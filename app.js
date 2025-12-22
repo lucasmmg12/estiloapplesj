@@ -117,44 +117,45 @@ async function cargarDatos() {
     mostrarCargando();
 
     try {
-        // Cargar conversaciones
+        // 1. Cargar cotización del dólar primero (crucial para precios)
+        const valorDolar = await cargarCotizacionDolar();
+
+        // 2. Cargar conversaciones y otros
         conversaciones = await supabaseService.obtenerConversaciones();
-
-        // MOCK: Asignar vendedores aleatoriamente si no tienen
         asignarVendedoresMock();
-
         renderizarConversaciones();
-
-        // Renderizar Tab Vendedores
         renderizarVendedores();
 
-        // Cargar productos
-        productos = await supabaseService.obtenerProductos();
+        // 3. Cargar productos y RECALCULAR precios dinámicamente
+        const rawProductos = await supabaseService.obtenerProductos();
+        productos = rawProductos.map(p => {
+            const precio_ars = p.precio_usd * valorDolar;
+            return {
+                ...p,
+                precio_ars: precio_ars,
+                cuotas_3: Math.round((precio_ars * 1.22) / 3 / 1000) * 1000,
+                cuotas_6: Math.round((precio_ars * 1.33) / 6 / 1000) * 1000,
+                cuotas_12: Math.round((precio_ars * 1.6) / 12)
+            };
+        });
         productosFiltrados = [...productos];
         renderizarCatalogo();
 
-        // Cargar mensajes automáticos
+        // 4. Cargar mensajes y programados
         mensajesAutomaticos = await supabaseService.obtenerMensajesAutomaticos();
         renderizarMensajesAutomaticos();
 
-        // Cargar mensajes programados persistentes
         mensajesProgramados = await supabaseService.obtenerMensajesProgramados();
         renderizarProgramados();
 
-        // Procesar datos para el embudo (necesario para estadísticas)
+        // 5. Estadísticas y Embudo
         renderizarEmbudo();
+        actualizarEstadisticas();
 
-        // Si la pestaña actual es estadísticas, refrescar gráficos
         const activeTab = document.querySelector('.tab.active');
         if (activeTab && activeTab.dataset.tab === 'estadisticas') {
             setTimeout(renderizarEstadisticas, 200);
         }
-
-        // Cargar cotización del dólar
-        await cargarCotizacionDolar();
-
-        // Actualizar estadísticas
-        actualizarEstadisticas();
 
         mostrarToast('Datos actualizados correctamente', 'success');
     } catch (error) {
@@ -1313,10 +1314,13 @@ async function cargarCotizacionDolar() {
 
         const el = document.getElementById('valorDolar');
         if (el) el.textContent = valorFormateado;
+
+        return cotizacion.valor; // Retornar el valor para cálculos
     } catch (error) {
         console.error('Error cargando cotización del dólar:', error);
         const el = document.getElementById('valorDolar');
         if (el) el.textContent = 'Error';
+        return 1485.00; // Valor por defecto
     }
 }
 
