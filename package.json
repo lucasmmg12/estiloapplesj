@@ -1,0 +1,16 @@
+{
+  "name": "estilo-apple-sj",
+  "version": "1.0.0",
+  "description": "Sistema de gestión Estilo Apple SJ",
+  "main": "app.js",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "http-server . -p 8000"
+  },
+  "keywords": [],
+  "author": "Grow Labs",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
