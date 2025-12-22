@@ -121,8 +121,29 @@ async function cargarProductos() {
             .limit(1)
             .single();
 
-        // Si hay error o no hay datos, usar valor por defecto
-        const cotizacionDolar = (cotizacionData && !cotizacionError) ? cotizacionData.valor : 1485.00;
+        let cotizacionDolar = (cotizacionData && !cotizacionError) ? cotizacionData.valor : 1485.00;
+
+        // --- Sincronización Automática Inteligente para el Público ---
+        // Si la cotización tiene más de 12 horas, intentamos actualizarla
+        if (cotizacionData && cotizacionData.created_at) {
+            const fechaCotizacion = new Date(cotizacionData.created_at);
+            const ahora = new Date();
+            const horasDiferencia = (ahora - fechaCotizacion) / (1000 * 60 * 60);
+
+            if (horasDiferencia > 12) {
+                console.log('🕒 Cotización antigua detection en catálogo. Intentando refrescar...');
+                try {
+                    // Llamar a la Edge Function
+                    const { data: newData } = await supabaseClient.functions.invoke('actualizar-dolar');
+                    if (newData && newData.precio) {
+                        cotizacionDolar = newData.precio;
+                        console.log('✅ Dólar actualizado automáticamente:', cotizacionDolar);
+                    }
+                } catch (autoError) {
+                    console.warn('No se pudo refrescar el dólar automáticamente:', autoError);
+                }
+            }
+        }
 
         // Actualizar UI con la cotización
         console.log('Cotización actual:', cotizacionDolar);

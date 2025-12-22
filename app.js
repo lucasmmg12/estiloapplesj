@@ -1286,15 +1286,37 @@ async function eliminarProductoFn(productoId) {
 async function cargarCotizacionDolar() {
     try {
         const cotizacion = await supabaseService.obtenerCotizacionDolar();
+
+        // --- Sincronización Automática Inteligente ---
+        // Si la cotización tiene más de 6 horas, intentamos actualizarla automáticamente
+        if (cotizacion && cotizacion.created_at) {
+            const fechaCotizacion = new Date(cotizacion.created_at);
+            const ahora = new Date();
+            const horasDiferencia = (ahora - fechaCotizacion) / (1000 * 60 * 60);
+
+            if (horasDiferencia > 6) {
+                console.log('🕒 Cotización antigua (>6h). Iniciando actualización automática...');
+                try {
+                    await supabaseService.actualizarDolarAutomatico();
+                    // Volver a obtener la cotización actualizada
+                    return cargarCotizacionDolar();
+                } catch (autoError) {
+                    console.warn('No se pudo actualizar el dólar automáticamente:', autoError);
+                }
+            }
+        }
+
         const valorFormateado = new Intl.NumberFormat('es-AR', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }).format(cotizacion.valor);
 
-        document.getElementById('valorDolar').textContent = valorFormateado;
+        const el = document.getElementById('valorDolar');
+        if (el) el.textContent = valorFormateado;
     } catch (error) {
         console.error('Error cargando cotización del dólar:', error);
-        document.getElementById('valorDolar').textContent = 'Error';
+        const el = document.getElementById('valorDolar');
+        if (el) el.textContent = 'Error';
     }
 }
 
@@ -1340,10 +1362,16 @@ async function sincronizarDolarAutomatico() {
     btn.disabled = true;
 
     try {
+        // Llamar al servicio que invoca la Edge Function
+        await supabaseService.actualizarDolarAutomatico();
+
         mostrarToast('Cotización sincronizada correctamente', 'success');
 
         // Recargar datos
         await cargarCotizacionDolar();
+
+        // Importante: Refrescar catálogo de productos también para ver los nuevos precios en ARS
+        await cargarDatos();
 
         cerrarModalDolar();
     } catch (error) {
