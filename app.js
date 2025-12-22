@@ -1009,6 +1009,9 @@ function cambiarTab(tabName) {
         document.getElementById('tabMensajes').classList.add('active');
     } else if (tabName === 'catalogo') {
         document.getElementById('tabCatalogo').classList.add('active');
+    } else if (tabName === 'programados') {
+        document.getElementById('tabProgramados').classList.add('active');
+        renderizarProgramados();
     }
 }
 
