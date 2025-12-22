@@ -1641,6 +1641,7 @@ window.programarAutoRespuesta = async (convId, intencionTipo) => {
 
 function renderizarProgramados() {
     const tbody = document.getElementById('tablaProgramados');
+    const badge = document.getElementById('badgeProgramados');
     if (!tbody) return;
 
     if (!mensajesProgramados || mensajesProgramados.length === 0) {
