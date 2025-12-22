@@ -83,6 +83,13 @@ const CONFIG = {
 export default CONFIG;
 `;
 
-fs.writeFileSync(path.join(distDir, 'config.js'), configContent);
+// Escribir en dist (por si se configuró Output Directory: dist)
+if (fs.existsSync(distDir)) {
+    fs.writeFileSync(path.join(distDir, 'config.js'), configContent);
+}
 
-console.log('✅ Build completado exitosamente en /dist');
+// Escribir en raíz (por si se usa la configuración por defecto de Vercel)
+fs.writeFileSync(path.join(__dirname, 'config.js'), configContent);
+
+console.log('✅ Config.js generado en raíz y /dist');
+console.log('✅ Build completado exitosamente');
