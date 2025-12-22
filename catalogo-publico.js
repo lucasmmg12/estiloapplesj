@@ -16,46 +16,46 @@ let productosFiltrados = [];
 // Mapeo de modelos a imágenes
 const imagenesIPhone = {
     // iPhone 17
-    'iPhone 17 Pro Max': 'public/iphone17pro.jpg',
-    'iPhone 17 Pro': 'public/iphone17pro.jpg',
-    'iPhone 17': 'public/iphone17.jpg',
+    'iPhone 17 Pro Max': 'iphone17pro.jpg',
+    'iPhone 17 Pro': 'iphone17pro.jpg',
+    'iPhone 17': 'iphone17.jpg',
 
     // iPhone 16
-    'iPhone 16 Pro Max': 'public/iphone16pro.jpg',
-    'iPhone 16 Pro': 'public/iphone16pro.jpg',
-    'iPhone 16': 'public/iphone16.jpg',
+    'iPhone 16 Pro Max': 'iphone16pro.jpg',
+    'iPhone 16 Pro': 'iphone16pro.jpg',
+    'iPhone 16': 'iphone16.jpg',
 
     // iPhone 15
-    'iPhone 15 Pro Max': 'public/iphone15pro.webp',
-    'iPhone 15 Pro': 'public/iphone15pro.webp',
-    'iPhone 15 Plus': 'public/iphone15.jpg',
-    'iPhone 15': 'public/iphone15.jpg',
+    'iPhone 15 Pro Max': 'iphone15pro.webp',
+    'iPhone 15 Pro': 'iphone15pro.webp',
+    'iPhone 15 Plus': 'iphone15.jpg',
+    'iPhone 15': 'iphone15.jpg',
 
     // iPhone 14
-    'iPhone 14 Pro Max': 'public/iphone14pro.png',
-    'iPhone 14 Pro': 'public/iphone14pro.png',
-    'iPhone 14 Plus': 'public/iphone14.jpg',
-    'iPhone 14': 'public/iphone14.jpg',
+    'iPhone 14 Pro Max': 'iphone14pro.png',
+    'iPhone 14 Pro': 'iphone14pro.png',
+    'iPhone 14 Plus': 'iphone14.jpg',
+    'iPhone 14': 'iphone14.jpg',
 
     // iPhone 13
-    'iPhone 13 Pro Max': 'public/iphone13pro.jpg',
-    'iPhone 13 Pro': 'public/iphone13pro.jpg',
-    'iPhone 13 mini': 'public/iphone13.jpg',
-    'iPhone 13': 'public/iphone13.jpg',
+    'iPhone 13 Pro Max': 'iphone13pro.jpg',
+    'iPhone 13 Pro': 'iphone13pro.jpg',
+    'iPhone 13 mini': 'iphone13.jpg',
+    'iPhone 13': 'iphone13.jpg',
 
     // iPhone 12
-    'iPhone 12 Pro Max': 'public/IPhone12pro.webp',
-    'iPhone 12 Pro': 'public/IPhone12pro.webp',
-    'iPhone 12 mini': 'public/iphone12.jpg',
-    'iPhone 12': 'public/iphone12.jpg',
+    'iPhone 12 Pro Max': 'IPhone12pro.webp',
+    'iPhone 12 Pro': 'IPhone12pro.webp',
+    'iPhone 12 mini': 'iphone12.jpg',
+    'iPhone 12': 'iphone12.jpg',
 
     // iPhone 11
-    'iPhone 11 Pro Max': 'public/iphone11pro.jpg',
-    'iPhone 11 Pro': 'public/iphone11pro.jpg',
-    'iPhone 11': 'public/iphone11.jpg',
+    'iPhone 11 Pro Max': 'iphone11pro.jpg',
+    'iPhone 11 Pro': 'iphone11pro.jpg',
+    'iPhone 11': 'iphone11.jpg',
 
     // Older models / Default
-    'default': 'public/iphone11.jpg'
+    'default': 'iphone11.jpg'
 };
 
 // Generar rating aleatorio pero realista (entre 4.6 y 5.0) para "Social Proof"
