@@ -20,7 +20,7 @@ const VENDEDORES = [
 let conversaciones = [];
 let clientes = [];
 let mensajesAutomaticos = [];
-let embudoVentas = [];
+let mensajesProgramados = [];
 let productos = [];
 let productosFiltrados = [];
 let conversacionActual = null;
@@ -128,9 +128,9 @@ async function cargarDatos() {
         // Renderizar Tab Vendedores
         renderizarVendedores();
 
-        // Cargar embudo
-        embudoVentas = await supabaseService.obtenerEmbudo();
-        renderizarEmbudo();
+        // Cargar mensajes programados persistentes
+        mensajesProgramados = await supabaseService.obtenerMensajesProgramados();
+        renderizarProgramados();
 
         // Cargar mensajes automáticos
         mensajesAutomaticos = await supabaseService.obtenerMensajesAutomaticos();
@@ -1613,21 +1613,21 @@ window.programarAutoRespuesta = async (convId, intencionTipo) => {
         `¿Programar mensaje de seguimiento "${intencionTipo}" para ${conv.clientes.nombre}?\n\nFecha de envío: ${fechaStr} (en ${dias} días)`,
         async () => {
             try {
-                const nuevoSeguimiento = await supabaseService.programarSeguimiento(
+                const nuevoProgramado = await supabaseService.programarNuevoMensaje(
                     conv.clientes.id,
+                    plantilla.id,
                     intencionTipo,
                     fechaProgramada.toISOString()
                 );
 
-                // Note: supabaseService.programarSeguimiento now returns the joined 'clientes' data
-                // so we don't need manual merging, but for safety against cached old client code:
-                const itemParaEmbudo = nuevoSeguimiento.clientes ? nuevoSeguimiento : {
-                    ...nuevoSeguimiento,
+                // Asegurar que el objeto tiene los datos del cliente para el renderizado inmediato
+                const itemParaLista = nuevoProgramado.clientes ? nuevoProgramado : {
+                    ...nuevoProgramado,
                     clientes: conv.clientes
                 };
 
                 // Actualizar estado local
-                embudoVentas.push(itemParaEmbudo);
+                mensajesProgramados.push(itemParaLista);
 
                 renderizarProgramados();
                 mostrarToast(`Mensaje programado exitosamente para el ${fechaProgramada.toLocaleDateString()}`, 'success');
@@ -1643,13 +1643,11 @@ function renderizarProgramados() {
     const tbody = document.getElementById('tablaProgramados');
     if (!tbody) return;
 
-    const badge = document.getElementById('badgeProgramados');
-
-    if (!embudoVentas || embudoVentas.length === 0) {
+    if (!mensajesProgramados || mensajesProgramados.length === 0) {
         tbody.innerHTML = `
             <tr class="loading-row">
                 <td colspan="5">
-                    <p>No hay mensajes programados pendientes.</p>
+                    <p>No hay envíos programados pendientes.</p>
                 </td>
             </tr>
         `;
@@ -1657,17 +1655,14 @@ function renderizarProgramados() {
         return;
     }
 
-    // Filtrar solo los NO enviados (pendientes)
-    const pendientes = embudoVentas.filter(item => !item.mensaje_enviado);
-
     // Ordenar por fecha próxima
-    pendientes.sort((a, b) => new Date(a.fecha_proximo_mensaje) - new Date(b.fecha_proximo_mensaje));
+    mensajesProgramados.sort((a, b) => new Date(a.fecha_envio) - new Date(b.fecha_envio));
 
-    if (badge) badge.textContent = `${pendientes.length} pendientes`;
+    if (badge) badge.textContent = `${mensajesProgramados.length} pendientes`;
 
-    tbody.innerHTML = pendientes.map(item => {
+    tbody.innerHTML = mensajesProgramados.map(item => {
         const clienteNombre = item.clientes ? item.clientes.nombre : 'Cliente desconocido';
-        const fechaObj = new Date(item.fecha_proximo_mensaje);
+        const fechaObj = new Date(item.fecha_envio);
         const hoy = new Date();
         const diasRestantes = Math.ceil((fechaObj - hoy) / (1000 * 60 * 60 * 24));
 
@@ -1686,7 +1681,7 @@ function renderizarProgramados() {
             <tr>
                 <td><strong>${clienteNombre}</strong></td>
                 <td>
-                    <span class="intencion-badge ${item.etapa.toLowerCase()}">${item.etapa}</span>
+                    <span class="intencion-badge ${item.tipo_plantilla.toLowerCase()}">${item.tipo_plantilla}</span>
                 </td>
                 <td>
                     <div>${fechaObj.toLocaleDateString('es-AR')}</div>
@@ -1698,14 +1693,10 @@ function renderizarProgramados() {
                     </span>
                 </td>
                 <td>
-                    <button class="btn-delete-card" 
-                            title="Cancelar programación"
-                            onclick="window.eliminarProgramacion('${item.id}')"
-                            style="background: none; border: none; color: #ff4d4d; cursor: pointer;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
+                    <button class="btn-action danger" 
+                            title="Cancelar"
+                            onclick="window.eliminarProgramacion('${item.id}')">
+                        Eliminar
                     </button>
                 </td>
             </tr>

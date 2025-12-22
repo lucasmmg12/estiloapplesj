@@ -82,6 +82,23 @@ CREATE INDEX idx_embudo_mensaje_enviado ON embudo_ventas(mensaje_enviado);
 CREATE INDEX idx_embudo_fecha_proximo ON embudo_ventas(fecha_proximo_mensaje);
 
 -- ============================================
+-- TABLA: mensajes_programados (Persistencia Real)
+-- ============================================
+CREATE TABLE IF NOT EXISTS mensajes_programados (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cliente_id UUID NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
+    plantilla_id UUID REFERENCES mensajes_automaticos(id) ON DELETE SET NULL,
+    tipo_plantilla TEXT NOT NULL, -- Ej: 'Averiguar', 'Comprar'
+    fecha_envio TIMESTAMP WITH TIME ZONE NOT NULL,
+    enviado BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_programados_cliente ON mensajes_programados(cliente_id);
+CREATE INDEX idx_programados_fecha ON mensajes_programados(fecha_envio);
+CREATE INDEX idx_programados_enviado ON mensajes_programados(enviado);
+
+-- ============================================
 -- TRIGGER: Actualizar updated_at
 -- ============================================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -141,6 +158,13 @@ CREATE POLICY "Anon can read mensajes_automaticos" ON mensajes_automaticos
 
 CREATE POLICY "Anon can read embudo_ventas" ON embudo_ventas
     FOR SELECT USING (true);
+
+-- Políticias para mensajes_programados
+ALTER TABLE mensajes_programados ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anon can read programados" ON mensajes_programados FOR SELECT USING (true);
+CREATE POLICY "Anon can insert programados" ON mensajes_programados FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anon can delete programados" ON mensajes_programados FOR DELETE USING (true);
+CREATE POLICY "Service role can do everything on programados" ON mensajes_programados FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "Anon can insert embudo_ventas" ON embudo_ventas
     FOR INSERT WITH CHECK (true);

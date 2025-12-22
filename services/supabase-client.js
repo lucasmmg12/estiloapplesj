@@ -150,30 +150,33 @@ export async function eliminarMensajeAutomatico(id) {
 }
 
 // ============================================
-// Funciones de Embudo de Ventas
+// Funciones de Mensajes Programados (Persistencia Real)
 // ============================================
 
-export async function obtenerEmbudo() {
+export async function obtenerMensajesProgramados() {
     const { data, error } = await supabase
-        .from('embudo_ventas')
+        .from('mensajes_programados')
         .select(`
-      *,
-      clientes (*)
-    `)
-        .order('fecha_proximo_mensaje', { ascending: true });
+            *,
+            clientes (*),
+            mensajes_automaticos:plantilla_id (*)
+        `)
+        .eq('enviado', false)
+        .order('fecha_envio', { ascending: true });
 
     if (error) throw error;
     return data;
 }
 
-export async function programarSeguimiento(clienteId, intencion, fechaProgramada) {
+export async function programarNuevoMensaje(clienteId, plantillaId, tipoPlantilla, fechaEnvio) {
     const { data, error } = await supabase
-        .from('embudo_ventas')
+        .from('mensajes_programados')
         .insert([{
             cliente_id: clienteId,
-            etapa: intencion,
-            fecha_proximo_mensaje: fechaProgramada,
-            mensaje_enviado: false
+            plantilla_id: plantillaId,
+            tipo_plantilla: tipoPlantilla,
+            fecha_envio: fechaEnvio,
+            enviado: false
         }])
         .select(`
             *,
@@ -185,9 +188,9 @@ export async function programarSeguimiento(clienteId, intencion, fechaProgramada
     return data;
 }
 
-export async function eliminarSeguimiento(id) {
+export async function eliminarMensajeProgramado(id) {
     const { error } = await supabase
-        .from('embudo_ventas')
+        .from('mensajes_programados')
         .delete()
         .eq('id', id);
 
