@@ -1,0 +1,87 @@
+================================================================================
+ANÁLISIS DEL ARCHIVO CATÁLOGO.XLSX
+================================================================================
+
+📋 HOJAS DISPONIBLES: ['Hoja 1']
+
+================================================================================
+HOJA ACTIVA: Hoja 1
+================================================================================
+
+📊 DIMENSIONES:
+   - Total de filas: 1022
+   - Total de columnas: 23
+
+📌 FILA DE ENCABEZADOS DETECTADA: Fila 1
+
+📌 ENCABEZADOS:
+
+📝 PRIMERAS 10 FILAS DE DATOS (desde fila 2):
+
+   === Fila 2 ===
+      (fila vacía)
+
+   === Fila 3 ===
+      Col1: CABLE ORIGINAL + 120 DÍAS DE GARANTÍA + FUNDA A ELECCIÓN  + VIDRIO TEMPLADO 😎
+
+   === Fila 4 ===
+      Col1: Hasta 12 cuotas FIJAS / 3 cuotas SIN interés BBVA - Descuento abonando de contado (Efec. - Trans. - Cripto)
+
+   === Fila 5 ===
+      Col1: Dólar hoy
+      Col2: =IFERROR(__xludf.DUMMYFUNCTION("INDEX (IMPORTXML(""https://www.infobae.com/economia/divisas/dolar-hoy/"",""/html/body/div[1]/div/div[2]/div[2]/div[5]/div[1]/div[3]/p/text()[2]""))*1000"),1485.0)
+
+   === Fila 6 ===
+      Col1: STOCK USADOS PREMIUM - SELLADOS
+      Col4: Promoción contado 🔥
+      Col6: PROMOCIONES BANCARIAS 
+
+   === Fila 7 ===
+      Col1: Modelo
+      Col2: Color/es
+      Col3: GB - % bat.
+      Col4: Precio en Dolar
+      Col5: Precio en pesos
+      Col6: 3 CUOTAS 💣
+      Col7: 6 CUOTAS 💣
+      Col8: 12 CUOTAS 💣
+
+   === Fila 8 ===
+      Col1: iPhone 8
+      Col2: Negro
+      Col3: 64 GB / 100%
+      Col4: 90.0
+      Col5: =D8*B5
+      Col6: =ROUND((E8*1.22)/3,-3)
+      Col7: =ROUND((E8*1.33)/6,-3)
+      Col8: =(E8*1.6)/12
+
+   === Fila 9 ===
+      Col1: iPhone 11 
+      Col2: Rojo
+      Col3: 64 GB / 87%
+      Col4: 200.0
+      Col5: =D9*B5
+      Col6: =ROUND((E9*1.22)/3,-3)
+      Col7: =ROUND((E9*1.33)/6,-3)
+      Col8: =(E9*1.6)/12
+
+   === Fila 10 ===
+      Col1: iPhone 11 
+      Col2: Negro
+      Col3: 64 GB / 100%
+      Col4: 220.0
+      Col5: =D10*B5
+      Col6: =ROUND((E10*1.22)/3,-3)
+      Col7: =ROUND((E10*1.33)/6,-3)
+      Col8: =(E10*1.6)/12
+
+   === Fila 11 ===
+      Col1: iPhone 11 
+      Col2: Blanco / Negro
+      Col3:  128GB / 83%
+      Col4: 240.0
+      Col5: =D11*B5
+      Col6: =ROUND((E11*1.22)/3,-3)
+      Col7: =ROUND((E11*1.33)/6,-3)
+      Col8: =(E11*1.6)/12

@@ -1,0 +1,697 @@
+/* ============================================
+   CATÁLOGO PÚBLICO - ESTILO APPLE
+   ============================================ */
+
+:root {
+    --primary: #800020;
+    /* Borravino (Burgundy) */
+    --primary-light: #a3304b;
+    --secondary: #fce4ec;
+    /* Pastel (Soft Pink/Cream) */
+    --accent: #d81b60;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --dark: #0f0505;
+    /* Dark Wine base */
+    --gray-900: #111827;
+    --gray-200: #e5e7eb;
+    --gray-400: #9ca3af;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: radial-gradient(circle at top left, #2d0a10 0%, #0f0505 100%);
+    color: var(--gray-200);
+    min-height: 100vh;
+    line-height: 1.6;
+    background-attachment: fixed;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Glassmorphism Utility */
+.glass-panel {
+    background: rgba(45, 10, 16, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border-radius: 20px;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+/* ============================================
+   SMART HEADER
+   ============================================ */
+
+.header {
+    background: rgba(18, 18, 18, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estado cuando se hace scroll */
+.header.scrolled {
+    padding: 0.8rem 0;
+    background: rgba(10, 10, 10, 0.85);
+    backdrop-filter: blur(30px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.4s ease;
+}
+
+.header.scrolled .header-content {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.logo {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.header.scrolled .logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-texts {
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.header.scrolled .header-texts {
+    text-align: left;
+    margin-left: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+    transition: all 0.3s ease;
+    letter-spacing: -1px;
+}
+
+.header.scrolled .header-title {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.header-subtitle {
+    font-size: 1rem;
+    color: #a1a1a6;
+    margin: 0;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.header.scrolled .header-subtitle {
+    font-size: 0.9rem;
+    opacity: 0;
+    /* Ocultar subtítulo en scroll para limpiar la vista */
+    display: none;
+}
+
+/* ============================================
+   FILTROS
+   ============================================ */
+
+.filters-section {
+    display: flex;
+    gap: 1rem;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+}
+
+.search-input,
+.filter-select {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem 1.5rem;
+    background: rgba(31, 41, 55, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: var(--gray-200);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.search-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.2);
+    background: rgba(31, 41, 55, 0.8);
+}
+
+/* Updated Button Styles for Theme */
+.btn-buy {
+    width: 100%;
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
+}
+
+.btn-buy:hover {
+    background: var(--primary-light);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(128, 0, 32, 0.5);
+}
+
+.installment-badge {
+    display: inline-block;
+    background: rgba(252, 228, 236, 0.1);
+    color: var(--secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(252, 228, 236, 0.2);
+}
+
+/* ============================================
+   TABLA DE PRECIOS (CANJE) & REGLAS
+   ============================================ */
+
+.trade-in-rules {
+    margin-bottom: 3rem;
+    padding: 2rem;
+}
+
+.rules-title {
+    text-align: center;
+    background: var(--primary);
+    color: white;
+    padding: 0.8rem;
+    border-radius: 12px 12px 0 0;
+    margin: -2rem -2rem 1.5rem -2rem;
+    /* Pull to edges */
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.rules-list {
+    list-style: none;
+    padding: 0;
+}
+
+.rules-list li {
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: 1rem;
+    color: var(--gray-200);
+}
+
+.rules-list li:last-child {
+    border-bottom: none;
+}
+
+.rules-list li::before {
+    content: "•";
+    color: var(--primary);
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* Table Updates with Glassmorphism */
+.pricelist-container {
+    background: rgba(45, 10, 16, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 4rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.pricelist-table th {
+    background: rgba(128, 0, 32, 0.6);
+    /* Semi-transparent Burgundy */
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    backdrop-filter: blur(5px);
+}
+
+.pricelist-table tr:hover {
+    background: rgba(252, 228, 236, 0.05);
+    /* Slight pastel hover */
+}
+
+/* Update Search Input Focus (Specific Override if needed) */
+.search-input:focus,
+.filter-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.2);
+}
+
+.search-input::placeholder {
+    color: var(--gray-500);
+}
+
+/* ============================================
+   GRID DE PRODUCTOS
+   ============================================ */
+
+/* ============================================
+   GRID DE PRODUCTOS PREMIUM
+   ============================================ */
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2.5rem;
+    margin-bottom: 4rem;
+}
+
+.producto-card {
+    background: #121212;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Límite sutil */
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.producto-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Badge de "Más Vendido" y Contenedor Imagen */
+.card-image-container {
+    position: relative;
+    padding: 3rem 1.5rem 2rem;
+    background: radial-gradient(circle at center, rgba(40, 40, 40, 0.5) 0%, rgba(18, 18, 18, 0) 70%);
+    text-align: center;
+}
+
+.card-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.producto-imagen {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.5));
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.producto-card:hover .producto-imagen {
+    transform: scale(1.08)translateY(-5px);
+}
+
+/* Contenido de la tarjeta */
+.card-content {
+    padding: 1.5rem 2rem 2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background: #121212;
+}
+
+/* Rating */
+.rating-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.rating-text {
+    font-size: 0.85rem;
+    color: #888;
+    font-weight: 400;
+}
+
+.producto-modelo {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #f5f5f7;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+.producto-specs {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.spec-bubble {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #d1d1d6;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spec-bubble.bateria {
+    color: #32d74b;
+    background: rgba(50, 215, 75, 0.1);
+    border-color: rgba(50, 215, 75, 0.2);
+}
+
+.spec-bubble.color {
+    color: #bf5af2;
+    background: rgba(191, 90, 242, 0.1);
+    border-color: rgba(191, 90, 242, 0.2);
+}
+
+/* Precios */
+.price-section {
+    margin-top: auto;
+    margin-bottom: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1.5rem;
+}
+
+.main-price {
+    display: flex;
+    align-items: flex-start;
+    color: #fff;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.currency {
+    font-size: 1rem;
+    margin-top: 6px;
+    margin-right: 4px;
+    color: #86868b;
+}
+
+.amount {
+    font-size: 2.25rem;
+    letter-spacing: -0.02em;
+}
+
+.ars-price {
+    font-size: 0.95rem;
+    color: #86868b;
+    font-weight: 400;
+}
+
+/* Cuotas */
+.installments-preview {
+    margin-bottom: 1.5rem;
+}
+
+.installment-badge {
+    display: inline-block;
+    background: linear-gradient(90deg, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0.05) 100%);
+    color: #0071e3;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+}
+
+/* Botón de compra */
+.btn-buy {
+    width: 100%;
+    background: #0071e3;
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-buy:hover {
+    background: #0077ed;
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(0, 113, 227, 0.4);
+}
+
+/* ============================================
+   CONTACTO
+   ============================================ */
+
+.contact-section {
+    background: rgba(31, 41, 55, 0.6);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 3rem;
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.contact-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--gray-100);
+}
+
+.contact-section p {
+    font-size: 1.1rem;
+    color: var(--gray-400);
+    margin-bottom: 2rem;
+}
+
+.whatsapp-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    box-shadow: 0 8px 24px rgba(37, 211, 102, 0.3);
+}
+
+.whatsapp-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(37, 211, 102, 0.4);
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.footer {
+    background: rgba(26, 31, 53, 0.8);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.footer p {
+    color: var(--gray-500);
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+/* ============================================
+   LOADING
+   ============================================ */
+
+.loading {
+    text-align: center;
+    padding: 4rem 0;
+    grid-column: 1 / -1;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(0, 212, 255, 0.1);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .header-title {
+        font-size: 2rem;
+    }
+
+    .productos-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-section {
+        flex-direction: column;
+    }
+
+    .search-input,
+    .filter-select {
+        min-width: 100%;
+    }
+}
+
+/* ============================================
+   TABLA DE PRECIOS (CANJE)
+   ============================================ */
+
+.pricelist-container {
+    background: #121212;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-bottom: 4rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.pricelist-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--gray-200);
+}
+
+.pricelist-table th,
+.pricelist-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pricelist-table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.pricelist-table tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.pricelist-table tr:last-child td {
+    border-bottom: none;
+}
+
+.model-cell {
+    font-weight: 600;
+    color: #fff;
+}
+
+.price-range {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--success);
+}
+
+.negative-price {
+    color: var(--danger);
+    /* O usa var(--warning) si prefieres */
+}
+
+@media (max-width: 600px) {
+
+    .pricelist-table th,
+    .pricelist-table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,25 @@
+================================================================================
+IMPORTACION DE CATALOGO
+================================================================================
+
+[*] Cargando archivo: Catálogo.xlsx
+[OK] Archivo cargado: 1022 filas, 23 columnas
+
+[*] Cotizacion del dolar: $1485.0
+
+[*] Procesando productos desde fila 8...
+
+[OK] Productos procesados: 39
+[!] Productos saltados: 976
+
+[*] Insertando 39 productos en Supabase...
+   Marcando productos existentes como inactivos...
+   Insertados: 39/39
+
+[OK] Importacion completada exitosamente!
+   - 39 productos importados
+   - Cotizacion del dolar: $1485.0
+
+================================================================================
+IMPORTACION FINALIZADA
+================================================================================
