@@ -128,19 +128,27 @@ async function cargarDatos() {
         // Renderizar Tab Vendedores
         renderizarVendedores();
 
-        // Cargar mensajes programados persistentes
-        mensajesProgramados = await supabaseService.obtenerMensajesProgramados();
-        renderizarProgramados();
-
-        // Cargar mensajes automáticos
-        mensajesAutomaticos = await supabaseService.obtenerMensajesAutomaticos();
-        renderizarMensajesAutomaticos();
-        renderizarProgramados();
-
         // Cargar productos
         productos = await supabaseService.obtenerProductos();
         productosFiltrados = [...productos];
         renderizarCatalogo();
+
+        // Cargar mensajes automáticos
+        mensajesAutomaticos = await supabaseService.obtenerMensajesAutomaticos();
+        renderizarMensajesAutomaticos();
+
+        // Cargar mensajes programados persistentes
+        mensajesProgramados = await supabaseService.obtenerMensajesProgramados();
+        renderizarProgramados();
+
+        // Procesar datos para el embudo (necesario para estadísticas)
+        renderizarEmbudo();
+
+        // Si la pestaña actual es estadísticas, refrescar gráficos
+        const activeTab = document.querySelector('.tab.active');
+        if (activeTab && activeTab.dataset.tab === 'estadisticas') {
+            setTimeout(renderizarEstadisticas, 200);
+        }
 
         // Cargar cotización del dólar
         await cargarCotizacionDolar();
@@ -1354,6 +1362,13 @@ async function sincronizarDolarAutomatico() {
 let charts = {};
 
 function renderizarEstadisticas() {
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js no está cargado aún');
+        return;
+    }
+
+    console.log('📊 Renderizando estadísticas...', { totalConversaciones: conversaciones.length });
+
     // 1. Chart Equipo
     const ctxEquipo = document.getElementById('chartEquipo').getContext('2d');
     const labelsEquipo = VENDEDORES.map(v => v.nombre);
