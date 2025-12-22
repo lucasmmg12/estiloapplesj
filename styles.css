@@ -1036,10 +1036,7 @@ body::before {
     box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
 
-.whatsapp-link::before {
-    content: "ðŸ“±";
-    font-size: 1.1em;
-}
+
 
 /* ============================================
    CATÃLOGO DE PRODUCTOS
@@ -1339,6 +1336,7 @@ body::before {
     font-weight: 700;
     background: linear-gradient(90deg, #fff, var(--primary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: 1px;
 }
