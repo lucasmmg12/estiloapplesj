@@ -1,5 +1,5 @@
-/* ============================================
-   CATÁLOGO PÚBLICO - ESTILO APPLE
+﻿/* ============================================
+   CATÃLOGO PÃšBLICO - ESTILO APPLE
    ============================================ */
 
 :root {
@@ -153,7 +153,7 @@ body {
 .header.scrolled .header-subtitle {
     font-size: 0.9rem;
     opacity: 0;
-    /* Ocultar subtítulo en scroll para limpiar la vista */
+    /* Ocultar subtÃ­tulo en scroll para limpiar la vista */
     display: none;
 }
 
@@ -267,7 +267,7 @@ body {
 }
 
 .rules-list li::before {
-    content: "•";
+    content: "â€¢";
     color: var(--primary);
     font-weight: bold;
     font-size: 1.2rem;
@@ -334,7 +334,7 @@ body {
     overflow: hidden;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    /* Límite sutil */
+    /* LÃ­mite sutil */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -346,7 +346,7 @@ body {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Badge de "Más Vendido" y Contenedor Imagen */
+/* Badge de "MÃ¡s Vendido" y Contenedor Imagen */
 .card-image-container {
     position: relative;
     padding: 3rem 1.5rem 2rem;
@@ -495,7 +495,7 @@ body {
     text-align: center;
 }
 
-/* Botón de compra */
+/* BotÃ³n de compra */
 .btn-buy {
     width: 100%;
     background: #0071e3;
@@ -694,4 +694,105 @@ body {
         padding: 0.75rem 1rem;
         font-size: 0.9rem;
     }
-}$footerCss
+}
+
+
+/* ============================================
+   FOOTER - GROW LABS
+   ============================================ */
+
+.main-footer {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(10, 5, 5, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-logo {
+    height: 40px;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.footer-logo:hover {
+    opacity: 1;
+}
+
+.footer-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fff, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+.footer-subtitle {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.social-link {
+    color: var(--gray-300);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.social-link:hover {
+    color: #fff;
+    background: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(128, 0, 32, 0.4);
+    border-color: var(--primary);
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.footer-link {
+    color: var(--gray-400);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.3s;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+}
+
+.footer-copy {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}

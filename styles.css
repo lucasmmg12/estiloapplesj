@@ -1,6 +1,6 @@
-/* ============================================
-   SISTEMA DE GESTIÓN BUILDERBOT - ESTILOS
-   Diseño profesional estilo Apple
+﻿/* ============================================
+   SISTEMA DE GESTIÃ“N BUILDERBOT - ESTILOS
+   DiseÃ±o profesional estilo Apple
    ============================================ */
 
 /* ============================================
@@ -795,7 +795,7 @@ body::before {
 }
 
 /* ============================================
-   DETALLES DE CONVERSACIÓN
+   DETALLES DE CONVERSACIÃ“N
    ============================================ */
 
 .detalle-section {
@@ -1037,12 +1037,12 @@ body::before {
 }
 
 .whatsapp-link::before {
-    content: "📱";
+    content: "ðŸ“±";
     font-size: 1.1em;
 }
 
 /* ============================================
-   CATÁLOGO DE PRODUCTOS
+   CATÃLOGO DE PRODUCTOS
    ============================================ */
 
 .catalogo-controls {
@@ -1258,8 +1258,9 @@ body::before {
 .kanban-board::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
 }
+
 /* ============================================
-   MODAL CONFIRMACI�N (Draggable)
+   MODAL CONFIRMACIÓN (Draggable)
    ============================================ */
 
 .modal-confirm-content {
@@ -1269,10 +1270,12 @@ body::before {
     box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), var(--shadow-glow);
     width: 450px;
     max-width: 90%;
-    position: absolute; /* Essential for dragging overriding flex centering */
+    position: absolute;
+    /* Essential for dragging overriding flex centering */
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Initial center */
+    transform: translate(-50%, -50%);
+    /* Initial center */
     margin: 0;
     overflow: hidden;
 }
@@ -1293,4 +1296,103 @@ body::before {
     background: rgba(0, 0, 0, 0.2);
     padding: 1.5rem;
 }
-$footerCss
+
+/* ============================================
+   FOOTER - GROW LABS
+   ============================================ */
+
+.main-footer {
+    margin-top: 4rem;
+    padding: 3rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(10, 5, 5, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-logo {
+    height: 40px;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.footer-logo:hover {
+    opacity: 1;
+}
+
+.footer-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #fff, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+.footer-subtitle {
+    color: var(--gray-400);
+    font-size: 0.9rem;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.social-link {
+    color: var(--gray-300);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.social-link:hover {
+    color: #fff;
+    background: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(128, 0, 32, 0.4);
+    border-color: var(--primary);
+}
+
+.footer-links {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.footer-link {
+    color: var(--gray-400);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.3s;
+}
+
+.footer-link:hover {
+    color: var(--primary);
+}
+
+.footer-copy {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--gray-500);
+}
