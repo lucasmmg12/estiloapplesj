@@ -1490,6 +1490,99 @@ function mostrarToast(mensaje, tipo = 'info') {
 // FUNCIONES DE PROGRAMACIÓN DE MENSAJES
 // ============================================
 
+// ============================================
+// FUNCIONES DE PROGRAMACIÓN DE MENSAJES
+// ============================================
+
+// --- Lógica del Modal Personalizado ---
+let confirmationCallback = null;
+
+window.mostrarConfirmacion = function (mensaje, onConfirm) {
+    const modal = document.getElementById('modalConfirmacion');
+    const msgElement = document.getElementById('mensajeConfirmacion');
+    const btnConfirm = document.getElementById('btnConfirmarAccion');
+
+    msgElement.innerText = mensaje;
+    confirmationCallback = onConfirm;
+
+    // Reset position logic would go here if we wanted to re-center every time
+    // But keeping last dragged position is often nice. 
+    // For now let's just show it.
+    modal.classList.add('active');
+
+    // Setup one-time click listener
+    btnConfirm.onclick = () => {
+        if (confirmationCallback) confirmationCallback();
+        window.cerrarModalConfirmacion();
+    };
+};
+
+window.cerrarModalConfirmacion = function () {
+    document.getElementById('modalConfirmacion').classList.remove('active');
+    confirmationCallback = null;
+};
+
+// --- Draggable Logic ---
+function setupDraggableModal() {
+    const modalContent = document.getElementById('modalConfirmacionContent');
+    const header = document.getElementById('modalConfirmacionHeader');
+
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    header.addEventListener("mousedown", dragStart);
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("mousemove", drag);
+
+    function dragStart(e) {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+
+        if (e.target === header || header.contains(e.target)) {
+            isDragging = true;
+        }
+    }
+
+    function dragEnd(e) {
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, modalContent);
+        }
+    }
+
+    function setTranslate(xPos, yPos, el) {
+        // We need to maintain the -50% for centering if we are adding to it,
+        // or we remove the css transform and rely fully on JS.
+        // Easiest is to remove the CSS transform: translate(-50%, -50%) once dragging starts
+        // and handle absolute positioning, but keeping center + offset is smoother math.
+        // Let's use calc.
+        el.style.transform = `translate(calc(-50% + ${xPos}px), calc(-50% + ${yPos}px))`;
+    }
+}
+
+// Initialize draggable on load
+document.addEventListener('DOMContentLoaded', () => {
+    setupDraggableModal();
+});
+
+
 window.programarAutoRespuesta = async (convId, intencionTipo) => {
     // 1. Buscar plantilla (case insensitive)
     const plantilla = mensajesAutomaticos.find(m => m.intencion.toLowerCase() === intencionTipo.toLowerCase() && m.activo);
@@ -1513,27 +1606,34 @@ window.programarAutoRespuesta = async (convId, intencionTipo) => {
     // Formato legible
     const fechaStr = fechaProgramada.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-    if (!confirm(`¿Programar mensaje de seguimiento "${intencionTipo}" para ${conv.clientes.nombre}?\n\nFecha de envío: ${fechaStr} (en ${dias} días)`)) return;
+    window.mostrarConfirmacion(
+        `¿Programar mensaje de seguimiento "${intencionTipo}" para ${conv.clientes.nombre}?\n\nFecha de envío: ${fechaStr} (en ${dias} días)`,
+        async () => {
+            try {
+                const nuevoSeguimiento = await supabaseService.programarSeguimiento(
+                    conv.clientes.id,
+                    intencionTipo,
+                    fechaProgramada.toISOString()
+                );
 
-    try {
-        const nuevoSeguimiento = await supabaseService.programarSeguimiento(
-            conv.clientes.id,
-            intencionTipo,
-            fechaProgramada.toISOString()
-        );
+                // Note: supabaseService.programarSeguimiento now returns the joined 'clientes' data
+                // so we don't need manual merging, but for safety against cached old client code:
+                const itemParaEmbudo = nuevoSeguimiento.clientes ? nuevoSeguimiento : {
+                    ...nuevoSeguimiento,
+                    clientes: conv.clientes
+                };
 
-        // Actualizar estado local
-        embudoVentas.push({
-            ...nuevoSeguimiento,
-            clientes: conv.clientes
-        });
+                // Actualizar estado local
+                embudoVentas.push(itemParaEmbudo);
 
-        renderizarProgramados();
-        mostrarToast(`Mensaje programado exitosamente para el ${fechaProgramada.toLocaleDateString()}`, 'success');
-    } catch (error) {
-        console.error('Error programando mensaje:', error);
-        mostrarToast('Error al programar: ' + error.message, 'error');
-    }
+                renderizarProgramados();
+                mostrarToast(`Mensaje programado exitosamente para el ${fechaProgramada.toLocaleDateString()}`, 'success');
+            } catch (error) {
+                console.error('Error programando mensaje:', error);
+                mostrarToast('Error al programar: ' + error.message, 'error');
+            }
+        }
+    );
 };
 
 function renderizarProgramados() {

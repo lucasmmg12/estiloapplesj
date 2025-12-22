@@ -175,7 +175,10 @@ export async function programarSeguimiento(clienteId, intencion, fechaProgramada
             fecha_proximo_mensaje: fechaProgramada,
             mensaje_enviado: false
         }])
-        .select()
+        .select(`
+            *,
+            clientes (*)
+        `)
         .single();
 
     if (error) throw error;

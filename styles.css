@@ -1258,3 +1258,38 @@ body::before {
 .kanban-board::-webkit-scrollbar-thumb:hover {
     background: var(--primary);
 }
+/* ============================================
+   MODAL CONFIRMACIÓN (Draggable)
+   ============================================ */
+
+.modal-confirm-content {
+    background: rgba(15, 5, 5, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(128, 0, 32, 0.4);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), var(--shadow-glow);
+    width: 450px;
+    max-width: 90%;
+    position: absolute; /* Essential for dragging overriding flex centering */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Initial center */
+    margin: 0;
+    overflow: hidden;
+}
+
+.modal-confirm-header {
+    cursor: grab;
+    background: linear-gradient(90deg, rgba(128, 0, 32, 0.15), transparent);
+    padding: 1.5rem;
+    user-select: none;
+}
+
+.modal-confirm-header:active {
+    cursor: grabbing;
+}
+
+.modal-confirm-content .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+}

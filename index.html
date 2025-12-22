@@ -711,9 +711,42 @@
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- MODAL CONFIRMACIÓN PERSONALIZADO -->
+    <div id="modalConfirmacion" class="modal">
+        <div class="modal-content modal-confirm-content" id="modalConfirmacionContent">
+            <div class="modal-header modal-confirm-header" id="modalConfirmacionHeader">
+                <h3 class="modal-title">Confirmar Programación</h3>
+                <button class="modal-close" onclick="cerrarModalConfirmacion()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--primary)"
+                        stroke-width="1.5" style="margin-bottom: 1rem;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <p id="mensajeConfirmacion" style="font-size: 1.1rem; color: var(--gray-100); line-height: 1.5;">
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button class="btn-secondary" onclick="cerrarModalConfirmacion()">Cancelar</button>
+                <button class="btn-primary" id="btnConfirmarAccion">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="config.js" type="module"></script>
+    <script src="services/supabase-client.js" type="module"></script>
+    <script src="services/builderbot-api.js" type="module"></script>
+    <script src="app.js" type="module"></script>
 </body>
 
 </html>
+```
