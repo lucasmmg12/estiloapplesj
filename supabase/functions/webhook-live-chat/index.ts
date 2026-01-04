@@ -36,7 +36,7 @@ serve(async (req) => {
 
         for (const msg of messages) {
             // Extraer campos básicos
-            const telefono = msg.from || msg.phone || msg.telefono;
+            const telefono = msg.from || msg.phone || msg.telefono || msg.numero;
             const contenido = msg.body || msg.content || msg.message || msg.mensaje;
             const media = msg.media || msg.mediaUrl || null;
 
