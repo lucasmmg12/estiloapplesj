@@ -15,11 +15,18 @@ serve(async (req) => {
 
     try {
         const payload = await req.json();
-        console.log('Payload Live Chat recibido:', JSON.stringify(payload, null, 2));
+        console.log('--- NUEVO MENSAJE RECIBIDO ---');
+        console.log('Payload crudo:', JSON.stringify(payload));
 
         // Inicializar Supabase
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('ERROR CRITICO: Faltan variables de entorno SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY');
+            throw new Error('Configuración incompleta del servidor');
+        }
+
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // Normalizar datos (soportar array o objeto único)
