@@ -14,7 +14,7 @@ const supabase = window.supabase.createClient(
 
 // State
 let activeChatPhone = null;
-let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar }
+let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite }
 
 // DOM Elements
 const contactsListEl = document.getElementById('contactsList');
@@ -34,13 +34,10 @@ const searchInputEl = document.getElementById('searchInput');
 
 async function init() {
     console.log('🚀 Iniciando Live Chat...');
-
     // 1. Initial Load
     await loadContacts();
-
     // 2. Realtime Subscription
     subscribeToMessages();
-
     // 3. Event Listeners
     setupEventListeners();
 }
@@ -58,26 +55,38 @@ async function loadContacts() {
     `;
 
     try {
-        // Obtenemos todos los mensajes para agrupar (en producción idealmente tendríamos una tabla 'contactos_live')
-        // ordenados por fecha descendente para tener lo más reciente primero
-        const { data, error } = await supabase
+        // 1. Obtener mensajes recientes (agrupación simulada por orden)
+        const { data: messages, error: msgError } = await supabase
             .from('mensajes')
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (msgError) throw msgError;
+
+        // 2. Obtener metadatos de contactos (nombres, favoritos)
+        const { data: contactsData, error: contactsError } = await supabase
+            .from('contactos')
+            .select('*');
+
+        // Si la tabla no existe aún, ignoramos el error silenciosamente o usamos array vacío
+        const savedContacts = contactsData || [];
 
         contactsMap.clear();
 
         // Agrupar por teléfono
-        data.forEach(msg => {
+        messages.forEach(msg => {
             if (!contactsMap.has(msg.cliente_telefono)) {
+                // Buscar si existe info guardada
+                const saved = savedContacts.find(c => c.telefono === msg.cliente_telefono);
+
                 contactsMap.set(msg.cliente_telefono, {
                     phone: msg.cliente_telefono,
                     lastMessage: msg.contenido || 'Archivo multimedia',
                     timestamp: new Date(msg.created_at),
-                    unreadCount: 0, // Por ahora no persistimos el estado de lectura, todo "leído" visualmente al inicio
-                    avatar: getRandomColor(msg.cliente_telefono)
+                    unreadCount: 0,
+                    avatar: '👤', // Default Avatar Emoji
+                    name: saved ? saved.nombre : null, // Alias guardado
+                    isFavorite: saved ? saved.es_favorito : false
                 });
             }
         });
@@ -86,13 +95,21 @@ async function loadContacts() {
 
     } catch (err) {
         console.error('Error cargando contactos:', err);
-        contactsListEl.innerHTML = `<p style="color:red; padding:20px;">Error cargando chats. Recarga la página.</p>`;
+        // Fallback si falla la carga de contactos (ej. tabla no creada)
+        renderContacts();
     }
 }
 
 function renderContacts() {
-    const sortedContacts = Array.from(contactsMap.values())
-        .sort((a, b) => b.timestamp - a.timestamp);
+    let sortedContacts = Array.from(contactsMap.values());
+
+    // Filtrar / Ordenar
+    // Prioridad: Favoritos primero, luego fecha descendente
+    sortedContacts.sort((a, b) => {
+        if (a.isFavorite && !b.isFavorite) return -1;
+        if (!a.isFavorite && b.isFavorite) return 1;
+        return b.timestamp - a.timestamp;
+    });
 
     contactsListEl.innerHTML = '';
 
@@ -104,15 +121,19 @@ function renderContacts() {
     sortedContacts.forEach(contact => {
         const isActive = activeChatPhone === contact.phone ? 'active' : '';
         const timeStr = formatTime(contact.timestamp);
+        const displayName = contact.name || contact.phone; // Mostrar nombre si existe, sino teléfono
+        const favIcon = contact.isFavorite ? '⭐' : '';
 
         const html = `
             <div class="contact-item ${isActive}" onclick="window.openChat('${contact.phone}')">
-                <div class="contact-avatar" style="background-color: ${contact.avatar}">
-                    ${contact.phone.slice(-2)}
+                <div class="contact-avatar">
+                   <span style="font-size:24px;">${contact.avatar}</span>
                 </div>
                 <div class="contact-info">
                     <div class="contact-top-row">
-                        <span class="contact-name">${contact.phone}</span>
+                        <span class="contact-name">
+                            ${favIcon} ${displayName}
+                        </span>
                         <span class="contact-time">${timeStr}</span>
                     </div>
                     <div class="contact-bottom-row">
@@ -132,19 +153,44 @@ window.openChat = async (phone) => {
 
     // Update UI active state
     document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
-    // Find the clicked element (re-rendering is easier but lets try to be efficient eventually)
     renderContacts();
 
     // Show Chat Area
     emptyStateEl.style.display = 'none';
     activeChatEl.style.display = 'flex';
 
-    // Header Info
-    chatHeaderNameEl.textContent = phone;
     const contact = contactsMap.get(phone);
-    if (contact) {
-        chatHeaderAvatarEl.innerHTML = `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:${contact.avatar}; color:white; font-weight:bold;">${phone.slice(-2)}</div>`;
-    }
+    const displayName = contact ? (contact.name || contact.phone) : phone;
+
+    // Header Info & Actions
+    // Inject edit/favorite controls directly into header
+    chatHeaderNameEl.innerHTML = `
+        <span id="chatTitleText" onclick="editContactName('${phone}')" style="cursor:pointer; border-bottom:1px dashed #666;" title="Click para editar nombre">
+            ${displayName} 
+        </span>
+        <span style="font-size:0.8em; color:var(--text-secondary);">✏️</span>
+    `;
+
+    // Avatar
+    chatHeaderAvatarEl.innerHTML = `<span style="font-size:24px;">👤</span>`;
+
+    // Header Actions Update (Agregar botón de Favorito)
+    const actionsContainer = document.querySelector('.chat-header .header-actions');
+    const isFav = contact && contact.isFavorite;
+
+    // Reemplazamos acciones (hack rápido para no duplicar listeners)
+    actionsContainer.innerHTML = `
+        <button class="icon-btn" title="${isFav ? 'Quitar Favorito' : 'Marcar Favorito'}" onclick="toggleFavorite('${phone}')">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? '#FFD700' : 'currentColor'}">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+        </button>
+        <button class="icon-btn" title="Opciones">
+             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+        </button>
+    `;
 
     // Load Messages
     messagesContainerEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">Cargando historial...</div>';
@@ -175,8 +221,65 @@ window.openChat = async (phone) => {
 }
 
 // ============================================
-// REALTIME
+// CONTACT ACTIONS (Edit Name, Favorite)
 // ============================================
+
+window.editContactName = async (phone) => {
+    const contact = contactsMap.get(phone);
+    const currentName = contact.name || '';
+    const newName = prompt("Editar nombre del contacto:", currentName);
+
+    if (newName !== null) { // Si no canceló
+        // Optimistic update
+        contact.name = newName || null; // Si vacío, vuelve a null (usa teléfono)
+        renderContacts();
+
+        // Update header immediately if active
+        if (activeChatPhone === phone) {
+            const displayName = contact.name || contact.phone;
+            document.getElementById('chatTitleText').textContent = displayName;
+        }
+
+        // Save to Supabase
+        await saveContactMetadata(phone, { nombre: newName });
+    }
+};
+
+window.toggleFavorite = async (phone) => {
+    const contact = contactsMap.get(phone);
+    if (!contact) return;
+
+    // Optimistic
+    contact.isFavorite = !contact.isFavorite;
+    renderContacts(); // Re-sorts list automatically
+
+    // Update active chat header icon
+    if (activeChatPhone === phone) {
+        window.openChat(phone); // Reload header mainly
+    }
+
+    // Save
+    await saveContactMetadata(phone, { es_favorito: contact.isFavorite });
+};
+
+async function saveContactMetadata(phone, updates) {
+    try {
+        // Upsert logic: Check if exists first or just upsert
+        const { error } = await supabase
+            .from('contactos')
+            .upsert({
+                telefono: phone,
+                ...updates
+            }, { onConflict: 'telefono' }); // Make sure phone is unique constraint
+
+        if (error) throw error;
+        console.log('Contacto actualizado:', phone);
+
+    } catch (err) {
+        console.error('Error guardando contacto:', err);
+        alert('Error guardando cambios. Verifica tu conexión.');
+    }
+}
 
 function subscribeToMessages() {
     supabase
@@ -295,7 +398,7 @@ function appendMessageToUI(msg) {
 
     const div = document.createElement('div');
     div.id = msg.id; // Set ID to prevent duplicates
-    div.className = `message ${isMine ? 'outgoing' : 'incoming'}`;
+    div.className = `message ${isMine ? 'sent' : 'received'}`;
 
     const checkIcon = isMine ? `
         <span class="msg-ticks ${msg.estado === 'leido' ? 'ticks-blue' : 'ticks-grey'}">
