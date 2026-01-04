@@ -35,24 +35,35 @@ serve(async (req) => {
         const inserts = [];
 
         for (const msg of messages) {
-            // Extraer campos básicos
+            // Extraer campos
             const telefono = msg.from || msg.phone || msg.telefono || msg.numero;
-            const contenido = msg.body || msg.content || msg.message || msg.mensaje;
+            const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje;
+            const respuestaIA = msg.respuesta || msg.aiResponse || msg.response;
             const media = msg.media || msg.mediaUrl || null;
 
-            // Ignorar mensajes vacíos o de sistema sin contenido útil
-            if (!telefono || (!contenido && !media)) {
-                continue;
+            if (!telefono) continue;
+
+            // 1. Guardar mensaje del usuario (Recibido)
+            if (contenidoUsuario || media) {
+                inserts.push({
+                    cliente_telefono: telefono,
+                    contenido: contenidoUsuario || (media ? 'Archivo multimedia' : ''),
+                    media_url: media,
+                    es_mio: false, // Mensaje del cliente
+                    estado: 'recibido'
+                });
             }
 
-            // Preparar insert
-            inserts.push({
-                cliente_telefono: telefono,
-                contenido: contenido || (media ? 'Archivo multimedia' : ''),
-                media_url: media,
-                es_mio: false, // Asumimos false porque viene del webhook (inbound)
-                estado: 'recibido'
-            });
+            // 2. Guardar respuesta del asistente (Enviado) -> NUEVO
+            if (respuestaIA) {
+                inserts.push({
+                    cliente_telefono: telefono,
+                    contenido: respuestaIA,
+                    media_url: null,
+                    es_mio: true, // Mensaje nuestro (Bot/IA)
+                    estado: 'enviado'
+                });
+            }
         }
 
         if (inserts.length > 0) {
