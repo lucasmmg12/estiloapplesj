@@ -256,6 +256,14 @@ body {
     border-bottom: 1px solid var(--border);
 }
 
+.chat-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    /* Ocupar espacio disponible */
+}
+
 .chat-avatar {
     width: 40px;
     height: 40px;
@@ -266,6 +274,33 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: 600;
+}
+
+.chat-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.chat-details h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Espacio entre nombre y lápiz */
+}
+
+.chat-details span {
+    font-size: 12px;
+    color: var(--gray-400);
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
 }
 
 /* MESSAGES CONTAINER */
