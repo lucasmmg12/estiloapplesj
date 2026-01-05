@@ -1313,7 +1313,6 @@ async function guardarProducto() {
     const bateria = document.getElementById('productoBateria').value;
     const precio_usd = parseFloat(document.getElementById('productoPrecioUSD').value);
     const notas = document.getElementById('productoNotas').value.trim();
-    const imagenFile = document.getElementById('productoImagen').files[0];
 
     if (!modelo || !precio_usd) {
         mostrarToast('Por favor completa los campos requeridos', 'error');
