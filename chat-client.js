@@ -144,13 +144,12 @@ function renderContacts() {
                 <div class="contact-info">
                     <div class="contact-top-row">
                         <span class="contact-name">
-                            ${favIcon} ${displayName}
+                            ${favIcon} ${displayName} ${contact.unreadCount > 0 ? `<span class="unread-badge">${contact.unreadCount}</span>` : ''}
                         </span>
                         <span class="contact-time">${timeStr}</span>
                     </div>
                     <div class="contact-bottom-row">
                         <span class="last-message">${contact.lastMessage}</span>
-                        ${contact.unreadCount > 0 ? `<span class="unread-badge">${contact.unreadCount}</span>` : ''}
                     </div>
                 </div>
             </div>
