@@ -9,6 +9,7 @@ export default defineConfig({
                 catalogo: resolve(__dirname, 'catalogo-publico.html'),
                 canje: resolve(__dirname, 'lista-canje.html'),
                 chat: resolve(__dirname, 'chat.html'),
+                login: resolve(__dirname, 'login.html'),
             },
         },
     },
