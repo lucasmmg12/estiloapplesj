@@ -5,7 +5,8 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
     const pass = document.getElementById('password').value.trim();
     const errorMsg = document.getElementById('errorMsg');
 
-    // Credenciales hardcodeadas (según requerimiento)
+    console.log('Intento de login:', user, 'vs esperado: estiloapple33');
+
     // Usuario: estiloapple33
     // Pass: estilo33
     if (user === 'estiloapple33' && pass === 'estilo33') {
