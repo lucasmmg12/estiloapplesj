@@ -252,14 +252,10 @@ function renderizarProductos() {
                         </button>
                     ` : ''}
                     
-                    <div class="card-badge">Más Vendido</div>
+                    ${producto.modelo.includes('14') ? '<div class="card-badge">Más Vendido</div>' : ''}
                 </div>
                 
                 <div class="card-content">
-                    <div class="rating-container" style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-                        <div class="stars" style="display: flex;">${starsHtml}</div>
-                        <span class="rating-text" style="font-size: 0.8rem; color: #888; margin-left: 0.5rem;">${rating} (${reviews})</span>
-                    </div>
 
                     <h3 class="producto-modelo">${producto.modelo}</h3>
                     
