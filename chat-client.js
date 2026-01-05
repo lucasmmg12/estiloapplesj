@@ -14,7 +14,8 @@ const supabase = window.supabase.createClient(
 
 // State
 let activeChatPhone = null;
-let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite }
+let activeFilter = 'all';
+let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite, platform }
 
 // DOM Elements
 const contactsListEl = document.getElementById('contactsList');
@@ -93,9 +94,10 @@ async function loadContacts() {
                     isFavorite: saved ? saved.es_favorito : false,
                     email: saved ? saved.email : null,
                     device: saved ? saved.modelo_dispositivo : null,
-                    interest: saved ? saved.interes : null,
-                    notes: saved ? saved.notas : null,
-                    seller: saved ? saved.vendedor_asignado : null
+                    interest: saved ? saved.interest : null,
+                    notes: saved ? saved.notes : null,
+                    seller: saved ? saved.vendedor_asignado : null,
+                    platform: saved ? (saved.plataforma || 'whatsapp') : 'whatsapp'
                 });
             }
         });
@@ -110,9 +112,20 @@ async function loadContacts() {
 }
 
 function renderContacts() {
-    let sortedContacts = Array.from(contactsMap.values());
+    let filteredContacts = Array.from(contactsMap.values());
 
-    // Filtrar / Ordenar
+    // Filter Logic
+    if (activeFilter === 'unread') {
+        filteredContacts = filteredContacts.filter(c => c.unreadCount > 0);
+    } else if (activeFilter === 'favorites') {
+        filteredContacts = filteredContacts.filter(c => c.isFavorite);
+    } else if (activeFilter === 'whatsapp') {
+        filteredContacts = filteredContacts.filter(c => c.platform === 'whatsapp');
+    } else if (activeFilter === 'instagram') {
+        filteredContacts = filteredContacts.filter(c => c.platform === 'instagram');
+    }
+
+    const sortedContacts = filteredContacts.sort((a, b) => b.timestamp - a.timestamp);
     // Prioridad: Favoritos primero, luego fecha descendente
     sortedContacts.sort((a, b) => {
         if (a.isFavorite && !b.isFavorite) return -1;
@@ -573,6 +586,16 @@ function setupEventListeners() {
             document.querySelectorAll('.seller-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('editSeller').value = btn.dataset.seller;
+        });
+    });
+
+    // Filter Tabs Logic
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeFilter = tab.dataset.filter;
+            renderContacts();
         });
     });
 }
