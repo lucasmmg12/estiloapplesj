@@ -164,13 +164,19 @@ body {
     height: 50px;
     background: #fff;
     border-radius: 50%;
-    /* Avatares redondos */
-    padding: 0;
-    /* Quitamos padding para que la imagen ocupe todo */
     margin-right: 15px;
     flex-shrink: 0;
     overflow: hidden;
-    /* Asegura que la imagen sea redonda */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-avatar img,
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .contact-info {
@@ -211,6 +217,7 @@ body {
     flex-direction: column;
     position: relative;
     background: rgba(0, 0, 0, 0.4);
+    height: 100vh;
 }
 
 .active-chat {
@@ -218,6 +225,7 @@ body {
     flex-direction: column;
     height: 100%;
     width: 100%;
+    position: relative;
 }
 
 .chat-header {
@@ -262,12 +270,21 @@ body {
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding: 30px 5%;
+    padding: 20px 5%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
     background: transparent;
-    min-height: 0;
+    z-index: 1;
+}
+
+.date-divider {
+    text-align: center;
+    margin: 20px 0;
+    color: var(--text-dim);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .message {
