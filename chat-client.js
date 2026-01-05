@@ -23,6 +23,7 @@ const emptyStateEl = document.getElementById('emptyState');
 const activeChatEl = document.getElementById('activeChat');
 const messagesContainerEl = document.getElementById('messagesContainer');
 const chatHeaderNameEl = document.getElementById('chatHeaderName');
+const chatHeaderStatusEl = document.getElementById('chatHeaderStatus');
 const chatHeaderAvatarEl = document.getElementById('chatHeaderAvatar');
 const messageInputEl = document.getElementById('messageInput');
 const btnSendEl = document.getElementById('btnSend');
