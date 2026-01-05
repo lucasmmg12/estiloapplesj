@@ -28,6 +28,9 @@ const chatHeaderAvatarEl = document.getElementById('chatHeaderAvatar');
 const messageInputEl = document.getElementById('messageInput');
 const btnSendEl = document.getElementById('btnSend');
 const searchInputEl = document.getElementById('searchInput');
+const emojiBtn = document.getElementById('emojiBtn');
+const emojiPickerContainer = document.getElementById('emojiPickerContainer');
+const emojiPicker = document.querySelector('emoji-picker');
 
 // ============================================
 // MAIN LOGIC
@@ -271,7 +274,18 @@ window.openEditModal = (phone) => {
     document.getElementById('editDevice').value = contact.device || '';
     document.getElementById('editInterest').value = contact.interest || '';
     document.getElementById('editNotes').value = contact.notes || '';
-    document.getElementById('editSeller').value = contact.seller || '';
+    const seller = contact.seller || 'Sin Asignar';
+    document.getElementById('editSeller').value = seller;
+
+    // Highlight active seller button
+    document.querySelectorAll('.seller-btn').forEach(btn => {
+        if (btn.dataset.seller === seller) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
     document.getElementById('editAvatar').value = contact.avatar && contact.avatar !== 'public/logogrow.png' ? contact.avatar : '';
 
     // Show Modal
@@ -523,6 +537,39 @@ function setupEventListeners() {
     });
 
     btnSendEl.addEventListener('click', sendMessage);
+
+    // Emoji Picker Logic
+    if (emojiBtn && emojiPickerContainer) {
+        emojiBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = emojiPickerContainer.style.display === 'none';
+            emojiPickerContainer.style.display = isHidden ? 'block' : 'none';
+        });
+
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!emojiPickerContainer.contains(e.target) && e.target !== emojiBtn) {
+                emojiPickerContainer.style.display = 'none';
+            }
+        });
+    }
+
+    if (emojiPicker) {
+        emojiPicker.addEventListener('emoji-click', (event) => {
+            const emoji = event.detail.unicode;
+            messageInputEl.value += emoji;
+            messageInputEl.focus();
+        });
+    }
+
+    // Seller Buttons Logic
+    document.querySelectorAll('.seller-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.seller-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('editSeller').value = btn.dataset.seller;
+        });
+    });
 }
 
 function formatTime(date) {

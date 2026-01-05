@@ -363,6 +363,39 @@ body {
     box-shadow: 0 0 15px var(--primary-green-glow);
 }
 
+/* EMOJI PICKER */
+.emoji-picker-container {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.dark-emoji-picker {
+    --background: #111b21;
+    --border-color: var(--glass-border);
+    --indicator-color: var(--primary-green);
+    --button-hover-background: rgba(0, 255, 136, 0.1);
+    --input-border-color: var(--glass-border);
+    --input-placeholder-color: var(--text-dim);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* SCROLLBARS */
 ::-webkit-scrollbar {
     width: 5px;
@@ -427,19 +460,160 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
 }
 
 .modal-content {
-    background: #0a0a0a;
-    width: 500px;
-    border-radius: 20px;
+    background: rgba(10, 10, 10, 0.95);
+    width: 480px;
+    border-radius: 28px;
     border: 1px solid var(--primary-green);
-    box-shadow: 0 0 40px rgba(0, 255, 136, 0.1);
-    padding: 30px;
+    box-shadow: 0 25px 50px rgba(0, 255, 136, 0.15);
+    padding: 35px;
+    position: relative;
+    color: white;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.modal-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--primary-green);
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 28px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: #ff4d4d;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-green);
+    background: rgba(0, 255, 136, 0.05);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+}
+
+/* Seller Selector */
+.seller-selector {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.seller-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-dim);
+    padding: 10px 5px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.seller-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.seller-btn.active {
+    background: var(--primary-green);
+    color: black;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 15px var(--primary-green-glow);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 35px;
+}
+
+.btn-cancel,
+.btn-save {
+    flex: 1;
+    padding: 14px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Montserrat', sans-serif;
+    border: none;
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    border: 1px solid var(--glass-border);
+}
+
+.btn-save {
+    background: var(--primary-green);
+    color: black;
+    box-shadow: 0 0 20px var(--primary-green-glow);
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
 }
