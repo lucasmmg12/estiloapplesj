@@ -102,6 +102,22 @@ function configurarEventListeners() {
     document.getElementById('productoImagen').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validaciones
+            const formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
+            const maxTamano = 2 * 1024 * 1024; // 2MB
+
+            if (!formatosPermitidos.includes(file.type)) {
+                mostrarToast('Formato no permitido. Usa JPG, PNG o WEBP', 'error');
+                e.target.value = '';
+                return;
+            }
+
+            if (file.size > maxTamano) {
+                mostrarToast('La imagen es muy pesada. Máximo 2MB', 'error');
+                e.target.value = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = (event) => {
                 const preview = document.getElementById('previewImagen');
