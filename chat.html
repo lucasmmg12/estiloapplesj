@@ -144,6 +144,57 @@
                     </button>
                 </footer>
             </div>
+            <!-- Edit Client Modal -->
+            <div class="modal-overlay" id="editClientModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Editar Cliente</h2>
+                        <button class="close-modal" onclick="closeEditModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editClientForm">
+                            <input type="hidden" id="editPhone">
+
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" id="editName" placeholder="Ej: Juan Pérez">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="editEmail" placeholder="cliente@email.com">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dispositivo</label>
+                                <input type="text" id="editDevice" placeholder="Ej: iPhone 14 Pro Max">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Interés Principal</label>
+                                <select id="editInterest">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Compra">Compra</option>
+                                    <option value="Servicio Técnico">Servicio Técnico</option>
+                                    <option value="Consulta">Consulta General</option>
+                                    <option value="Canje">Plan Canje</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Notas</label>
+                                <textarea id="editNotes" rows="3"
+                                    placeholder="Detalles importantes del cliente..."></textarea>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
+                                <button type="submit" class="btn-save">Guardar Cambios</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 

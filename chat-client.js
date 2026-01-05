@@ -86,7 +86,11 @@ async function loadContacts() {
                     unreadCount: 0,
                     avatar: '👤', // Default Avatar Emoji
                     name: saved ? saved.nombre : null, // Alias guardado
-                    isFavorite: saved ? saved.es_favorito : false
+                    isFavorite: saved ? saved.es_favorito : false,
+                    email: saved ? saved.email : null,
+                    device: saved ? saved.modelo_dispositivo : null,
+                    interest: saved ? saved.interes : null,
+                    notes: saved ? saved.notas : null
                 });
             }
         });
@@ -163,22 +167,21 @@ window.openChat = async (phone) => {
     const displayName = contact ? (contact.name || contact.phone) : phone;
 
     // Header Info & Actions
-    // Inject edit/favorite controls directly into header
     chatHeaderNameEl.innerHTML = `
-        <span id="chatTitleText" onclick="editContactName('${phone}')" style="cursor:pointer; border-bottom:1px dashed #666;" title="Click para editar nombre">
-            ${displayName} 
+        <span id="chatTitleText" onclick="openEditModal('${phone}')" style="cursor:pointer; border-bottom:1px dashed #666;" title="Click para editar cliente">
+            ${displayName}
         </span>
-        <span style="font-size:0.8em; color:var(--text-secondary);">✏️</span>
+        <span style="font-size:0.8em; color:var(--text-secondary); cursor:pointer;" onclick="openEditModal('${phone}')">✏️</span>
+        <span class="edit-hint">Cambia el nombre desde aquí</span>
     `;
 
     // Avatar
     chatHeaderAvatarEl.innerHTML = `<span style="font-size:24px;">👤</span>`;
 
-    // Header Actions Update (Agregar botón de Favorito)
+    // Header Actions Update
     const actionsContainer = document.querySelector('.chat-header .header-actions');
     const isFav = contact && contact.isFavorite;
 
-    // Reemplazamos acciones (hack rápido para no duplicar listeners)
     actionsContainer.innerHTML = `
         <button class="icon-btn" title="${isFav ? 'Quitar Favorito' : 'Marcar Favorito'}" onclick="toggleFavorite('${phone}')">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? '#FFD700' : 'currentColor'}">
@@ -224,26 +227,72 @@ window.openChat = async (phone) => {
 // CONTACT ACTIONS (Edit Name, Favorite)
 // ============================================
 
-window.editContactName = async (phone) => {
+window.openEditModal = (phone) => {
     const contact = contactsMap.get(phone);
-    const currentName = contact.name || '';
-    const newName = prompt("Editar nombre del contacto:", currentName);
+    if (!contact) return;
 
-    if (newName !== null) { // Si no canceló
-        // Optimistic update
-        contact.name = newName || null; // Si vacío, vuelve a null (usa teléfono)
-        renderContacts();
+    // Populate Form
+    document.getElementById('editPhone').value = phone;
+    document.getElementById('editName').value = contact.name || '';
 
-        // Update header immediately if active
-        if (activeChatPhone === phone) {
-            const displayName = contact.name || contact.phone;
-            document.getElementById('chatTitleText').textContent = displayName;
+    // Si tenemos datos extra guardados en la map (implementar esto en loadContacts si es necesario), los cargamos.
+    // Como loadContacts hace select * deberiamos tenerlos si existen en el objeto contact.
+    // Vamos a asegurar que loadContacts mapee estos campos nuevos.
+    document.getElementById('editEmail').value = contact.email || '';
+    document.getElementById('editDevice').value = contact.device || '';
+    document.getElementById('editInterest').value = contact.interest || '';
+    document.getElementById('editNotes').value = contact.notes || '';
+
+    // Show Modal
+    document.getElementById('editClientModal').style.display = 'flex';
+};
+
+window.closeEditModal = () => {
+    document.getElementById('editClientModal').style.display = 'none';
+};
+
+// Handle Form Submit
+const editClientForm = document.getElementById('editClientForm');
+if (editClientForm) { // Check if exists (it should now)
+    editClientForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const phone = document.getElementById('editPhone').value;
+        const name = document.getElementById('editName').value;
+        const email = document.getElementById('editEmail').value;
+        const device = document.getElementById('editDevice').value;
+        const interest = document.getElementById('editInterest').value;
+        const notes = document.getElementById('editNotes').value;
+
+        // 1. Update Map (Optimistic)
+        const contact = contactsMap.get(phone);
+        if (contact) {
+            contact.name = name;
+            contact.email = email;
+            contact.device = device;
+            contact.interest = interest;
+            contact.notes = notes;
         }
 
-        // Save to Supabase
-        await saveContactMetadata(phone, { nombre: newName });
-    }
-};
+        renderContacts();
+        if (activeChatPhone === phone) {
+            const displayName = name || phone;
+            const titleEl = document.getElementById('chatTitleText');
+            if (titleEl) titleEl.textContent = displayName;
+        }
+
+        closeEditModal();
+
+        // 2. Save to Supabase
+        await saveContactMetadata(phone, {
+            nombre: name,
+            email: email,
+            modelo_dispositivo: device,
+            interes: interest,
+            notas: notes
+        });
+    });
+}
 
 window.toggleFavorite = async (phone) => {
     const contact = contactsMap.get(phone);

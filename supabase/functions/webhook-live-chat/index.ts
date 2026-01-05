@@ -35,33 +35,46 @@ serve(async (req) => {
         const inserts = [];
 
         for (const msg of messages) {
-            // Extraer campos
+            // Extraer campos (soporta múltiples variantes de Builderbot/Webhooks)
             const telefono = msg.from || msg.phone || msg.telefono || msg.numero;
             const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje;
-            const respuestaIA = msg.respuesta || msg.aiResponse || msg.response;
+            const respuestaIA = msg.respuesta || msg.aiResponse || msg.response || msg.answer;
             const media = msg.media || msg.mediaUrl || null;
 
-            if (!telefono) continue;
+            if (!telefono) {
+                console.warn('Mensaje omitido: No se encontró teléfono en el payload.', msg);
+                continue;
+            }
 
-            // 1. Guardar mensaje del usuario (Recibido)
+            // 1. Asegurarse de que el contacto existe (Crucial para integridad de FK en la tabla mensajes)
+            const { error: contactError } = await supabase
+                .from('contactos')
+                .upsert({ telefono: telefono }, { onConflict: 'telefono' });
+
+            if (contactError) {
+                console.error("Error upserting contact:", contactError);
+                // Si falla el contacto, es probable que falle el mensaje, pero intentamos seguir
+            }
+
+            // 2. Guardar mensaje del usuario (Recibido del cliente)
             if (contenidoUsuario || media) {
                 inserts.push({
                     cliente_telefono: telefono,
                     contenido: contenidoUsuario || (media ? 'Archivo multimedia' : ''),
                     media_url: media,
                     es_mio: false, // Mensaje del cliente
-                    estado: 'recibido'
+                    estado: 'received'
                 });
             }
 
-            // 2. Guardar respuesta del asistente (Enviado) -> NUEVO
+            // 3. Guardar respuesta del asistente (Enviado por la IA/Bot)
             if (respuestaIA) {
                 inserts.push({
                     cliente_telefono: telefono,
                     contenido: respuestaIA,
                     media_url: null,
                     es_mio: true, // Mensaje nuestro (Bot/IA)
-                    estado: 'enviado'
+                    estado: 'sent'
                 });
             }
         }
@@ -71,7 +84,13 @@ serve(async (req) => {
                 .from('mensajes')
                 .insert(inserts);
 
-            if (error) throw error;
+            if (error) {
+                console.error('Error insertando mensajes en Supabase:', error);
+                throw error;
+            }
+            console.log(`✅ ${inserts.length} mensajes guardados correctamente.`);
+        } else {
+            console.log('ℹ️ No se encontraron mensajes válidos para insertar.');
         }
 
         return new Response(
@@ -93,3 +112,4 @@ serve(async (req) => {
         );
     }
 });
+
