@@ -14,7 +14,7 @@ const supabase = window.supabase.createClient(
 
 // State
 let activeChatPhone = null;
-let activeFilter = 'all';
+let activeFilter = 'whatsapp';
 let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite, platform }
 
 // DOM Elements
