@@ -151,10 +151,11 @@ body {
 }
 
 .header.scrolled .header-subtitle {
-    font-size: 0.9rem;
     opacity: 0;
-    /* Ocultar subtÃ­tulo en scroll para limpiar la vista */
-    display: none;
+    max-height: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
 }
 
 /* ============================================
