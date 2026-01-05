@@ -34,14 +34,14 @@ serve(async (req) => {
     const inserts = [];
 
     for (const msg of messages) {
-      // Extraer campos (ajustado para Instagram si es necesario, pero mantenido igual por consistencia de bot)
-      const idUsuario = msg.from || msg.phone || msg.id || msg.user_id; // En Instagram suele ser un ID numérico o username
-      const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje;
-      const respuestaIA = msg.respuesta || msg.aiResponse || msg.response || msg.answer;
+      // Extraer campos con máxima compatibilidad
+      const idUsuario = msg.from || msg.phone || msg.id || msg.user_id || msg.numero || msg.number;
+      const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje || msg.texto;
+      const respuestaIA = msg.respuesta || msg.aiResponse || msg.response || msg.answer || msg.reply;
       const media = msg.media || msg.mediaUrl || null;
 
       if (!idUsuario) {
-        console.warn('Mensaje omitido: No se encontró identificador de usuario en el payload.', msg);
+        console.warn('⚠️ Mensaje omitido: No se encontró identificador (from/phone/id/numero) en el payload.', JSON.stringify(msg));
         continue;
       }
 
