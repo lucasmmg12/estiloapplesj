@@ -49,11 +49,13 @@ serve(async (req) => {
             // 1. Asegurarse de que el contacto existe (Crucial para integridad de FK en la tabla mensajes)
             const { error: contactError } = await supabase
                 .from('contactos')
-                .upsert({ telefono: telefono }, { onConflict: 'telefono' });
+                .upsert({
+                    telefono: telefono,
+                    plataforma: 'whatsapp'
+                }, { onConflict: 'telefono' });
 
             if (contactError) {
                 console.error("Error upserting contact:", contactError);
-                // Si falla el contacto, es probable que falle el mensaje, pero intentamos seguir
             }
 
             // 2. Guardar mensaje del usuario (Recibido del cliente)
@@ -63,7 +65,8 @@ serve(async (req) => {
                     contenido: contenidoUsuario || (media ? 'Archivo multimedia' : ''),
                     media_url: media,
                     es_mio: false, // Mensaje del cliente
-                    estado: 'received'
+                    estado: 'received',
+                    plataforma: 'whatsapp'
                 });
             }
 
@@ -74,7 +77,8 @@ serve(async (req) => {
                     contenido: respuestaIA,
                     media_url: null,
                     es_mio: true, // Mensaje nuestro (Bot/IA)
-                    estado: 'sent'
+                    estado: 'sent',
+                    plataforma: 'whatsapp'
                 });
             }
         }
