@@ -133,46 +133,6 @@ function configurarEventListeners() {
         }
     });
 
-    function renderizarGaleriaPreview() {
-        const galeria = document.getElementById('galeriaPreview');
-        galeria.innerHTML = '';
-
-        // 1. Mostrar imágenes existentes (si estamos editando)
-        imagenesExistentes.forEach((url, index) => {
-            const item = document.createElement('div');
-            item.className = 'galeria-item';
-            item.innerHTML = `
-                <img src="${url}" alt="Preview">
-                <button type="button" class="btn-remove-photo" data-index="${index}" data-type="existente">&times;</button>
-            `;
-            galeria.appendChild(item);
-        });
-
-        // 2. Mostrar imágenes nuevas (temporales)
-        imagenesTemporales.forEach((img, index) => {
-            const item = document.createElement('div');
-            item.className = 'galeria-item';
-            item.innerHTML = `
-                <img src="${img.preview}" alt="Preview">
-                <button type="button" class="btn-remove-photo" data-index="${index}" data-type="temporal">&times;</button>
-            `;
-            galeria.appendChild(item);
-        });
-
-        // Event listeners para botones de eliminar
-        document.querySelectorAll('.btn-remove-photo').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const index = parseInt(btn.dataset.index);
-                const type = btn.dataset.type;
-                if (type === 'existente') {
-                    imagenesExistentes.splice(index, 1);
-                } else {
-                    imagenesTemporales.splice(index, 1);
-                }
-                renderizarGaleriaPreview();
-            });
-        });
-    }
 
     // Cotización del Dólar
     document.getElementById('btnActualizarDolar').addEventListener('click', abrirModalDolar);
@@ -1263,6 +1223,47 @@ function abrirCatalogoPublico() {
 }
 
 // Abrir modal de producto
+function renderizarGaleriaPreview() {
+    const galeria = document.getElementById('galeriaPreview');
+    galeria.innerHTML = '';
+
+    // 1. Mostrar imágenes existentes (si estamos editando)
+    imagenesExistentes.forEach((url, index) => {
+        const item = document.createElement('div');
+        item.className = 'galeria-item';
+        item.innerHTML = `
+            <img src="${url}" alt="Preview">
+            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="existente">&times;</button>
+        `;
+        galeria.appendChild(item);
+    });
+
+    // 2. Mostrar imágenes nuevas (temporales)
+    imagenesTemporales.forEach((img, index) => {
+        const item = document.createElement('div');
+        item.className = 'galeria-item';
+        item.innerHTML = `
+            <img src="${img.preview}" alt="Preview">
+            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="temporal">&times;</button>
+        `;
+        galeria.appendChild(item);
+    });
+
+    // Event listeners para botones de eliminar
+    document.querySelectorAll('.btn-remove-photo').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const index = parseInt(btn.dataset.index);
+            const type = btn.dataset.type;
+            if (type === 'existente') {
+                imagenesExistentes.splice(index, 1);
+            } else {
+                imagenesTemporales.splice(index, 1);
+            }
+            renderizarGaleriaPreview();
+        });
+    });
+}
+
 function abrirModalProducto(productoId = null) {
     productoActualId = productoId;
     const modal = document.getElementById('modalProducto');
