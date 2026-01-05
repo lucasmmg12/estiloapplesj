@@ -98,6 +98,32 @@ function configurarEventListeners() {
     document.getElementById('btnCancelarProducto').addEventListener('click', cerrarModalProducto);
     document.getElementById('btnGuardarProducto').addEventListener('click', guardarProducto);
 
+    // Imágenes del Producto
+    document.getElementById('productoImagen').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const preview = document.getElementById('previewImagen');
+                const contenedor = document.getElementById('previewImagenContenedor');
+                preview.src = event.target.result;
+                contenedor.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('btnQuitarImagen').addEventListener('click', () => {
+        document.getElementById('productoImagen').value = '';
+        document.getElementById('previewImagen').src = '';
+        document.getElementById('previewImagenContenedor').style.display = 'none';
+        // Si hay una imagen actual en el producto, marcar para eliminar
+        if (productoActualId) {
+            const producto = productos.find(p => p.id === productoActualId);
+            if (producto) producto.imagenEliminar = true;
+        }
+    });
+
     // Cotización del Dólar
     document.getElementById('btnActualizarDolar').addEventListener('click', abrirModalDolar);
     document.getElementById('btnCerrarModalDolar').addEventListener('click', cerrarModalDolar);
@@ -1196,16 +1222,27 @@ function abrirModalProducto(productoId = null) {
         titulo.textContent = 'Editar Producto';
         const producto = productos.find(p => p.id === productoId);
         if (producto) {
+            producto.imagenEliminar = false; // Reiniciar flag de eliminación
             document.getElementById('productoModelo').value = producto.modelo || '';
             document.getElementById('productoColores').value = producto.colores || '';
             document.getElementById('productoAlmacenamiento').value = producto.almacenamiento || '';
             document.getElementById('productoBateria').value = producto.bateria ? parseInt(producto.bateria) : '';
             document.getElementById('productoPrecioUSD').value = producto.precio_usd || '';
             document.getElementById('productoNotas').value = producto.notas || '';
+
+            // Mostrar imagen si tiene
+            if (producto.imagen_url) {
+                document.getElementById('previewImagen').src = producto.imagen_url;
+                document.getElementById('previewImagenContenedor').style.display = 'block';
+            } else {
+                document.getElementById('previewImagenContenedor').style.display = 'none';
+            }
         }
     } else {
         titulo.textContent = 'Nuevo Producto';
         document.getElementById('formProducto').reset();
+        document.getElementById('previewImagenContenedor').style.display = 'none';
+        document.getElementById('productoImagen').value = '';
     }
 
     modal.classList.add('active');
@@ -1225,6 +1262,7 @@ async function guardarProducto() {
     const bateria = document.getElementById('productoBateria').value;
     const precio_usd = parseFloat(document.getElementById('productoPrecioUSD').value);
     const notas = document.getElementById('productoNotas').value.trim();
+    const imagenFile = document.getElementById('productoImagen').files[0];
 
     if (!modelo || !precio_usd) {
         mostrarToast('Por favor completa los campos requeridos', 'error');
@@ -1241,6 +1279,23 @@ async function guardarProducto() {
     };
 
     try {
+        mostrarToast('Guardando producto...', 'info');
+
+        // Manejar Imagen
+        if (imagenFile) {
+            const publicUrl = await supabaseService.subirImagenProducto(imagenFile);
+            productoData.imagen_url = publicUrl;
+        } else if (productoActualId) {
+            const producto = productos.find(p => p.id === productoActualId);
+            if (producto && producto.imagenEliminar) {
+                productoData.imagen_url = null;
+                // Opcional: eliminar del storage el archivo viejo
+                if (producto.imagen_url) await supabaseService.eliminarImagenProducto(producto.imagen_url);
+            } else {
+                productoData.imagen_url = producto.imagen_url;
+            }
+        }
+
         if (productoActualId) {
             await supabaseService.actualizarProducto(productoActualId, productoData);
             mostrarToast('Producto actualizado correctamente', 'success');

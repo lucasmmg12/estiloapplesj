@@ -649,6 +649,28 @@
                         <textarea id="productoNotas" rows="3"
                             placeholder="Información adicional del producto..."></textarea>
                     </div>
+
+                    <div class="form-group">
+                        <label for="productoImagen">Foto del Producto (opcional)</label>
+                        <div class="image-upload-wrapper">
+                            <input type="file" id="productoImagen" accept="image/*" style="display: none;">
+                            <button type="button" class="btn-secondary" id="btnSeleccionarImagen"
+                                onclick="document.getElementById('productoImagen').click()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="margin-right: 0.5rem;">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                                </svg>
+                                Seleccionar Foto
+                            </button>
+                            <div id="previewImagenContenedor"
+                                style="margin-top: 1rem; display: none; position: relative;">
+                                <img id="previewImagen" src=""
+                                    style="max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border);">
+                                <button type="button" id="btnQuitarImagen"
+                                    style="position: absolute; top: -10px; right: -10px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
 

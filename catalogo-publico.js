@@ -203,7 +203,8 @@ function renderizarProductos() {
             }).format(precio);
         };
 
-        const imagen = obtenerImagenIPhone(producto.modelo);
+        // Priorizar imagen_url de la DB, sino usar el mapeo local
+        const imagen = producto.imagen_url || obtenerImagenIPhone(producto.modelo);
         const { rating, reviews } = obtenerRating(producto.modelo);
 
         // Generar estrella SVG inline

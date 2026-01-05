@@ -198,8 +198,42 @@ export async function eliminarMensajeProgramado(id) {
 }
 
 // ============================================
+// ============================================
 // Funciones de Productos
 // ============================================
+
+export async function subirImagenProducto(file) {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+    const filePath = `fotos/${fileName}`;
+
+    const { data, error } = await supabase.storage
+        .from('productos')
+        .upload(filePath, file);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+        .from('productos')
+        .getPublicUrl(filePath);
+
+    return publicUrl;
+}
+
+export async function eliminarImagenProducto(url) {
+    if (!url) return;
+    try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/');
+        const fileName = pathParts[pathParts.length - 1];
+
+        await supabase.storage
+            .from('productos')
+            .remove([`fotos/${fileName}`]);
+    } catch (e) {
+        console.warn('No se pudo eliminar la imagen del storage:', e);
+    }
+}
 
 export async function obtenerProductos(filtros = {}) {
     let query = supabase

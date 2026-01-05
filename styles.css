@@ -781,6 +781,33 @@ body::before {
     min-height: 100px;
 }
 
+.image-upload-wrapper {
+    background: rgba(31, 41, 55, 0.3);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.image-upload-wrapper:hover {
+    border-color: var(--primary);
+    background: rgba(0, 212, 255, 0.05);
+}
+
+#previewImagenContenedor img {
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+#btnQuitarImagen:hover {
+    transform: scale(1.1);
+    background: #ff4d4d;
+}
+
 .checkbox-label {
     display: flex;
     align-items: center;
