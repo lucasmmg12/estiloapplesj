@@ -25,6 +25,8 @@ let conversacionActual = null;
 let clienteActual = null;
 let mensajeActualId = null;
 let productoActualId = null;
+let imagenesTemporales = []; // Array de { file: File, preview: string } para nuevas fotos
+let imagenesExistentes = []; // Array de URLs de fotos ya guardadas
 
 // ============================================
 // INICIALIZACIÓN
@@ -99,46 +101,78 @@ function configurarEventListeners() {
     document.getElementById('btnGuardarProducto').addEventListener('click', guardarProducto);
 
     // Imágenes del Producto
-    document.getElementById('productoImagen').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            // Validaciones
+    document.getElementById('productoImagenes').addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
             const formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
             const maxTamano = 2 * 1024 * 1024; // 2MB
 
-            if (!formatosPermitidos.includes(file.type)) {
-                mostrarToast('Formato no permitido. Usa JPG, PNG o WEBP', 'error');
-                e.target.value = '';
-                return;
-            }
+            files.forEach(file => {
+                if (!formatosPermitidos.includes(file.type)) {
+                    mostrarToast(`Formato no permitido para ${file.name}.`, 'error');
+                    return;
+                }
 
-            if (file.size > maxTamano) {
-                mostrarToast('La imagen es muy pesada. Máximo 2MB', 'error');
-                e.target.value = '';
-                return;
-            }
+                if (file.size > maxTamano) {
+                    mostrarToast(`${file.name} es muy pesada. Máximo 2MB.`, 'error');
+                    return;
+                }
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const preview = document.getElementById('previewImagen');
-                const contenedor = document.getElementById('previewImagenContenedor');
-                preview.src = event.target.result;
-                contenedor.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imagenesTemporales.push({
+                        file: file,
+                        preview: event.target.result
+                    });
+                    renderizarGaleriaPreview();
+                };
+                reader.readAsDataURL(file);
+            });
+            // Resetear input para permitir seleccionar los mismos archivos después
+            e.target.value = '';
         }
     });
 
-    document.getElementById('btnQuitarImagen').addEventListener('click', () => {
-        document.getElementById('productoImagen').value = '';
-        document.getElementById('previewImagen').src = '';
-        document.getElementById('previewImagenContenedor').style.display = 'none';
-        // Si hay una imagen actual en el producto, marcar para eliminar
-        if (productoActualId) {
-            const producto = productos.find(p => p.id === productoActualId);
-            if (producto) producto.imagenEliminar = true;
-        }
-    });
+    function renderizarGaleriaPreview() {
+        const galeria = document.getElementById('galeriaPreview');
+        galeria.innerHTML = '';
+
+        // 1. Mostrar imágenes existentes (si estamos editando)
+        imagenesExistentes.forEach((url, index) => {
+            const item = document.createElement('div');
+            item.className = 'galeria-item';
+            item.innerHTML = `
+                <img src="${url}" alt="Preview">
+                <button type="button" class="btn-remove-photo" data-index="${index}" data-type="existente">&times;</button>
+            `;
+            galeria.appendChild(item);
+        });
+
+        // 2. Mostrar imágenes nuevas (temporales)
+        imagenesTemporales.forEach((img, index) => {
+            const item = document.createElement('div');
+            item.className = 'galeria-item';
+            item.innerHTML = `
+                <img src="${img.preview}" alt="Preview">
+                <button type="button" class="btn-remove-photo" data-index="${index}" data-type="temporal">&times;</button>
+            `;
+            galeria.appendChild(item);
+        });
+
+        // Event listeners para botones de eliminar
+        document.querySelectorAll('.btn-remove-photo').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const index = parseInt(btn.dataset.index);
+                const type = btn.dataset.type;
+                if (type === 'existente') {
+                    imagenesExistentes.splice(index, 1);
+                } else {
+                    imagenesTemporales.splice(index, 1);
+                }
+                renderizarGaleriaPreview();
+            });
+        });
+    }
 
     // Cotización del Dólar
     document.getElementById('btnActualizarDolar').addEventListener('click', abrirModalDolar);
@@ -1234,11 +1268,14 @@ function abrirModalProducto(productoId = null) {
     const modal = document.getElementById('modalProducto');
     const titulo = document.getElementById('tituloModalProducto');
 
+    // Resetear estados de imagen
+    imagenesTemporales = [];
+    imagenesExistentes = [];
+
     if (productoId) {
         titulo.textContent = 'Editar Producto';
         const producto = productos.find(p => p.id === productoId);
         if (producto) {
-            producto.imagenEliminar = false; // Reiniciar flag de eliminación
             document.getElementById('productoModelo').value = producto.modelo || '';
             document.getElementById('productoColores').value = producto.colores || '';
             document.getElementById('productoAlmacenamiento').value = producto.almacenamiento || '';
@@ -1246,21 +1283,19 @@ function abrirModalProducto(productoId = null) {
             document.getElementById('productoPrecioUSD').value = producto.precio_usd || '';
             document.getElementById('productoNotas').value = producto.notas || '';
 
-            // Mostrar imagen si tiene
-            if (producto.imagen_url) {
-                document.getElementById('previewImagen').src = producto.imagen_url;
-                document.getElementById('previewImagenContenedor').style.display = 'block';
-            } else {
-                document.getElementById('previewImagenContenedor').style.display = 'none';
+            // Cargar imágenes existentes
+            if (producto.imagenes && Array.isArray(producto.imagenes)) {
+                imagenesExistentes = [...producto.imagenes];
+            } else if (producto.imagen_url) {
+                imagenesExistentes = [producto.imagen_url];
             }
         }
     } else {
         titulo.textContent = 'Nuevo Producto';
         document.getElementById('formProducto').reset();
-        document.getElementById('previewImagenContenedor').style.display = 'none';
-        document.getElementById('productoImagen').value = '';
     }
 
+    renderizarGaleriaPreview();
     modal.classList.add('active');
 }
 
@@ -1295,22 +1330,17 @@ async function guardarProducto() {
     };
 
     try {
-        mostrarToast('Guardando producto...', 'info');
+        mostrarToast('Guardando producto y subiendo fotos...', 'info');
 
-        // Manejar Imagen
-        if (imagenFile) {
-            const publicUrl = await supabaseService.subirImagenProducto(imagenFile);
-            productoData.imagen_url = publicUrl;
-        } else if (productoActualId) {
-            const producto = productos.find(p => p.id === productoActualId);
-            if (producto && producto.imagenEliminar) {
-                productoData.imagen_url = null;
-                // Opcional: eliminar del storage el archivo viejo
-                if (producto.imagen_url) await supabaseService.eliminarImagenProducto(producto.imagen_url);
-            } else {
-                productoData.imagen_url = producto.imagen_url;
-            }
-        }
+        // 1. Subir nuevas imágenes en paralelo para mayor velocidad
+        const uploadPromises = imagenesTemporales.map(img => supabaseService.subirImagenProducto(img.file));
+        const nuevasUrls = await Promise.all(uploadPromises);
+
+        // 2. Combinar con las existentes que quedaron
+        const todasLasImagenes = [...imagenesExistentes, ...nuevasUrls];
+
+        productoData.imagenes = todasLasImagenes;
+        productoData.imagen_url = todasLasImagenes.length > 0 ? todasLasImagenes[0] : null;
 
         if (productoActualId) {
             await supabaseService.actualizarProducto(productoActualId, productoData);

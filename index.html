@@ -651,26 +651,23 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="productoImagen">Foto del Producto (opcional)</label>
+                        <label for="productoImagenes">Fotos del Producto (puedes seleccionar varias)</label>
                         <p style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem;">
-                            Recomendado: 800x800px. Formatos: JPG, PNG, WEBP. Máximo: 2MB.
+                            Formatos: JPG, PNG, WEBP. Máximo: 2MB por foto.
                         </p>
                         <div class="image-upload-wrapper">
-                            <input type="file" id="productoImagen" accept="image/*" style="display: none;">
-                            <button type="button" class="btn-secondary" id="btnSeleccionarImagen"
-                                onclick="document.getElementById('productoImagen').click()">
+                            <input type="file" id="productoImagenes" accept="image/*" multiple style="display: none;">
+                            <button type="button" class="btn-secondary" id="btnSeleccionarImagenes"
+                                onclick="document.getElementById('productoImagenes').click()">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2" style="margin-right: 0.5rem;">
                                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
                                 </svg>
-                                Seleccionar Foto
+                                Agregar Fotos
                             </button>
-                            <div id="previewImagenContenedor"
-                                style="margin-top: 1rem; display: none; position: relative;">
-                                <img id="previewImagen" src=""
-                                    style="max-width: 100%; border-radius: 8px; border: 1px solid var(--glass-border);">
-                                <button type="button" id="btnQuitarImagen"
-                                    style="position: absolute; top: -10px; right: -10px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+                            <div id="galeriaPreview"
+                                style="margin-top: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <!-- Las vistas previas se generarán aquí -->
                             </div>
                         </div>
                     </div>

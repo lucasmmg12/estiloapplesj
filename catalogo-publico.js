@@ -182,6 +182,22 @@ async function cargarProductos() {
     }
 }
 
+// Lógica del Slider de Imágenes
+window.cambiarImagenSlider = function (btn, direccion) {
+    const card = btn.closest('.producto-card');
+    const imagenes = card.querySelectorAll('.producto-imagen');
+    let indexActual = Array.from(imagenes).findIndex(img => img.classList.contains('active'));
+
+    imagenes[indexActual].classList.remove('active');
+
+    indexActual += direccion;
+
+    if (indexActual >= imagenes.length) indexActual = 0;
+    if (indexActual < 0) indexActual = imagenes.length - 1;
+
+    imagenes[indexActual].classList.add('active');
+};
+
 // Renderizar productos con Diseño Premium
 function renderizarProductos() {
     const grid = document.getElementById('productosGrid');
@@ -203,9 +219,18 @@ function renderizarProductos() {
             }).format(precio);
         };
 
-        // Priorizar imagen_url de la DB, sino usar el mapeo local
-        const imagen = producto.imagen_url || obtenerImagenIPhone(producto.modelo);
+        // Lista de imágenes: Priorizar array 'imagenes', sino usar 'imagen_url', sino fallback local
+        let listaImagenes = [];
+        if (producto.imagenes && Array.isArray(producto.imagenes) && producto.imagenes.length > 0) {
+            listaImagenes = producto.imagenes;
+        } else if (producto.imagen_url) {
+            listaImagenes = [producto.imagen_url];
+        } else {
+            listaImagenes = [obtenerImagenIPhone(producto.modelo)];
+        }
+
         const { rating, reviews } = obtenerRating(producto.modelo);
+        const manyImages = listaImagenes.length > 1;
 
         // Generar estrella SVG inline
         const fullStar = `<svg width="14" height="14" viewBox="0 0 24 24" fill="#FFC107" style="margin-right:2px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`;
@@ -213,8 +238,20 @@ function renderizarProductos() {
 
         return `
             <div class="producto-card">
-                <div class="card-image-container">
-                    <img src="${imagen}" alt="${producto.modelo}" class="producto-imagen" loading="lazy">
+                <div class="card-image-container ${manyImages ? 'has-slider' : ''}">
+                    ${listaImagenes.map((img, i) => `
+                        <img src="${img}" alt="${producto.modelo}" class="producto-imagen ${i === 0 ? 'active' : ''}" loading="${i === 0 ? 'eager' : 'lazy'}">
+                    `).join('')}
+                    
+                    ${manyImages ? `
+                        <button class="slider-btn prev" onclick="cambiarImagenSlider(this, -1)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <button class="slider-btn next" onclick="cambiarImagenSlider(this, 1)">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    ` : ''}
+                    
                     <div class="card-badge">Más Vendido</div>
                 </div>
                 

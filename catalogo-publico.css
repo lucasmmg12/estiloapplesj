@@ -347,12 +347,19 @@ body {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Badge de "MÃ¡s Vendido" y Contenedor Imagen */
+/* Slider Styles */
 .card-image-container {
     position: relative;
     padding: 3rem 1.5rem 2rem;
     background: radial-gradient(circle at center, rgba(40, 40, 40, 0.5) 0%, rgba(18, 18, 18, 0) 70%);
     text-align: center;
+}
+
+.card-image-container.has-slider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 320px;
 }
 
 .card-badge {
@@ -369,6 +376,7 @@ body {
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    z-index: 20;
 }
 
 .producto-imagen {
@@ -377,11 +385,59 @@ body {
     height: auto;
     object-fit: contain;
     filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.5));
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.producto-card:hover .producto-imagen {
-    transform: scale(1.08)translateY(-5px);
+.card-image-container .producto-imagen {
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.card-image-container .producto-imagen.active {
+    position: relative;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.slider-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.slider-btn.prev {
+    left: 10px;
+}
+
+.slider-btn.next {
+    right: 10px;
+}
+
+.producto-card:hover .producto-imagen.active {
+    transform: scale(1.08) translateY(-5px);
 }
 
 /* Contenido de la tarjeta */

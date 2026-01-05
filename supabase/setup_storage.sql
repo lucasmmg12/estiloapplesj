@@ -2,7 +2,8 @@
 -- Copia y pega esto en el SQL Editor de Supabase y ejecútalo
 
 ALTER TABLE productos 
-ADD COLUMN IF NOT EXISTS imagen_url TEXT;
+ADD COLUMN IF NOT EXISTS imagen_url TEXT,
+ADD COLUMN IF NOT EXISTS imagenes TEXT[] DEFAULT '{}';
 
 -- Script para configurar el storage (por si no lo hiciste antes)
 -- 1. Crear el bucket 'productos'
