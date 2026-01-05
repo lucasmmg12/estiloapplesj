@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Estilo Apple SJ</title>
+    <link rel="icon" type="image/png" href="public/logogrow.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at top left, #2d0a10 0%, #0f0505 100%);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+        }
+
+        .logo-login {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            display: block;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--gray-100);
+        }
+
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray-400);
+            font-size: 0.9rem;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(31, 41, 55, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            transition: all 0.3s;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(31, 41, 55, 0.9);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-login:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.4);
+        }
+
+        .error-msg {
+            color: var(--danger);
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            min-height: 1.25em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .error-msg.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-panel login-container">
+        <img src="logoestilo.png" alt="Logo" class="logo-login">
+        <h1 class="login-title">Acceso Administrativo</h1>
+
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" id="username" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-login">Ingresar</button>
+            <p id="errorMsg" class="error-msg">Credenciales incorrectas</p>
+        </form>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+
+</html>
