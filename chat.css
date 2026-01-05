@@ -405,88 +405,149 @@ body {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* MODALS */
+/* MODALS (Estilo Foto 2) */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(11, 20, 26, 0.85);
-    /* Fondo WhatsApp dark */
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
 }
 
 .modal-content {
-    background: #222e35;
+    background: #111b21;
     width: 500px;
-    padding: 0;
-    border-radius: 3px;
-    box-shadow: 0 17px 50px 0 rgba(0, 0, 0, .19), 0 12px 15px 0 rgba(0, 0, 0, .24);
+    border-radius: 16px;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+    overflow: hidden;
+    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalPop {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .modal-header {
-    padding: 20px;
-    background: #202c33;
+    padding: 24px 24px 10px;
     display: flex;
+    justify-content: space-between;
     align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-green);
+    letter-spacing: -0.5px;
+}
+
+.close-modal {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
     color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-body {
-    padding: 20px;
-    color: #d1d7db;
+    padding: 24px;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    color: var(--primary-green);
+    margin-bottom: 8px;
+    color: var(--text-main);
     font-size: 13px;
+    font-weight: 600;
+}
+
+.form-group label::after {
+    content: " *";
+    color: #ff4b4b;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
     width: 100%;
-    background: #2a3942;
-    border: none;
-    padding: 10px;
+    background: #202c33;
+    border: 1px solid #3b4a54;
+    padding: 12px 16px;
     color: white;
-    border-radius: 3px;
+    border-radius: 10px;
     outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-green);
+    background: #2a3942;
 }
 
 .modal-actions {
-    padding: 20px;
+    padding: 0 24px 30px;
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    gap: 12px;
 }
 
 .btn-save {
+    flex: 1;
     background: var(--primary-green);
     color: black;
     border: none;
-    padding: 10px 20px;
-    font-weight: 600;
-    border-radius: 3px;
+    padding: 14px;
+    font-weight: 700;
+    border-radius: 10px;
     cursor: pointer;
+    font-size: 15px;
+    transition: transform 0.1s;
+}
+
+.btn-save:active {
+    transform: scale(0.98);
 }
 
 .btn-cancel {
-    background: transparent;
+    flex: 1;
+    background: #111b21;
     border: 1px solid #3b4a54;
-    color: var(--primary-green);
-    padding: 10px 20px;
-    border-radius: 3px;
+    color: var(--text-main);
+    padding: 14px;
+    border-radius: 10px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.btn-cancel:hover {
+    background: #202c33;
 }
