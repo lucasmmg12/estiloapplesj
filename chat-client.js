@@ -166,14 +166,9 @@ window.openChat = async (phone) => {
     const contact = contactsMap.get(phone);
     const displayName = contact ? (contact.name || contact.phone) : phone;
 
-    // Header Info & Actions
-    chatHeaderNameEl.innerHTML = `
-        <span id="chatTitleText" onclick="openEditModal('${phone}')" style="cursor:pointer; border-bottom:1px dashed var(--primary-green);" title="Click para editar cliente">
-            ${displayName}
-        </span>
-        <span style="font-size:0.8em; color:var(--primary-green); cursor:pointer;" onclick="openEditModal('${phone}')">✏️</span>
-        <span class="edit-hint">Configuración de cliente</span>
-    `;
+    // Header Info
+    chatHeaderNameEl.innerText = displayName;
+    chatHeaderStatusEl.innerText = 'en línea';
 
     // Avatar
     chatHeaderAvatarEl.innerHTML = `<span style="font-size:24px;">👤</span>`;
