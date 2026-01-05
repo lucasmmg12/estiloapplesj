@@ -6,9 +6,9 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
     const errorMsg = document.getElementById('errorMsg');
 
     // Credenciales hardcodeadas (según requerimiento)
-    // Usuario: estilopple33
+    // Usuario: estiloapple33
     // Pass: estilo33
-    if (user === 'estilopple33' && pass === 'estilo33') {
+    if (user === 'estiloapple33' && pass === 'estilo33') {
         // Login exitoso
         localStorage.setItem('estilo_admin_auth', 'true');
         localStorage.setItem('estilo_admin_user', user);
