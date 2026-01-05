@@ -1225,7 +1225,16 @@ function abrirCatalogoPublico() {
 // Abrir modal de producto
 function renderizarGaleriaPreview() {
     const galeria = document.getElementById('galeriaPreview');
+    if (!galeria) return;
+
     galeria.innerHTML = '';
+
+    console.log('Renderizando galería. Existentes:', imagenesExistentes.length, 'Temporales:', imagenesTemporales.length);
+
+    if (imagenesExistentes.length === 0 && imagenesTemporales.length === 0) {
+        galeria.innerHTML = '<p style="color: #666; font-size: 0.8rem; grid-column: 1/-1; text-align: center;">Sin imágenes seleccionadas</p>';
+        return;
+    }
 
     // 1. Mostrar imágenes existentes (si estamos editando)
     imagenesExistentes.forEach((url, index) => {
@@ -1233,7 +1242,7 @@ function renderizarGaleriaPreview() {
         item.className = 'galeria-item';
         item.innerHTML = `
             <img src="${url}" alt="Preview">
-            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="existente">&times;</button>
+            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="existente" title="Eliminar foto">&times;</button>
         `;
         galeria.appendChild(item);
     });
@@ -1244,22 +1253,28 @@ function renderizarGaleriaPreview() {
         item.className = 'galeria-item';
         item.innerHTML = `
             <img src="${img.preview}" alt="Preview">
-            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="temporal">&times;</button>
+            <button type="button" class="btn-remove-photo" data-index="${index}" data-type="temporal" title="Eliminar foto">&times;</button>
         `;
         galeria.appendChild(item);
     });
 
     // Event listeners para botones de eliminar
     document.querySelectorAll('.btn-remove-photo').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evitar cerrar modal si hubiera evento click
+            e.preventDefault();
+
             const index = parseInt(btn.dataset.index);
             const type = btn.dataset.type;
-            if (type === 'existente') {
-                imagenesExistentes.splice(index, 1);
-            } else {
-                imagenesTemporales.splice(index, 1);
+
+            if (confirm('¿Eliminar esta imagen?')) {
+                if (type === 'existente') {
+                    imagenesExistentes.splice(index, 1);
+                } else {
+                    imagenesTemporales.splice(index, 1);
+                }
+                renderizarGaleriaPreview();
             }
-            renderizarGaleriaPreview();
         });
     });
 }
