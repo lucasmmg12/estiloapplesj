@@ -363,20 +363,25 @@ window.toggleFavorite = async (phone) => {
 
 async function saveContactMetadata(phone, updates) {
     try {
-        // Upsert logic: Check if exists first or just upsert
+        console.log('Intentando guardar metadatos para:', phone, updates);
+
         const { error } = await supabase
             .from('contactos')
             .upsert({
                 telefono: phone,
                 ...updates
-            }, { onConflict: 'telefono' }); // Make sure phone is unique constraint
+            }, { onConflict: 'telefono' });
 
-        if (error) throw error;
-        console.log('Contacto actualizado:', phone);
+        if (error) {
+            console.error('Error detallado de Supabase:', error);
+            throw error;
+        }
+
+        console.log('Contacto actualizado exitosamente:', phone);
 
     } catch (err) {
-        console.error('Error guardando contacto:', err);
-        alert('Error guardando cambios. Verifica tu conexión.');
+        console.error('Error excepcional guardando contacto:', err);
+        alert('Error al guardar en base de datos: ' + (err.message || 'Error desconocido') + '. Revisa si las columnas nuevas existen en Supabase.');
     }
 }
 
