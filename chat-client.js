@@ -144,7 +144,6 @@ function renderContacts() {
         const isActive = activeChatPhone === contact.phone ? 'active' : '';
         const timeStr = formatTime(contact.timestamp);
         const displayName = contact.name || contact.phone;
-        const favIcon = contact.isFavorite ? '⭐' : '';
 
         // Determinar qué avatar mostrar
         const avatarHtml = getAvatarHtml(contact);
@@ -157,7 +156,11 @@ function renderContacts() {
                 <div class="contact-info">
                     <div class="contact-top-row">
                         <span class="contact-name">
-                            ${favIcon} ${displayName} ${contact.unreadCount > 0 ? `<span class="unread-badge">${contact.unreadCount}</span>` : ''}
+                            ${displayName} 
+                            <span class="contact-badges">
+                                ${contact.seller ? `<span class="seller-name-badge">${contact.seller}</span>` : ''}
+                                ${contact.unreadCount > 0 ? `<span class="unread-badge">${contact.unreadCount}</span>` : ''}
+                            </span>
                         </span>
                         <span class="contact-time">${timeStr}</span>
                     </div>
@@ -222,14 +225,25 @@ window.openChat = async (phone) => {
     // Avatar Dinámico
     chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
 
-    // Header Actions Update
+    // Header Actions Update (Sellers + Options)
     const actionsContainer = document.querySelector('.chat-header .header-actions');
-    const isFav = contact && contact.isFavorite;
 
     actionsContainer.innerHTML = `
-        <button class="icon-btn" title="${isFav ? 'Quitar Favorito' : 'Marcar Favorito'}" onclick="toggleFavorite('${phone}')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? 'var(--primary-green)' : 'currentColor'}">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        <div class="header-seller-quick-actions">
+            <button class="header-seller-btn ${contact && contact.seller === 'Nahuel' ? 'active' : ''}" 
+                    title="Asignar a Nahuel" 
+                    onclick="window.confirmAndAssignSeller('${phone}', 'Nahuel')">
+                N
+            </button>
+            <button class="header-seller-btn ${contact && contact.seller === 'Cristofer' ? 'active' : ''}" 
+                    title="Asignar a Cristofer" 
+                    onclick="window.confirmAndAssignSeller('${phone}', 'Cristofer')">
+                C
+            </button>
+        </div>
+        <button class="icon-btn" title="Analizar Historial (IA)" onclick="window.analizarHistorial('${phone}')">
+             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19c.7 0 1.38-.09 2.03-.25l3.47 3.47c.39.39 1.02.39 1.41 0l.59-.59c.39-.39.39-1.02 0-1.41l-3.47-3.47c1.47-1.46 2.47-3.46 2.47-5.75C18 6.31 15.69 2 11.5 2zm0 15c-3.59 0-6.5-2.91-6.5-6.5S7.91 4 11.5 4 18 6.91 18 10.5 15.09 17 11.5 17zM11.5 6c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5S10.12 8 11.5 8 14 9.12 14 10.5 12.88 13 11.5 13z"/>
             </svg>
         </button>
         <button class="icon-btn" title="Opciones" onclick="openEditModal('${phone}')">
@@ -588,6 +602,59 @@ function setupEventListeners() {
             document.getElementById('editSeller').value = btn.dataset.seller;
         });
     });
+
+    window.confirmAndAssignSeller = async (phone, sellerName) => {
+        const confirmMsg = `¿Deseas asignar este chat a ${sellerName}?`;
+        if (confirm(confirmMsg)) {
+            const contact = contactsMap.get(phone);
+            if (contact) {
+                contact.seller = sellerName;
+            }
+
+            // UI Update
+            renderContacts();
+            if (activeChatPhone === phone) {
+                window.openChat(phone);
+            }
+
+            // Save
+            await saveContactMetadata(phone, { vendedor_asignado: sellerName });
+        }
+    };
+
+    window.analizarHistorial = async (phone) => {
+        mostrarToast('Analizando historial con IA...', 'info');
+
+        try {
+            const { data: mensajes, error } = await supabase
+                .from('mensajes')
+                .select('contenido, es_mio, created_at')
+                .eq('cliente_telefono', phone)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+
+            if (!mensajes || mensajes.length === 0) {
+                mostrarToast('No hay mensajes para analizar', 'warning');
+                return;
+            }
+
+            const chatLog = mensajes.map(m => `${m.es_mio ? 'Vendedor' : 'Cliente'}: ${m.contenido}`).join('\n');
+
+            const { data, error: aiError } = await supabase.functions.invoke('analizar-historial', {
+                body: { chatLog, phone }
+            });
+
+            if (aiError) throw aiError;
+
+            // Mostrar el resultado en un modal de confirmación simple o un nuevo modal
+            window.mostrarConfirmacion(`Resumen del historial:\n\n${data.resumen}`, () => { });
+
+        } catch (err) {
+            console.error('Error analizando historial:', err);
+            mostrarToast('Error al analizar historial', 'error');
+        }
+    };
 
     // Filter Tabs Logic
     document.querySelectorAll('.filter-tab').forEach(tab => {

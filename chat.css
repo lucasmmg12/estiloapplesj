@@ -214,6 +214,23 @@ body {
     box-shadow: 0 0 10px rgba(255, 59, 48, 0.4);
 }
 
+.seller-name-badge {
+    font-size: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.contact-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .contact-time {
     font-size: 11px;
     color: var(--text-dim);
@@ -257,6 +274,45 @@ body {
     align-items: center;
     border-bottom: 1px solid var(--glass-border);
     z-index: 50;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-seller-quick-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.header-seller-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-seller-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.header-seller-btn.active {
+    background: var(--primary-green);
+    color: #000;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 15px var(--primary-green-glow);
 }
 
 .chat-info {

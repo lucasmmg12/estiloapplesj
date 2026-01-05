@@ -11,10 +11,8 @@ import * as builderbotAPI from './services/builderbot-api.js';
 // ============================================
 
 const VENDEDORES = [
-    { id: 1, nombre: 'Ana', color: 'rgba(255, 173, 173, 0.2)', border: '#ffadad' },
-    { id: 2, nombre: 'Carlos', color: 'rgba(255, 214, 165, 0.2)', border: '#ffd6a5' },
-    { id: 3, nombre: 'Sofía', color: 'rgba(253, 255, 182, 0.2)', border: '#fdffb6' },
-    { id: 4, nombre: 'Miguel', color: 'rgba(202, 255, 191, 0.2)', border: '#caffbf' }
+    { id: 1, nombre: 'Nahuel', color: 'rgba(0, 255, 136, 0.2)', border: '#00ff88' },
+    { id: 2, nombre: 'Cristofer', color: 'rgba(0, 204, 255, 0.2)', border: '#00ccff' }
 ];
 
 let conversaciones = [];
@@ -169,9 +167,11 @@ function asignarVendedoresMock() {
     let huboCambios = false;
 
     conversaciones.forEach(conv => {
-        // Si ya viene de la BD (asumiendo que en el futuro vendrá), lo respetamos.
-        // Si no, usamos nuestro mock local.
-        if (conv.vendedor_asignado) return;
+        // Si ya viene de la BD, lo respetamos y buscamos el objeto vendedor por nombre o ID
+        if (conv.vendedor_asignado) {
+            conv.vendedor = VENDEDORES.find(v => v.nombre === conv.vendedor_asignado);
+            return;
+        }
 
         if (!asignaciones[conv.id]) {
             // Asignar aleatorio

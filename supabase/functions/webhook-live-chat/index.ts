@@ -46,16 +46,25 @@ serve(async (req) => {
                 continue;
             }
 
-            // 1. Asegurarse de que el contacto existe (Crucial para integridad de FK en la tabla mensajes)
-            const { error: contactError } = await supabase
+            // 1. Asegurarse de que el contacto existe y asignar vendedor si es nuevo
+            const { data: contact } = await supabase
                 .from('contactos')
-                .upsert({
-                    telefono: telefono,
-                    plataforma: 'whatsapp'
-                }, { onConflict: 'telefono' });
+                .select('vendedor_asignado')
+                .eq('telefono', telefono)
+                .single();
 
-            if (contactError) {
-                console.error("Error upserting contact:", contactError);
+            if (!contact) {
+                const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+                await supabase.from('contactos').insert({
+                    telefono: telefono,
+                    plataforma: 'whatsapp',
+                    vendedor_asignado: vendedorAleatorio
+                });
+            } else if (!contact.vendedor_asignado) {
+                const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+                await supabase.from('contactos')
+                    .update({ vendedor_asignado: vendedorAleatorio })
+                    .eq('telefono', telefono);
             }
 
             // 2. Guardar mensaje del usuario (Recibido del cliente)
