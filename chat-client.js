@@ -50,7 +50,7 @@ async function loadContacts() {
     contactsListEl.innerHTML = `
         <div class="loading-contacts">
             <div class="spinner"></div>
-            <p style="color:var(--text-secondary); margin-top:10px;">Cargando chats...</p>
+            <p style="color:var(--text-dim); margin-top:10px;">Iniciando sistema...</p>
         </div>
     `;
 
@@ -168,11 +168,11 @@ window.openChat = async (phone) => {
 
     // Header Info & Actions
     chatHeaderNameEl.innerHTML = `
-        <span id="chatTitleText" onclick="openEditModal('${phone}')" style="cursor:pointer; border-bottom:1px dashed #666;" title="Click para editar cliente">
+        <span id="chatTitleText" onclick="openEditModal('${phone}')" style="cursor:pointer; border-bottom:1px dashed var(--primary-green);" title="Click para editar cliente">
             ${displayName}
         </span>
-        <span style="font-size:0.8em; color:var(--text-secondary); cursor:pointer;" onclick="openEditModal('${phone}')">✏️</span>
-        <span class="edit-hint">Cambia el nombre desde aquí</span>
+        <span style="font-size:0.8em; color:var(--primary-green); cursor:pointer;" onclick="openEditModal('${phone}')">✏️</span>
+        <span class="edit-hint">Configuración de cliente</span>
     `;
 
     // Avatar
@@ -184,7 +184,7 @@ window.openChat = async (phone) => {
 
     actionsContainer.innerHTML = `
         <button class="icon-btn" title="${isFav ? 'Quitar Favorito' : 'Marcar Favorito'}" onclick="toggleFavorite('${phone}')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? '#FFD700' : 'currentColor'}">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? 'var(--primary-green)' : 'currentColor'}">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
         </button>
@@ -196,7 +196,7 @@ window.openChat = async (phone) => {
     `;
 
     // Load Messages
-    messagesContainerEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-secondary);">Cargando historial...</div>';
+    messagesContainerEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-dim);">Sincronizando mensajes...</div>';
 
     try {
         const { data, error } = await supabase
