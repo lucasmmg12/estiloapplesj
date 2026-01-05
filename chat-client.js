@@ -265,6 +265,7 @@ window.openEditModal = (phone) => {
 
     // Populate Form
     document.getElementById('editPhone').value = phone;
+    document.getElementById('editPhoneDisplay').value = '+' + phone;
     document.getElementById('editName').value = contact.name || '';
 
     // Si tenemos datos extra guardados en la map (implementar esto en loadContacts si es necesario), los cargamos.
