@@ -81,10 +81,10 @@ async function loadContacts() {
 
                 contactsMap.set(msg.cliente_telefono, {
                     phone: msg.cliente_telefono,
-                    lastMessage: msg.contenido || 'Archivo multimedia',
+                    lastMessage: (msg.es_mio ? 'Tú: ' : '') + (msg.contenido || 'Archivo multimedia'),
                     timestamp: new Date(msg.created_at),
                     unreadCount: 0,
-                    avatar: '👤', // Default Avatar Emoji
+                    avatar: 'public/logogrow.png',
                     name: saved ? saved.nombre : null, // Alias guardado
                     isFavorite: saved ? saved.es_favorito : false,
                     email: saved ? saved.email : null,
@@ -131,7 +131,7 @@ function renderContacts() {
         const html = `
             <div class="contact-item ${isActive}" onclick="window.openChat('${contact.phone}')">
                 <div class="contact-avatar">
-                   <span style="font-size:24px;">${contact.avatar}</span>
+                   <img src="public/logogrow.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="contact-info">
                     <div class="contact-top-row">
@@ -171,7 +171,7 @@ window.openChat = async (phone) => {
     chatHeaderStatusEl.innerText = 'en línea';
 
     // Avatar
-    chatHeaderAvatarEl.innerHTML = `<span style="font-size:24px;">👤</span>`;
+    chatHeaderAvatarEl.innerHTML = `<img src="public/logogrow.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain;">`;
 
     // Header Actions Update
     const actionsContainer = document.querySelector('.chat-header .header-actions');
