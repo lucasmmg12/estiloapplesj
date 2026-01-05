@@ -544,6 +544,11 @@ body {
     box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
 }
 
+.form-group select option {
+    color: black;
+    background: white;
+}
+
 /* Seller Selector */
 .seller-selector {
     display: flex;
