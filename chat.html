@@ -103,11 +103,10 @@
                                 </path>
                             </svg>
                         </button>
-                        <button class="icon-btn" title="Más opciones">
+                        <button class="icon-btn" title="Opciones" onclick="openEditModal('${phone}')">
                             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                                 <path
-                                    d="M12 7a2 2 0 1 0-.001-4.001A2 2 0 0 0 12 7zm0 2a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 9zm0 6a2 2 0 1 0-.001 3.999A2 2 0 0 0 12 15z">
-                                </path>
+                                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                             </svg>
                         </button>
                     </div>
@@ -171,13 +170,25 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Interés Principal</label>
+                                <label>Vendedor Asignado</label>
+                                <input type="text" id="editSeller" placeholder="Nombre del vendedor">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Avatar (URL de Imagen)</label>
+                                <input type="text" id="editAvatar" placeholder="https://ejemplo.com/imagen.jpg">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Categoría / Interés</label>
                                 <select id="editInterest">
                                     <option value="">Seleccionar...</option>
-                                    <option value="Compra">Compra</option>
+                                    <option value="Comprar">Comprar</option>
+                                    <option value="Averiguar">Averiguar</option>
+                                    <option value="Reparar">Reparar</option>
+                                    <option value="Canjear">Canjear</option>
                                     <option value="Servicio Técnico">Servicio Técnico</option>
-                                    <option value="Consulta">Consulta General</option>
-                                    <option value="Canje">Plan Canje</option>
+                                    <option value="Consulta General">Consulta General</option>
                                 </select>
                             </div>
 

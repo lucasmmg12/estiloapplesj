@@ -84,13 +84,14 @@ async function loadContacts() {
                     lastMessage: (msg.es_mio ? 'Tú: ' : '') + (msg.contenido || 'Archivo multimedia'),
                     timestamp: new Date(msg.created_at),
                     unreadCount: 0,
-                    avatar: 'public/logogrow.png',
-                    name: saved ? saved.nombre : null, // Alias guardado
+                    avatar: saved ? (saved.avatar_url || 'public/logogrow.png') : 'public/logogrow.png',
+                    name: saved ? saved.nombre : null,
                     isFavorite: saved ? saved.es_favorito : false,
                     email: saved ? saved.email : null,
                     device: saved ? saved.modelo_dispositivo : null,
                     interest: saved ? saved.interes : null,
-                    notes: saved ? saved.notas : null
+                    notes: saved ? saved.notas : null,
+                    seller: saved ? saved.vendedor_asignado : null
                 });
             }
         });
@@ -125,13 +126,16 @@ function renderContacts() {
     sortedContacts.forEach(contact => {
         const isActive = activeChatPhone === contact.phone ? 'active' : '';
         const timeStr = formatTime(contact.timestamp);
-        const displayName = contact.name || contact.phone; // Mostrar nombre si existe, sino teléfono
+        const displayName = contact.name || contact.phone;
         const favIcon = contact.isFavorite ? '⭐' : '';
+
+        // Determinar qué avatar mostrar
+        const avatarHtml = getAvatarHtml(contact);
 
         const html = `
             <div class="contact-item ${isActive}" onclick="window.openChat('${contact.phone}')">
                 <div class="contact-avatar">
-                   <img src="public/logogrow.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain;">
+                   ${avatarHtml}
                 </div>
                 <div class="contact-info">
                     <div class="contact-top-row">
@@ -149,6 +153,35 @@ function renderContacts() {
         `;
         contactsListEl.insertAdjacentHTML('beforeend', html);
     });
+}
+
+function getAvatarHtml(contact) {
+    if (contact.avatar && contact.avatar !== 'public/logogrow.png' && contact.avatar.startsWith('http')) {
+        return `<img src="${contact.avatar}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">`;
+    }
+
+    // Generar avatar por iniciales
+    const name = contact.name || contact.phone || '?';
+    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const bgColor = getRandomColor(contact.phone || 'root');
+
+    return `
+        <div style="
+            width: 100%; 
+            height: 100%; 
+            background: ${bgColor}; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #fff; 
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 14px; 
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        ">
+            ${initials}
+        </div>
+    `;
 }
 
 // Function attached to window for HTML access
@@ -170,25 +203,20 @@ window.openChat = async (phone) => {
     chatHeaderNameEl.innerText = displayName;
     chatHeaderStatusEl.innerText = 'en línea';
 
-    // Avatar
-    chatHeaderAvatarEl.innerHTML = `<img src="public/logogrow.png" alt="Avatar" style="width: 100%; height: 100%; object-fit: contain;">`;
+    // Avatar Dinámico
+    chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
 
     // Header Actions Update
     const actionsContainer = document.querySelector('.chat-header .header-actions');
     const isFav = contact && contact.isFavorite;
 
     actionsContainer.innerHTML = `
-        <button class="icon-btn" title="Editar Cliente" onclick="openEditModal('${phone}')">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
-            </svg>
-        </button>
         <button class="icon-btn" title="${isFav ? 'Quitar Favorito' : 'Marcar Favorito'}" onclick="toggleFavorite('${phone}')">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="${isFav ? 'var(--primary-green)' : 'currentColor'}">
                 <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
             </svg>
         </button>
-        <button class="icon-btn" title="Opciones">
+        <button class="icon-btn" title="Opciones" onclick="openEditModal('${phone}')">
              <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                 <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
             </svg>
@@ -242,6 +270,8 @@ window.openEditModal = (phone) => {
     document.getElementById('editDevice').value = contact.device || '';
     document.getElementById('editInterest').value = contact.interest || '';
     document.getElementById('editNotes').value = contact.notes || '';
+    document.getElementById('editSeller').value = contact.seller || '';
+    document.getElementById('editAvatar').value = contact.avatar && contact.avatar !== 'public/logogrow.png' ? contact.avatar : '';
 
     // Show Modal
     document.getElementById('editClientModal').style.display = 'flex';
@@ -263,6 +293,8 @@ if (editClientForm) { // Check if exists (it should now)
         const device = document.getElementById('editDevice').value;
         const interest = document.getElementById('editInterest').value;
         const notes = document.getElementById('editNotes').value;
+        const seller = document.getElementById('editSeller').value;
+        const avatar = document.getElementById('editAvatar').value;
 
         // 1. Update Map (Optimistic)
         const contact = contactsMap.get(phone);
@@ -272,13 +304,14 @@ if (editClientForm) { // Check if exists (it should now)
             contact.device = device;
             contact.interest = interest;
             contact.notes = notes;
+            contact.seller = seller;
+            contact.avatar = avatar || 'public/logogrow.png';
         }
 
         renderContacts();
         if (activeChatPhone === phone) {
-            const displayName = name || phone;
-            const titleEl = document.getElementById('chatTitleText');
-            if (titleEl) titleEl.textContent = displayName;
+            chatHeaderNameEl.innerText = name || phone;
+            chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
         }
 
         closeEditModal();
@@ -289,7 +322,9 @@ if (editClientForm) { // Check if exists (it should now)
             email: email,
             modelo_dispositivo: device,
             interes: interest,
-            notas: notes
+            notas: notes,
+            vendedor_asignado: seller,
+            avatar_url: avatar
         });
     });
 }
