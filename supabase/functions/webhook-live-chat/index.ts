@@ -54,12 +54,36 @@ serve(async (req) => {
                 data = item.data;
             }
 
-            // Si es un evento que no nos interesa (ej: estado de bot), lo saltamos
-            // Pero por ahora asumimos que todo lo que llega es mensaje o actualizacion
+            // Determinar primero si es mio o del cliente para saber qué campo buscar
+            let esMio = false;
+            // Chequeo robusto de dirección
+            if (item.eventName === 'message.outgoing') esMio = true;
+            else if (data.key && typeof data.key.fromMe !== 'undefined') esMio = Boolean(data.key.fromMe);
+            else if (data.es_mio !== undefined) esMio = Boolean(data.es_mio);
+            else if (data.fromMe !== undefined) esMio = Boolean(data.fromMe);
 
             // Extraer campos clave
-            // En estructura nueva: data.from o data.key.remoteJid
-            const telefono = data.from || data.phone || data.telefono || data.numero || (data.key ? data.key.remoteJid : null);
+            // Si es mio (outgoing), el destinatario está en 'to' o 'remoteJid'
+            // Si es incoming, el remitente está en 'from' o 'remoteJid' (o a veces 'from' es el usuario en incoming)
+            let rawPhone = null;
+
+            if (esMio) {
+                // Mensaje saliente: buscamos el destinatario
+                // En outgoing, 'to' suele ser el destinatario. key.remoteJid también suele ser el destinatario en este caso.
+                rawPhone = data.to
+                    || (data.key ? data.key.remoteJid : null)
+                    || data.phone
+                    || data.numero;
+            } else {
+                // Mensaje entrante: buscamos el remitente
+                rawPhone = data.from
+                    || (data.key ? data.key.remoteJid : null)
+                    || data.phone
+                    || data.numero
+                    || data.telefono;
+            }
+
+            const telefono = rawPhone;
 
             // Limpieza del teléfono (quitar @s.whatsapp.net y @c.us)
             const cleanPhone = telefono ? telefono.replace('@s.whatsapp.net', '').replace('@c.us', '') : null;
@@ -74,23 +98,6 @@ serve(async (req) => {
 
             const contenidoUsuario = data.body || data.content || data.message || data.mensaje;
             const pushName = data.pushName || data.name || null;
-
-            // Determinar si es mio o del cliente
-            let esMio = false;
-            // Estructura nueva: data.key.fromMe (debe ser boolean true para mensajes del bot/host)
-            if (data.key && typeof data.key.fromMe !== 'undefined') {
-                esMio = Boolean(data.key.fromMe);
-            }
-            // Fallbacks
-            else if (data.es_mio !== undefined) {
-                esMio = Boolean(data.es_mio);
-            }
-            else if (eventName === 'message.outgoing') {
-                esMio = true;
-            }
-            else if (data.fromMe !== undefined) {
-                esMio = Boolean(data.fromMe);
-            }
 
             // Si es la estructura nueva, el 'body' suele ser el mensaje. 
             // A veces viene en message.extendedTextMessage.text
