@@ -35,67 +35,15 @@ serve(async (req) => {
         // Y que NO han sido reactivados ya (podríamos chequear si bot_paused_at no es null)
 
         // Tiempo límite: 15 minutos atrás
-        const timeoutMinutes = 15;
-        const timeLimit = new Date(Date.now() - timeoutMinutes * 60 * 1000).toISOString();
-
-        const { data: contactos, error } = await supabase
-            .from('contactos')
-            .select('telefono, bot_paused_at')
-            .not('bot_paused_at', 'is', null) // Solo los que están pausados
-            .lt('bot_paused_at', timeLimit); // Que su pausa fue hace más de 15 min
-
-        if (error) throw error;
-
-        console.log(`Encontrados ${contactos.length} contactos para reactivar bot.`);
-
-        let reactivatedCount = 0;
-
-        for (const contacto of contactos) {
-            // Llamar a API Builderbot para remover de blacklist
-            const url = `${BUILDERBOT_API_URL}/${BUILDERBOT_BOT_ID}/blacklist`;
-
-            // Intentar reactivar
-            try {
-                const resp = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-builderbot': builderbotKey
-                    },
-                    body: JSON.stringify({
-                        number: contacto.telefono,
-                        intent: 'remove'
-                    })
-                });
-
-                if (resp.ok) {
-                    // Si éxito, limpiar la columna bot_paused_at
-                    await supabase
-                        .from('contactos')
-                        .update({ bot_paused_at: null })
-                        .eq('telefono', contacto.telefono);
-
-                    reactivatedCount++;
-                    console.log(`Bot reactivado para ${contacto.telefono}`);
-                } else {
-                    console.error(`Error removiendo blacklist para ${contacto.telefono}: ${resp.statusText}`);
-                }
-            } catch (err) {
-                console.error(`Excepción HTTP para ${contacto.telefono}:`, err);
-            }
-        }
+        // LOGIC DISABLED BY USER REQUEST (Step 549/551)
+        // Cron job might still run, but we do nothing.
+        console.log('Monitor de inactividad ejecutado, pero la reactivación automática está DESACTIVADA.');
 
         return new Response(
-            JSON.stringify({
-                success: true,
-                processed: contactos.length,
-                reactivated: reactivatedCount
-            }),
-            {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200,
-            }
+            JSON.stringify({ success: true, message: 'Auto-reactivation disabled' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
+        // (Original logic removed)
 
     } catch (error) {
         console.error('Error en Monitor Inactividad:', error);

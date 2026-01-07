@@ -1,5 +1,5 @@
 import CONFIG from './config.js';
-import { enviarMensajeWhatsApp, manageBlacklist } from './services/builderbot-api.js';
+import { enviarMensaje, manageBlacklist } from './services/builderbot-api.js';
 
 // ============================================
 // INITIALIZATION
@@ -292,19 +292,9 @@ function updateBotStatusUI(contact) {
     if (!contact || !contact.bot_paused_at) {
         // Bot Activo (No hay fecha de pausa)
         setBotUI('active');
-        return;
-    }
-
-    const pausedAt = new Date(contact.bot_paused_at);
-    const now = new Date();
-    const diffMinutes = (now - pausedAt) / 1000 / 60;
-
-    if (diffMinutes < 15) {
-        // Está pausado recientemente
-        setBotUI('paused');
     } else {
-        // Ya pasó el tiempo, asumimos activo (aunque el cron job lo limpia, la UI debe ser optimista)
-        setBotUI('active');
+        // Bot Pausado (Indefinidamente, hasta que se active manual)
+        setBotUI('paused');
     }
 }
 
@@ -322,6 +312,7 @@ function setBotUI(state) {
 botStatusBtn.addEventListener('click', async () => {
     if (!activeChatPhone) return;
     const contact = contactsMap.get(activeChatPhone);
+    const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
     const isPaused = botStatusBtn.classList.contains('paused');
 
     // Cambiar estado (Toggle)
@@ -329,10 +320,10 @@ botStatusBtn.addEventListener('click', async () => {
         // REACTIVAR BOT
         setBotUI('active'); // Optimistic
         try {
-            await manageBlacklist(activeChatPhone, 'remove');
+            await manageBlacklist(activeChatPhone, 'remove', platform);
             await supabase.from('contactos').update({ bot_paused_at: null }).eq('telefono', activeChatPhone);
             if (contact) contact.bot_paused_at = null; // Update local state
-            console.log('Bot reactivado manualmente');
+            console.log(`Bot reactivado manualmente para ${activeChatPhone} (${platform})`);
         } catch (e) {
             console.error(e);
             alert('Error reactivando bot');
@@ -341,11 +332,11 @@ botStatusBtn.addEventListener('click', async () => {
         // PAUSAR BOT
         setBotUI('paused'); // Optimistic
         try {
-            await manageBlacklist(activeChatPhone, 'add');
+            await manageBlacklist(activeChatPhone, 'add', platform);
             const now = new Date().toISOString();
             await supabase.from('contactos').update({ bot_paused_at: now }).eq('telefono', activeChatPhone);
             if (contact) contact.bot_paused_at = now; // Update local state
-            console.log('Bot pausado manualmente');
+            console.log(`Bot pausado manualmente para ${activeChatPhone} (${platform})`);
         } catch (e) {
             console.error(e);
             alert('Error pausando bot');
@@ -545,13 +536,16 @@ async function sendMessage() {
     // appendMessageToUI(optimisticMsg);
 
     try {
-        // 2. Send via WhatsApp API (Builderbot)
-        await enviarMensajeWhatsApp(activeChatPhone, text);
+        const contact = contactsMap.get(activeChatPhone);
+        const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
+
+        // 2. Send via Builderbot API (Generic)
+        await enviarMensaje(platform, activeChatPhone, text);
 
         // --- logic FRENAR BOT ---
         // Al enviar un mensaje manual, bloqueamos al bot para este usuario
-        manageBlacklist(activeChatPhone, 'add')
-            .then(res => console.log('Bot pausado (blacklist) para:', activeChatPhone))
+        manageBlacklist(activeChatPhone, 'add', platform)
+            .then(res => console.log(`Bot pausado (blacklist) para ${activeChatPhone} (${platform})`))
             .catch(err => console.error('Error pausando bot:', err));
 
         // Actualizamos timestamp de inactividad
@@ -562,17 +556,14 @@ async function sendMessage() {
         // ------------------------
 
         // 3. Save to Supabase (Database)
-        // Note: The UI will receive this via Realtime again, so we need to deduplicate or just ignore 'es_mio' from realtime if we already showed it.
-        // ACTUALLY: Let's simpler approach. Save to DB. Realtime picks it up. 
-        // We will insert into DB.
-
         const { error } = await supabase
             .from('mensajes')
             .insert({
                 cliente_telefono: activeChatPhone,
                 contenido: text,
                 es_mio: true,
-                estado: 'enviado'
+                estado: 'enviado',
+                plataforma: platform
             });
 
         if (error) throw error;
