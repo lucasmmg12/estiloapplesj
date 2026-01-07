@@ -224,6 +224,10 @@ window.openChat = async (phone) => {
     // Avatar Dinámico
     chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
 
+    // --- BOT STATUS LOGIC ---
+    updateBotStatusUI(contact);
+    // ------------------------
+
     // Header Actions Update (Sellers + Options)
     const actionsContainer = document.querySelector('.chat-header .header-actions');
 
@@ -279,6 +283,76 @@ window.openChat = async (phone) => {
         console.error('Error cargando chat:', err);
     }
 }
+
+// --- BOT STATUS HELPERS ---
+const botStatusBtn = document.getElementById('botStatusBtn');
+const botStatusSpan = botStatusBtn.querySelector('span');
+
+function updateBotStatusUI(contact) {
+    if (!contact || !contact.bot_paused_at) {
+        // Bot Activo (No hay fecha de pausa)
+        setBotUI('active');
+        return;
+    }
+
+    const pausedAt = new Date(contact.bot_paused_at);
+    const now = new Date();
+    const diffMinutes = (now - pausedAt) / 1000 / 60;
+
+    if (diffMinutes < 15) {
+        // Está pausado recientemente
+        setBotUI('paused');
+    } else {
+        // Ya pasó el tiempo, asumimos activo (aunque el cron job lo limpia, la UI debe ser optimista)
+        setBotUI('active');
+    }
+}
+
+function setBotUI(state) {
+    botStatusBtn.classList.remove('active', 'paused');
+    if (state === 'active') {
+        botStatusBtn.classList.add('active');
+        botStatusSpan.innerText = 'ON';
+    } else {
+        botStatusBtn.classList.add('paused');
+        botStatusSpan.innerText = 'PAUSA';
+    }
+}
+
+botStatusBtn.addEventListener('click', async () => {
+    if (!activeChatPhone) return;
+    const contact = contactsMap.get(activeChatPhone);
+    const isPaused = botStatusBtn.classList.contains('paused');
+
+    // Cambiar estado (Toggle)
+    if (isPaused) {
+        // REACTIVAR BOT
+        setBotUI('active'); // Optimistic
+        try {
+            await manageBlacklist(activeChatPhone, 'remove');
+            await supabase.from('contactos').update({ bot_paused_at: null }).eq('telefono', activeChatPhone);
+            if (contact) contact.bot_paused_at = null; // Update local state
+            console.log('Bot reactivado manualmente');
+        } catch (e) {
+            console.error(e);
+            alert('Error reactivando bot');
+        }
+    } else {
+        // PAUSAR BOT
+        setBotUI('paused'); // Optimistic
+        try {
+            await manageBlacklist(activeChatPhone, 'add');
+            const now = new Date().toISOString();
+            await supabase.from('contactos').update({ bot_paused_at: now }).eq('telefono', activeChatPhone);
+            if (contact) contact.bot_paused_at = now; // Update local state
+            console.log('Bot pausado manualmente');
+        } catch (e) {
+            console.error(e);
+            alert('Error pausando bot');
+        }
+    }
+});
+// ------------------------
 
 // ============================================
 // CONTACT ACTIONS (Edit Name, Favorite)
