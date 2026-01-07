@@ -542,18 +542,9 @@ async function sendMessage() {
         // 2. Send via Builderbot API (Generic)
         await enviarMensaje(platform, activeChatPhone, text);
 
-        // --- logic FRENAR BOT ---
-        // Al enviar un mensaje manual, bloqueamos al bot para este usuario
-        manageBlacklist(activeChatPhone, 'add', platform)
-            .then(res => console.log(`Bot pausado (blacklist) para ${activeChatPhone} (${platform})`))
-            .catch(err => console.error('Error pausando bot:', err));
-
-        // Actualizamos timestamp de inactividad
-        await supabase
-            .from('contactos')
-            .update({ bot_paused_at: new Date().toISOString() })
-            .eq('telefono', activeChatPhone);
-        // ------------------------
+        // Default behavior: Do NOT auto-pause bot on manual message.
+        // User must use the toggle button explicitly.
+        // (Logic removed)
 
         // 3. Save to Supabase (Database)
         const { error } = await supabase
