@@ -466,16 +466,9 @@ async function sendMessage() {
 
     messageInputEl.value = '';
 
-    // 1. Optimistic UI Update (Show immediately)
-    const optimisticMsg = {
-        id: 'temp-' + Date.now(),
-        contenido: text,
-        es_mio: true,
-        created_at: new Date().toISOString(),
-        estado: 'enviando'
-    };
-    appendMessageToUI(optimisticMsg);
-    scrollToBottom();
+    // 1. Optimistic UI removed to prevent duplication. Relying on Realtime.
+    // const optimisticMsg = { ... };
+    // appendMessageToUI(optimisticMsg);
 
     try {
         // 2. Send via WhatsApp API (Builderbot)
@@ -515,9 +508,9 @@ async function sendMessage() {
         // OR: remove the temp bubble when realtime arrives.
         // OR: Make handleIncomingMessage smart enough to skip if ID exists.
 
-        // For this version (MVP), let's remove the optimistic bubble and let Realtime handle it to ensure consistency.
-        const tempBubble = document.getElementById(optimisticMsg.id);
-        if (tempBubble) tempBubble.remove();
+        // Optimistic cleanup removed as optimistic UI is disabled.
+        // const tempBubble = document.getElementById(optimisticMsg.id);
+        // if (tempBubble) tempBubble.remove();
 
     } catch (err) {
         console.error('Error enviando mensaje:', err);
