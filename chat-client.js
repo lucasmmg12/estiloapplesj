@@ -302,10 +302,10 @@ function setBotUI(state) {
     botStatusBtn.classList.remove('active', 'paused');
     if (state === 'active') {
         botStatusBtn.classList.add('active');
-        botStatusSpan.innerText = 'ON';
+        botStatusSpan.innerText = 'BOT ACTIVO';
     } else {
         botStatusBtn.classList.add('paused');
-        botStatusSpan.innerText = 'PAUSA';
+        botStatusSpan.innerText = 'BOT PAUSADO';
     }
 }
 
