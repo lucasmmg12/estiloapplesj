@@ -1,6 +1,5 @@
-
 import CONFIG from './config.js';
-import { enviarMensajeWhatsApp } from './services/builderbot-api.js';
+import { enviarMensajeWhatsApp, manageBlacklist } from './services/builderbot-api.js';
 
 // ============================================
 // INITIALIZATION
@@ -481,6 +480,19 @@ async function sendMessage() {
     try {
         // 2. Send via WhatsApp API (Builderbot)
         await enviarMensajeWhatsApp(activeChatPhone, text);
+
+        // --- logic FRENAR BOT ---
+        // Al enviar un mensaje manual, bloqueamos al bot para este usuario
+        manageBlacklist(activeChatPhone, 'add')
+            .then(res => console.log('Bot pausado (blacklist) para:', activeChatPhone))
+            .catch(err => console.error('Error pausando bot:', err));
+
+        // Actualizamos timestamp de inactividad
+        await supabase
+            .from('contactos')
+            .update({ bot_paused_at: new Date().toISOString() })
+            .eq('telefono', activeChatPhone);
+        // ------------------------
 
         // 3. Save to Supabase (Database)
         // Note: The UI will receive this via Realtime again, so we need to deduplicate or just ignore 'es_mio' from realtime if we already showed it.

@@ -74,8 +74,43 @@ export async function enviarMensaje(plataforma, numero, contenido, mediaUrl = nu
     }
 }
 
+// ============================================
+// Blacklist Management
+// ============================================
+
+export async function manageBlacklist(numero, intent) {
+    // intent: 'add' (bloquear bot) | 'remove' (activar bot)
+    const url = `${CONFIG.whatsapp.baseUrl}/${CONFIG.whatsapp.botId}/blacklist`;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-builderbot': CONFIG.whatsapp.apiKey
+            },
+            body: JSON.stringify({
+                number: numero,
+                intent: intent
+            })
+        });
+
+        if (!response.ok) {
+            console.error(`Error blacklist ${intent}:`, response.statusText);
+            // No lanzamos error para no bloquear el flujo principal de chat, solo log
+            return false;
+        }
+
+        return await response.json();
+    } catch (e) {
+        console.error('Excepción gestionando blacklist:', e);
+        return false;
+    }
+}
+
 export default {
     enviarMensajeWhatsApp,
     enviarMensajeInstagram,
-    enviarMensaje
+    enviarMensaje,
+    manageBlacklist
 };

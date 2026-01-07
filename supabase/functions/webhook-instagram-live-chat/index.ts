@@ -1,13 +1,12 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient } from "npm:@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Manejar CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -29,7 +28,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Normalizar datos (soportar array o objeto)
+    // Normalizar entrada: convertir todo a un array de "items procesables"
     let rawItems = [];
     if (Array.isArray(payload)) {
       rawItems = payload;
@@ -54,28 +53,53 @@ serve(async (req) => {
         data = item.data;
       }
 
-      // Extraer campos clave
-      const idUsuario = data.from || data.phone || data.id || data.user_id || data.numero || data.number || (data.key ? data.key.remoteJid : null);
+      // Determinar primero si es mio o del cliente para saber qué campo buscar
+      let esMio = false;
+      // Chequeo robusto de dirección
+      if (item.eventName === 'message.outgoing') esMio = true;
+      else if (data.key && typeof data.key.fromMe !== 'undefined') esMio = Boolean(data.key.fromMe);
+      else if (data.es_mio !== undefined) esMio = Boolean(data.es_mio);
+      else if (data.fromMe !== undefined) esMio = Boolean(data.fromMe);
 
-      if (!idUsuario) {
-        if (eventName !== 'status.online') {
-          console.warn('⚠️ Mensaje omitido: No se encontró identificador (from/phone/id) en el payload.', JSON.stringify(item));
+      // Extraer campos clave
+      // Si es mio (outgoing), el destinatario está en 'to' o 'remoteJid'
+      // Si es incoming, el remitente está en 'from' o 'remoteJid' (o a veces 'from' es el usuario en incoming)
+      let rawPhone = null;
+
+      if (esMio) {
+        // Mensaje saliente: buscamos el destinatario
+        // En outgoing, 'to' suele ser el destinatario. key.remoteJid también suele ser el destinatario en este caso.
+        rawPhone = data.to
+          || (data.key ? data.key.remoteJid : null)
+          || data.phone
+          || data.numero;
+      } else {
+        // Mensaje entrante: buscamos el remitente
+        rawPhone = data.from
+          || (data.key ? data.key.remoteJid : null)
+          || data.phone
+          || data.numero
+          || data.telefono;
+      }
+
+      const telefono = rawPhone;
+
+      // Limpieza del identificador (aunque sea string de IG, quitamos suffix de WP por si acaso)
+      const cleanPhone = telefono ? telefono.replace('@s.whatsapp.net', '').replace('@c.us', '') : null;
+
+      if (!cleanPhone) {
+        // Si no hay teléfono/ID, no podemos hacer nada util
+        if (eventName !== 'status.online') { // Ignorar logs de keepalive
+          console.warn('Mensaje omitido: No se encontró ID/Teléfono en el payload.', JSON.stringify(item));
         }
         continue;
       }
 
-      const contenidoUsuario = data.body || data.content || data.message || data.mensaje || data.texto;
-      const pushName = data.pushName || data.name || data.username || null; // Instagram suele tener username
-
-      // Determinar si es mio o del cliente
-      let esMio = false;
-      if (data.key && typeof data.key.fromMe === 'boolean') {
-        esMio = data.key.fromMe;
-      } else if (data.es_mio !== undefined) {
-        esMio = data.es_mio;
-      }
+      const contenidoUsuario = data.body || data.content || data.message || data.mensaje;
+      const pushName = data.pushName || data.name || null;
 
       // Si es la estructura nueva, el 'body' suele ser el mensaje. 
+      // A veces viene en message.extendedTextMessage.text
       let textoFinal = contenidoUsuario;
       if (!textoFinal && data.message) {
         if (data.message.conversation) textoFinal = data.message.conversation;
@@ -84,62 +108,74 @@ serve(async (req) => {
         else if (data.message.videoMessage) textoFinal = data.message.videoMessage.caption || '🎥 Video';
       }
 
-      // 1. Asegurarse de que el contacto existe y asignar vendedor si es nuevo (INSTAGRAM)
+      if (!textoFinal && !eventName) {
+        // Si no hay body y no es un evento conocido, logueamos y seguimos
+        // console.log('Item sin contenido de texto claro:', item);
+      }
+
+      // 1. ACTUALIZAR O CREAR CONTACTO
+      // Intentamos buscarlo primero
       const { data: contact } = await supabase
         .from('contactos')
         .select('*')
-        .eq('telefono', idUsuario.toString())
+        .eq('telefono', cleanPhone)
         .single();
 
       const updates: any = {};
       let shouldUpdate = false;
 
       if (!contact) {
-        updates.telefono = idUsuario.toString();
-        updates.plataforma = 'instagram';
+        // Crear nuevo
+        updates.telefono = cleanPhone;
+        updates.plataforma = 'instagram'; // <--- CAMBIO PRINCIPAL
         updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-        if (pushName) updates.nombre = pushName;
+
+        // Solo asignar nombre si NO es mío
+        if (pushName && !esMio) {
+          updates.nombre = pushName;
+        }
 
         await supabase.from('contactos').insert(updates);
         contactsUpdated++;
       } else {
         // Actualizar existente si tenemos datos nuevos (ej: pushName)
-        if (pushName && (!contact.nombre || contact.nombre === idUsuario.toString())) {
+        if (pushName && !esMio && (!contact.nombre || contact.nombre === cleanPhone || contact.nombre !== pushName)) {
           updates.nombre = pushName;
           shouldUpdate = true;
         }
 
+        // Si no tiene vendedor, asignar uno
         if (!contact.vendedor_asignado) {
           updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
           shouldUpdate = true;
         }
 
-        // Si el contacto ya existía pero no teniamos la plataforma registrada (ej. migración), la actualizamos
-        if (!contact.plataforma || contact.plataforma !== 'instagram') {
+        // Actualizar plataforma si estaba en otro estado o null
+        if (contact.plataforma !== 'instagram') {
           updates.plataforma = 'instagram';
           shouldUpdate = true;
         }
 
         if (shouldUpdate) {
-          await supabase.from('contactos').update(updates).eq('telefono', idUsuario.toString());
+          await supabase.from('contactos').update(updates).eq('telefono', cleanPhone);
           contactsUpdated++;
         }
       }
 
-      // 2. Insertar mensaje
-      if (textoFinal || data.mediaUrl || eventName === 'message.incoming') {
+      // 2. PREPARAR INSERCIÓN DE MENSAJE
+      if (textoFinal || data.mediaUrl || eventName === 'message.incoming' || eventName === 'message.outgoing') {
         const contentToSave = textoFinal
           || (data.mediaUrl ? 'Archivo multimedia' : '')
-          || (eventName === 'message.incoming' ? 'Mensaje recibido (formato desconocido)' : null);
+          || (eventName === 'message.incoming' || eventName === 'message.outgoing' ? 'Mensaje recibido (formato desconocido)' : null);
 
         if (contentToSave) {
           inserts.push({
-            cliente_telefono: idUsuario.toString(),
+            cliente_telefono: cleanPhone,
             contenido: contentToSave,
             media_url: data.mediaUrl || null,
             es_mio: esMio,
             estado: esMio ? 'enviado' : 'received',
-            plataforma: 'instagram'
+            plataforma: 'instagram' // <--- CAMBIO PRINCIPAL
           });
         }
       }
@@ -151,14 +187,16 @@ serve(async (req) => {
         .insert(inserts);
 
       if (error) {
-        console.error('Error insertando mensajes de Instagram en Supabase:', error);
+        console.error('Error insertando mensajes en Supabase:', error);
         throw error;
       }
-      console.log(`✅ ${inserts.length} mensajes de Instagram guardados. ${contactsUpdated} contactos actualizados.`);
+      console.log(`✅ ${inserts.length} mensajes IG guardados. ${contactsUpdated} contactos actualizados.`);
+    } else {
+      console.log('ℹ️ No se encontraron mensajes válidos para insertar.');
     }
 
     return new Response(
-      JSON.stringify({ success: true, count: inserts.length, platform: 'instagram' }),
+      JSON.stringify({ success: true, count: inserts.length }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -171,7 +209,7 @@ serve(async (req) => {
       JSON.stringify({ success: false, error: error.message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 400, // Bad Request
       }
     );
   }

@@ -1,5 +1,5 @@
 // ============================================
-// CONFIGURACIÓN CENTRAL
+// CONFIGURACIÃ“N CENTRAL
 // ============================================
 
 const CONFIG = {
@@ -11,16 +11,16 @@ const CONFIG = {
 
     // Builderbot WhatsApp
     whatsapp: {
-        apiKey: import.meta.env.VITE_BUILDERBOT_WHATSAPP_KEY,
-        botId: import.meta.env.VITE_BUILDERBOT_WHATSAPP_BOT_ID || 'e7b46f56-d304-4bef-8886-803d5fb393dd',
-        baseUrl: 'https://app.builderbot.cloud/api/v2'
+        baseUrl: 'https://app.builderbot.cloud/api/v2',
+        botId: 'e7b46f56-d304-4bef-8886-803d5fb393dd', // ID del Bot Principal (Provider)
+        apiKey: import.meta.env.VITE_BUILDERBOT_WHATSAPP_KEY
     },
 
     // Builderbot Instagram
     instagram: {
-        apiKey: import.meta.env.VITE_BUILDERBOT_INSTAGRAM_KEY,
-        botId: import.meta.env.VITE_BUILDERBOT_INSTAGRAM_BOT_ID || '931b173b-f544-43a3-9e73-7ed55020ffa0',
-        baseUrl: 'https://app.builderbot.cloud/api/v2'
+        baseUrl: 'https://app.builderbot.cloud/api/v2',
+        botId: 'e7b46f56-d304-4bef-8886-803d5fb393dd',
+        apiKey: import.meta.env.VITE_BUILDERBOT_INSTAGRAM_KEY
     }
 };
 
