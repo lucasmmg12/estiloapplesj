@@ -168,17 +168,20 @@ serve(async (req) => {
 
             // 2. PREPARAR INSERCIÓN DE MENSAJE
             // Insertamos si hay contenido o si es un evento que implica mensaje (y no es solo un status update tipo 'online')
-            if (textoFinal || data.mediaUrl || eventName === 'message.incoming' || eventName === 'message.outgoing') {
+            if (textoFinal || data.mediaUrl || data.url || data.urlTempFile || eventName === 'message.incoming' || eventName === 'message.outgoing') {
+
+                const mediaUrlToSave = data.mediaUrl || data.url || data.urlTempFile || null;
+
                 // Si es message.incoming y no extrajimos texto pero hay algo, guardamos un placeholder para no perder el evento
                 const contentToSave = textoFinal
-                    || (data.mediaUrl ? 'Archivo multimedia' : '')
+                    || (mediaUrlToSave ? (mediaUrlToSave.match(/\.(jpeg|jpg|png|webp)$/i) ? '📷 Imagen' : '📎 Archivo') : '')
                     || (eventName === 'message.incoming' || eventName === 'message.outgoing' ? 'Mensaje recibido (formato desconocido)' : null);
 
                 if (contentToSave) {
                     inserts.push({
                         cliente_telefono: cleanPhone,
                         contenido: contentToSave,
-                        media_url: data.mediaUrl || null, // TODO: Procesar media si viene en crudo del provider
+                        media_url: mediaUrlToSave,
                         es_mio: esMio,
                         estado: esMio ? 'enviado' : 'received',
                         plataforma: 'whatsapp'

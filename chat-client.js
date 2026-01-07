@@ -550,7 +550,10 @@ function appendMessageToUI(msg) {
     ` : '';
 
     div.innerHTML = `
-        <div class="msg-content">${msg.contenido}</div>
+        <div class="msg-content">
+            ${msg.media_url ? renderMedia(msg.media_url) : ''}
+            ${msg.contenido ? `<span>${msg.contenido}</span>` : ''}
+        </div>
         <div class="msg-meta">
             ${time}
             ${checkIcon}
@@ -558,6 +561,21 @@ function appendMessageToUI(msg) {
     `;
 
     messagesContainerEl.appendChild(div);
+}
+
+function renderMedia(url) {
+    // Detectar si es imagen
+    const isImage = url.match(/\.(jpeg|jpg|gif|png|webp|bmp)$/i) != null;
+
+    if (isImage) {
+        return `<a href="${url}" target="_blank" style="display:block; margin-bottom:5px;">
+                  <img src="${url}" alt="Imagen recibida" style="max-width: 200px; border-radius: 8px; cursor: pointer;">
+                </a>`;
+    } else {
+        return `<a href="${url}" target="_blank" style="display:flex; align-items:center; gap:5px; margin-bottom:5px; color:inherit; text-decoration:none; background: rgba(0,0,0,0.1); padding:5px 10px; border-radius:5px;">
+                  <span>📎</span> <span>Ver Archivo Adjunto</span>
+                </a>`;
+    }
 }
 
 function scrollToBottom() {

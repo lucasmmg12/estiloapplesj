@@ -169,19 +169,22 @@ Deno.serve(async (req) => {
       }
 
       // 2. PREPARAR INSERCIÓN DE MENSAJE
-      if (textoFinal || data.mediaUrl || eventName === 'message.incoming' || eventName === 'message.outgoing') {
+      if (textoFinal || data.mediaUrl || data.url || data.urlTempFile || eventName === 'message.incoming' || eventName === 'message.outgoing') {
+
+        const mediaUrlToSave = data.mediaUrl || data.url || data.urlTempFile || null;
+
         const contentToSave = textoFinal
-          || (data.mediaUrl ? 'Archivo multimedia' : '')
+          || (mediaUrlToSave ? (mediaUrlToSave.match(/\.(jpeg|jpg|png|webp)$/i) ? '📷 Imagen' : '📎 Archivo') : '')
           || (eventName === 'message.incoming' || eventName === 'message.outgoing' ? 'Mensaje recibido (formato desconocido)' : null);
 
         if (contentToSave) {
           inserts.push({
             cliente_telefono: cleanPhone,
             contenido: contentToSave,
-            media_url: data.mediaUrl || null,
+            media_url: mediaUrlToSave,
             es_mio: esMio,
             estado: esMio ? 'enviado' : 'received',
-            plataforma: 'instagram' // <--- CAMBIO PRINCIPAL
+            plataforma: 'instagram'
           });
         }
       }
