@@ -76,13 +76,21 @@ serve(async (req) => {
             const pushName = data.pushName || data.name || null;
 
             // Determinar si es mio o del cliente
-            // En estructura nueva: data.key.fromMe (boolean)
-            // En estructura vieja: a veces no venía, o se infería.
             let esMio = false;
-            if (data.key && typeof data.key.fromMe === 'boolean') {
-                esMio = data.key.fromMe;
-            } else if (data.es_mio !== undefined) {
-                esMio = data.es_mio;
+            // Estructura nueva: data.key.fromMe (debe ser boolean true para mensajes del bot/host)
+            if (data.key && typeof data.key.fromMe !== 'undefined') {
+                esMio = Boolean(data.key.fromMe);
+            }
+            // Fallbacks
+            else if (data.es_mio !== undefined) {
+                esMio = Boolean(data.es_mio);
+            }
+            else if (eventName === 'message.outgoing') {
+                // Si el evento es explícitamente outgoing, asumimos que es nuestro
+                esMio = true;
+            }
+            else if (data.fromMe !== undefined) {
+                esMio = Boolean(data.fromMe);
             }
 
             // Si es la estructura nueva, el 'body' suele ser el mensaje. 
@@ -143,11 +151,11 @@ serve(async (req) => {
 
             // 2. PREPARAR INSERCIÓN DE MENSAJE
             // Insertamos si hay contenido o si es un evento que implica mensaje (y no es solo un status update tipo 'online')
-            if (textoFinal || data.mediaUrl || eventName === 'message.incoming') {
+            if (textoFinal || data.mediaUrl || eventName === 'message.incoming' || eventName === 'message.outgoing') {
                 // Si es message.incoming y no extrajimos texto pero hay algo, guardamos un placeholder para no perder el evento
                 const contentToSave = textoFinal
                     || (data.mediaUrl ? 'Archivo multimedia' : '')
-                    || (eventName === 'message.incoming' ? 'Mensaje recibido (formato desconocido)' : null);
+                    || (eventName === 'message.incoming' || eventName === 'message.outgoing' ? 'Mensaje recibido (formato desconocido)' : null);
 
                 if (contentToSave) {
                     inserts.push({
