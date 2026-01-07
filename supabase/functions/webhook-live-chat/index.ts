@@ -69,11 +69,13 @@ serve(async (req) => {
 
             if (esMio) {
                 // Mensaje saliente: buscamos el destinatario
-                // En outgoing, 'to' suele ser el destinatario. key.remoteJid también suele ser el destinatario en este caso.
+                // En outgoing del provider, 'to' falta muchas veces, y el destinatario está en 'from' o en 'remoteJid'
                 rawPhone = data.to
                     || (data.key ? data.key.remoteJid : null)
+                    || (data.respMessage && data.respMessage.key ? data.respMessage.key.remoteJid : null)
                     || data.phone
-                    || data.numero;
+                    || data.numero
+                    || (eventName === 'message.outgoing' ? data.from : null);
             } else {
                 // Mensaje entrante: buscamos el remitente
                 rawPhone = data.from
@@ -96,7 +98,7 @@ serve(async (req) => {
                 continue;
             }
 
-            const contenidoUsuario = data.body || data.content || data.message || data.mensaje;
+            const contenidoUsuario = data.answer || data.body || data.content || data.message || data.mensaje;
             const pushName = data.pushName || data.name || null;
 
             // Si es la estructura nueva, el 'body' suele ser el mensaje. 

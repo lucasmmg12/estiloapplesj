@@ -68,11 +68,13 @@ Deno.serve(async (req) => {
 
       if (esMio) {
         // Mensaje saliente: buscamos el destinatario
-        // En outgoing, 'to' suele ser el destinatario. key.remoteJid también suele ser el destinatario en este caso.
+        // En outgoing del provider, 'to' falta muchas veces, y el destinatario está en 'from' o en 'remoteJid'
         rawPhone = data.to
           || (data.key ? data.key.remoteJid : null)
+          || (data.respMessage && data.respMessage.key ? data.respMessage.key.remoteJid : null)
           || data.phone
-          || data.numero;
+          || data.numero
+          || (eventName === 'message.outgoing' ? data.from : null);
       } else {
         // Mensaje entrante: buscamos el remitente
         rawPhone = data.from
@@ -95,7 +97,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      const contenidoUsuario = data.body || data.content || data.message || data.mensaje;
+      const contenidoUsuario = data.answer || data.body || data.content || data.message || data.mensaje;
       const pushName = data.pushName || data.name || null;
 
       // Si es la estructura nueva, el 'body' suele ser el mensaje. 
@@ -106,6 +108,10 @@ Deno.serve(async (req) => {
         else if (data.message.extendedTextMessage) textoFinal = data.message.extendedTextMessage.text;
         else if (data.message.imageMessage) textoFinal = data.message.imageMessage.caption || '📷 Imagen';
         else if (data.message.videoMessage) textoFinal = data.message.videoMessage.caption || '🎥 Video';
+        else if (data.message.buttonsMessage) textoFinal = data.message.buttonsMessage.contentText || data.message.buttonsMessage.caption || '🔘 Botones';
+        else if (data.message.listMessage) textoFinal = data.message.listMessage.description || data.message.listMessage.title || '📜 Lista';
+        else if (data.message.templateMessage) textoFinal = '📝 Plantilla';
+        else if (data.message.interactiveMessage) textoFinal = '👉 Interactivo';
       }
 
       if (!textoFinal && !eventName) {
