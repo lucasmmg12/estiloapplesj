@@ -101,34 +101,63 @@ function configurarEventListeners() {
     document.getElementById('btnGuardarProducto').addEventListener('click', guardarProducto);
 
     // Imágenes del Producto
-    document.getElementById('productoImagenes').addEventListener('change', (e) => {
+    document.getElementById('productoImagenes').addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-            const formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp'];
-            const maxTamano = 2 * 1024 * 1024; // 2MB
+            const formatosPermitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+            const maxTamano = 5 * 1024 * 1024; // 5MB
 
-            files.forEach(file => {
-                if (!formatosPermitidos.includes(file.type)) {
+            for (let file of files) {
+                // Chequeo de extensión y tipo para HEIC
+                const extension = file.name.split('.').pop().toLowerCase();
+                const esHeic = extension === 'heic' || extension === 'heif' || file.type === 'image/heic' || file.type === 'image/heif';
+
+                if (!formatosPermitidos.includes(file.type) && !esHeic) {
                     mostrarToast(`Formato no permitido para ${file.name}.`, 'error');
-                    return;
+                    continue;
                 }
 
-                if (file.size > maxTamano) {
-                    mostrarToast(`${file.name} es muy pesada. Máximo 2MB.`, 'error');
-                    return;
-                }
+                try {
+                    let fileToProcess = file;
 
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    imagenesTemporales.push({
-                        file: file,
-                        preview: event.target.result
+                    if (esHeic) {
+                        mostrarToast(`Convirtiendo ${file.name} a JPG...`, 'info');
+                        const convertedBlob = await heic2any({
+                            blob: file,
+                            toType: "image/jpeg",
+                            quality: 0.8
+                        });
+
+                        const finalBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                        const newName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+                        fileToProcess = new File([finalBlob], newName, { type: "image/jpeg" });
+                    }
+
+                    if (fileToProcess.size > maxTamano) {
+                        mostrarToast(`${file.name} es muy pesada (>5MB).`, 'error');
+                        continue;
+                    }
+
+                    // Promesa para leer el archivo
+                    await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            imagenesTemporales.push({
+                                file: fileToProcess,
+                                preview: event.target.result
+                            });
+                            renderizarGaleriaPreview();
+                            resolve();
+                        };
+                        reader.readAsDataURL(fileToProcess);
                     });
-                    renderizarGaleriaPreview();
-                };
-                reader.readAsDataURL(file);
-            });
-            // Resetear input para permitir seleccionar los mismos archivos después
+
+                } catch (error) {
+                    console.error('Error al procesar imagen:', error);
+                    mostrarToast(`Error al procesar ${file.name}`, 'error');
+                }
+            }
+            // Resetear input
             e.target.value = '';
         }
     });
