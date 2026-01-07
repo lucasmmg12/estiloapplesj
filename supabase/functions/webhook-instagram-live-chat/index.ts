@@ -16,7 +16,7 @@ serve(async (req) => {
   try {
     const payload = await req.json();
     console.log('--- NUEVO MENSAJE INSTAGRAM RECIBIDO ---');
-    console.log('Payload crudo:', JSON.stringify(payload));
+    // console.log('Payload crudo:', JSON.stringify(payload)); 
 
     // Inicializar Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -29,65 +29,119 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Normalizar datos (Instagram suele venir del bot con la misma estructura que WhatsApp)
-    const messages = Array.isArray(payload) ? payload : [payload];
-    const inserts = [];
+    // Normalizar datos (soportar array o objeto)
+    let rawItems = [];
+    if (Array.isArray(payload)) {
+      rawItems = payload;
+    } else {
+      rawItems = [payload];
+    }
 
-    for (const msg of messages) {
-      // Extraer campos con máxima compatibilidad
-      const idUsuario = msg.from || msg.phone || msg.id || msg.user_id || msg.numero || msg.number;
-      const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje || msg.texto;
-      const respuestaIA = msg.respuesta || msg.aiResponse || msg.response || msg.answer || msg.reply;
-      const media = msg.media || msg.mediaUrl || null;
+    const inserts = [];
+    let contactsUpdated = 0;
+
+    for (const item of rawItems) {
+      // DETECTAR ESTRUCTURA
+      // Estructura nueva (BuilderBot/Provider): { eventName: 'message.incoming', data: { ... } }
+      // Estructura vieja custom: { from: '...', body: '...' }
+
+      let data = item;
+      let eventName = null;
+
+      if (item.eventName && item.data) {
+        // Es la nueva estructura
+        eventName = item.eventName;
+        data = item.data;
+      }
+
+      // Extraer campos clave
+      const idUsuario = data.from || data.phone || data.id || data.user_id || data.numero || data.number || (data.key ? data.key.remoteJid : null);
 
       if (!idUsuario) {
-        console.warn('⚠️ Mensaje omitido: No se encontró identificador (from/phone/id/numero) en el payload.', JSON.stringify(msg));
+        if (eventName !== 'status.online') {
+          console.warn('⚠️ Mensaje omitido: No se encontró identificador (from/phone/id) en el payload.', JSON.stringify(item));
+        }
         continue;
+      }
+
+      const contenidoUsuario = data.body || data.content || data.message || data.mensaje || data.texto;
+      const pushName = data.pushName || data.name || data.username || null; // Instagram suele tener username
+
+      // Determinar si es mio o del cliente
+      let esMio = false;
+      if (data.key && typeof data.key.fromMe === 'boolean') {
+        esMio = data.key.fromMe;
+      } else if (data.es_mio !== undefined) {
+        esMio = data.es_mio;
+      }
+
+      // Si es la estructura nueva, el 'body' suele ser el mensaje. 
+      let textoFinal = contenidoUsuario;
+      if (!textoFinal && data.message) {
+        if (data.message.conversation) textoFinal = data.message.conversation;
+        else if (data.message.extendedTextMessage) textoFinal = data.message.extendedTextMessage.text;
+        else if (data.message.imageMessage) textoFinal = data.message.imageMessage.caption || '📷 Imagen';
+        else if (data.message.videoMessage) textoFinal = data.message.videoMessage.caption || '🎥 Video';
       }
 
       // 1. Asegurarse de que el contacto existe y asignar vendedor si es nuevo (INSTAGRAM)
       const { data: contact } = await supabase
         .from('contactos')
-        .select('vendedor_asignado')
+        .select('*')
         .eq('telefono', idUsuario.toString())
         .single();
 
+      const updates: any = {};
+      let shouldUpdate = false;
+
       if (!contact) {
-        const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-        await supabase.from('contactos').insert({
-          telefono: idUsuario.toString(),
-          plataforma: 'instagram',
-          vendedor_asignado: vendedorAleatorio
-        });
-      } else if (!contact.vendedor_asignado) {
-        const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-        await supabase.from('contactos')
-          .update({ vendedor_asignado: vendedorAleatorio })
-          .eq('telefono', idUsuario.toString());
+        updates.telefono = idUsuario.toString();
+        updates.plataforma = 'instagram';
+        updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+        if (pushName) updates.nombre = pushName;
+
+        await supabase.from('contactos').insert(updates);
+        contactsUpdated++;
+      } else {
+        // Actualizar existente si tenemos datos nuevos (ej: pushName)
+        if (pushName && (!contact.nombre || contact.nombre === idUsuario.toString())) {
+          updates.nombre = pushName;
+          shouldUpdate = true;
+        }
+
+        if (!contact.vendedor_asignado) {
+          updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+          shouldUpdate = true;
+        }
+
+        // Si el contacto ya existía pero no teniamos la plataforma registrada (ej. migración), la actualizamos
+        if (!contact.plataforma || contact.plataforma !== 'instagram') {
+          updates.plataforma = 'instagram';
+          shouldUpdate = true;
+        }
+
+        if (shouldUpdate) {
+          await supabase.from('contactos').update(updates).eq('telefono', idUsuario.toString());
+          contactsUpdated++;
+        }
       }
 
-      // 2. Guardar mensaje del usuario
-      if (contenidoUsuario || media) {
-        inserts.push({
-          cliente_telefono: idUsuario.toString(),
-          contenido: contenidoUsuario || (media ? 'Archivo multimedia' : ''),
-          media_url: media,
-          es_mio: false,
-          estado: 'received',
-          plataforma: 'instagram' // Marcar como Instagram
-        });
-      }
+      // 2. Insertar mensaje
+      if (textoFinal || data.mediaUrl || eventName === 'message.incoming') {
+        const contentToSave = textoFinal
+          || (data.mediaUrl ? 'Archivo multimedia' : '')
+          || (eventName === 'message.incoming' ? 'Mensaje recibido (formato desconocido)' : null);
 
-      // 3. Guardar respuesta de la IA
-      if (respuestaIA) {
-        inserts.push({
-          cliente_telefono: idUsuario.toString(),
-          contenido: respuestaIA,
-          media_url: null,
-          es_mio: true,
-          estado: 'sent',
-          plataforma: 'instagram' // Marcar como Instagram
-        });
+        if (contentToSave) {
+          inserts.push({
+            cliente_telefono: idUsuario.toString(),
+            contenido: contentToSave,
+            media_url: data.mediaUrl || null,
+            es_mio: esMio,
+            estado: esMio ? 'enviado' : 'received',
+            plataforma: 'instagram'
+          });
+        }
       }
     }
 
@@ -100,7 +154,7 @@ serve(async (req) => {
         console.error('Error insertando mensajes de Instagram en Supabase:', error);
         throw error;
       }
-      console.log(`✅ ${inserts.length} mensajes de Instagram guardados correctamente.`);
+      console.log(`✅ ${inserts.length} mensajes de Instagram guardados. ${contactsUpdated} contactos actualizados.`);
     }
 
     return new Response(
