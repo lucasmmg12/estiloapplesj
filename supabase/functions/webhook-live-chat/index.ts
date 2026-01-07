@@ -16,7 +16,7 @@ serve(async (req) => {
     try {
         const payload = await req.json();
         console.log('--- NUEVO MENSAJE RECIBIDO ---');
-        console.log('Payload crudo:', JSON.stringify(payload));
+        // console.log('Payload crudo:', JSON.stringify(payload)); // Comentado para no saturar logs si es muy grande
 
         // Inicializar Supabase
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -29,66 +29,136 @@ serve(async (req) => {
 
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // Normalizar datos (soportar array o objeto único)
-        const messages = Array.isArray(payload) ? payload : [payload];
+        // Normalizar entrada: convertir todo a un array de "items procesables"
+        let rawItems = [];
+        if (Array.isArray(payload)) {
+            rawItems = payload;
+        } else {
+            rawItems = [payload];
+        }
 
         const inserts = [];
+        let contactsUpdated = 0;
 
-        for (const msg of messages) {
-            // Extraer campos (soporta múltiples variantes de Builderbot/Webhooks)
-            const telefono = msg.from || msg.phone || msg.telefono || msg.numero;
-            const contenidoUsuario = msg.body || msg.content || msg.message || msg.mensaje;
-            const respuestaIA = msg.respuesta || msg.aiResponse || msg.response || msg.answer;
-            const media = msg.media || msg.mediaUrl || null;
+        for (const item of rawItems) {
+            // DETECTAR ESTRUCTURA
+            // Estructura nueva (BuilderBot/Provider): { eventName: 'message.incoming', data: { ... } }
+            // Estructura vieja custom: { from: '...', body: '...' }
 
-            if (!telefono) {
-                console.warn('Mensaje omitido: No se encontró teléfono en el payload.', msg);
+            let data = item;
+            let eventName = null;
+
+            if (item.eventName && item.data) {
+                // Es la nueva estructura
+                eventName = item.eventName;
+                data = item.data;
+            }
+
+            // Si es un evento que no nos interesa (ej: estado de bot), lo saltamos
+            // Pero por ahora asumimos que todo lo que llega es mensaje o actualizacion
+
+            // Extraer campos clave
+            // En estructura nueva: data.from o data.key.remoteJid
+            const telefono = data.from || data.phone || data.telefono || data.numero || (data.key ? data.key.remoteJid : null);
+
+            // Limpieza del teléfono (quitar @s.whatsapp.net si viene)
+            const cleanPhone = telefono ? telefono.replace('@s.whatsapp.net', '') : null;
+
+            if (!cleanPhone) {
+                // Si no hay teléfono, no podemos hacer nada util
+                if (eventName !== 'status.online') { // Ignorar logs de keepalive
+                    console.warn('Mensaje omitido: No se encontró teléfono en el payload.', JSON.stringify(item));
+                }
                 continue;
             }
 
-            // 1. Asegurarse de que el contacto existe y asignar vendedor si es nuevo
+            const contenidoUsuario = data.body || data.content || data.message || data.mensaje;
+            const pushName = data.pushName || data.name || null;
+
+            // Determinar si es mio o del cliente
+            // En estructura nueva: data.key.fromMe (boolean)
+            // En estructura vieja: a veces no venía, o se infería.
+            let esMio = false;
+            if (data.key && typeof data.key.fromMe === 'boolean') {
+                esMio = data.key.fromMe;
+            } else if (data.es_mio !== undefined) {
+                esMio = data.es_mio;
+            }
+
+            // Si es la estructura nueva, el 'body' suele ser el mensaje. 
+            // A veces viene en message.extendedTextMessage.text
+            let textoFinal = contenidoUsuario;
+            if (!textoFinal && data.message) {
+                if (data.message.conversation) textoFinal = data.message.conversation;
+                else if (data.message.extendedTextMessage) textoFinal = data.message.extendedTextMessage.text;
+                else if (data.message.imageMessage) textoFinal = data.message.imageMessage.caption || '📷 Imagen';
+                else if (data.message.videoMessage) textoFinal = data.message.videoMessage.caption || '🎥 Video';
+            }
+
+            // Si no hay texto y no es multimedia explícito, poner algo genérico o saltar?
+            // A veces llegan eventos de estado sin body.
+            if (!textoFinal && !eventName) {
+                // Si no hay body y no es un evento conocido, logueamos y seguimos
+                // console.log('Item sin contenido de texto claro:', item);
+            }
+
+            // 1. ACTUALIZAR O CREAR CONTACTO
+            // Intentamos buscarlo primero
             const { data: contact } = await supabase
                 .from('contactos')
-                .select('vendedor_asignado')
-                .eq('telefono', telefono)
+                .select('*')
+                .eq('telefono', cleanPhone)
                 .single();
 
+            const updates: any = {};
+            let shouldUpdate = false;
+
             if (!contact) {
-                const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-                await supabase.from('contactos').insert({
-                    telefono: telefono,
-                    plataforma: 'whatsapp',
-                    vendedor_asignado: vendedorAleatorio
-                });
-            } else if (!contact.vendedor_asignado) {
-                const vendedorAleatorio = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-                await supabase.from('contactos')
-                    .update({ vendedor_asignado: vendedorAleatorio })
-                    .eq('telefono', telefono);
+                // Crear nuevo
+                updates.telefono = cleanPhone;
+                updates.plataforma = 'whatsapp';
+                updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+                if (pushName) updates.nombre = pushName;
+
+                await supabase.from('contactos').insert(updates);
+                contactsUpdated++;
+            } else {
+                // Actualizar existente si tenemos datos nuevos (ej: pushName)
+                if (pushName && (!contact.nombre || contact.nombre === cleanPhone)) {
+                    updates.nombre = pushName;
+                    shouldUpdate = true;
+                }
+
+                // Si no tiene vendedor, asignar uno
+                if (!contact.vendedor_asignado) {
+                    updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
+                    shouldUpdate = true;
+                }
+
+                if (shouldUpdate) {
+                    await supabase.from('contactos').update(updates).eq('telefono', cleanPhone);
+                    contactsUpdated++;
+                }
             }
 
-            // 2. Guardar mensaje del usuario (Recibido del cliente)
-            if (contenidoUsuario || media) {
-                inserts.push({
-                    cliente_telefono: telefono,
-                    contenido: contenidoUsuario || (media ? 'Archivo multimedia' : ''),
-                    media_url: media,
-                    es_mio: false, // Mensaje del cliente
-                    estado: 'received',
-                    plataforma: 'whatsapp'
-                });
-            }
+            // 2. PREPARAR INSERCIÓN DE MENSAJE
+            // Insertamos si hay contenido o si es un evento que implica mensaje (y no es solo un status update tipo 'online')
+            if (textoFinal || data.mediaUrl || eventName === 'message.incoming') {
+                // Si es message.incoming y no extrajimos texto pero hay algo, guardamos un placeholder para no perder el evento
+                const contentToSave = textoFinal
+                    || (data.mediaUrl ? 'Archivo multimedia' : '')
+                    || (eventName === 'message.incoming' ? 'Mensaje recibido (formato desconocido)' : null);
 
-            // 3. Guardar respuesta del asistente (Enviado por la IA/Bot)
-            if (respuestaIA) {
-                inserts.push({
-                    cliente_telefono: telefono,
-                    contenido: respuestaIA,
-                    media_url: null,
-                    es_mio: true, // Mensaje nuestro (Bot/IA)
-                    estado: 'sent',
-                    plataforma: 'whatsapp'
-                });
+                if (contentToSave) {
+                    inserts.push({
+                        cliente_telefono: cleanPhone,
+                        contenido: contentToSave,
+                        media_url: data.mediaUrl || null, // TODO: Procesar media si viene en crudo del provider
+                        es_mio: esMio,
+                        estado: esMio ? 'enviado' : 'received',
+                        plataforma: 'whatsapp'
+                    });
+                }
             }
         }
 
@@ -101,7 +171,7 @@ serve(async (req) => {
                 console.error('Error insertando mensajes en Supabase:', error);
                 throw error;
             }
-            console.log(`✅ ${inserts.length} mensajes guardados correctamente.`);
+            console.log(`✅ ${inserts.length} mensajes guardados. ${contactsUpdated} contactos actualizados.`);
         } else {
             console.log('ℹ️ No se encontraron mensajes válidos para insertar.');
         }
@@ -125,4 +195,3 @@ serve(async (req) => {
         );
     }
 });
-
