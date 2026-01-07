@@ -107,6 +107,10 @@ serve(async (req) => {
                 else if (data.message.extendedTextMessage) textoFinal = data.message.extendedTextMessage.text;
                 else if (data.message.imageMessage) textoFinal = data.message.imageMessage.caption || '📷 Imagen';
                 else if (data.message.videoMessage) textoFinal = data.message.videoMessage.caption || '🎥 Video';
+                else if (data.message.buttonsMessage) textoFinal = data.message.buttonsMessage.contentText || data.message.buttonsMessage.caption || '🔘 Botones';
+                else if (data.message.listMessage) textoFinal = data.message.listMessage.description || data.message.listMessage.title || '📜 Lista';
+                else if (data.message.templateMessage) textoFinal = '📝 Plantilla';
+                else if (data.message.interactiveMessage) textoFinal = '👉 Interactivo';
             }
 
             // Si no hay texto y no es multimedia explícito, poner algo genérico o saltar?
