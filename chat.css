@@ -374,8 +374,49 @@ body {
 }
 
 .header-seller-quick-actions {
+    position: relative;
+    /* Context for hint */
     display: flex;
     gap: 8px;
+    margin-right: 10px;
+}
+
+/* Handwritten Hint Style */
+.vendor-selection-hint {
+    position: absolute;
+    top: 42px;
+    /* Below the buttons */
+    right: -10px;
+    width: 140px;
+    font-family: 'Comic Sans MS', 'Marker Felt', 'Brush Script MT', cursive;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+    transform: rotate(-3deg);
+    opacity: 0;
+    /* Hidden by default, JS will show it if needed */
+    transition: opacity 0.5s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.vendor-selection-hint.visible {
+    opacity: 1;
+}
+
+/* Arrow */
+.vendor-selection-hint::before {
+    content: '⤻';
+    /* Curled arrow */
+    display: block;
+    font-size: 28px;
+    position: absolute;
+    top: -22px;
+    left: 45%;
+    transform: translateX(-50%) rotate(-10deg);
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Segoe UI Symbol', sans-serif;
 }
 
 .header-seller-btn {

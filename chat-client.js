@@ -243,6 +243,7 @@ window.openChat = async (phone) => {
                     onclick="window.confirmAndAssignSeller('${phone}', 'Cristofer')">
                 C
             </button>
+            <div id="vendorHint" class="vendor-selection-hint ${!contact || !contact.seller ? 'visible' : ''}">Seleccionar<br>Vendedor</div>
         </div>
         <button class="icon-btn" title="Analizar Historial (IA)" onclick="window.analizarHistorial('${phone}')">
              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
@@ -701,7 +702,13 @@ function setupEventListeners() {
             // UI Update
             renderContacts();
             if (activeChatPhone === phone) {
+                // If we reload openChat, it might reshow hint if logic isn't perfect, but seller is now set so it won't.
+                // However, openChat re-renders the whole DOM.
+                // Let's just reload openChat which now has the updated 'contact' with seller set.
                 window.openChat(phone);
+
+                // (Alternative: manually update buttons and hide hint without reload)
+                // But reloading is safer to ensure state consistency.
             }
 
             // Save
