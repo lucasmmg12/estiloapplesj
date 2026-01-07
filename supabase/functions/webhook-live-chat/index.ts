@@ -61,8 +61,8 @@ serve(async (req) => {
             // En estructura nueva: data.from o data.key.remoteJid
             const telefono = data.from || data.phone || data.telefono || data.numero || (data.key ? data.key.remoteJid : null);
 
-            // Limpieza del teléfono (quitar @s.whatsapp.net si viene)
-            const cleanPhone = telefono ? telefono.replace('@s.whatsapp.net', '') : null;
+            // Limpieza del teléfono (quitar @s.whatsapp.net y @c.us)
+            const cleanPhone = telefono ? telefono.replace('@s.whatsapp.net', '').replace('@c.us', '') : null;
 
             if (!cleanPhone) {
                 // Si no hay teléfono, no podemos hacer nada util
@@ -86,7 +86,6 @@ serve(async (req) => {
                 esMio = Boolean(data.es_mio);
             }
             else if (eventName === 'message.outgoing') {
-                // Si el evento es explícitamente outgoing, asumimos que es nuestro
                 esMio = true;
             }
             else if (data.fromMe !== undefined) {
@@ -126,13 +125,18 @@ serve(async (req) => {
                 updates.telefono = cleanPhone;
                 updates.plataforma = 'whatsapp';
                 updates.vendedor_asignado = Math.random() < 0.5 ? 'Nahuel' : 'Cristofer';
-                if (pushName) updates.nombre = pushName;
+
+                // Solo asignar nombre si NO es mío (evitar poner ESTILO APPLE a todos)
+                if (pushName && !esMio) {
+                    updates.nombre = pushName;
+                }
 
                 await supabase.from('contactos').insert(updates);
                 contactsUpdated++;
             } else {
                 // Actualizar existente si tenemos datos nuevos (ej: pushName)
-                if (pushName && (!contact.nombre || contact.nombre === cleanPhone)) {
+                // CLAVE: Solo actualizar nombre si NO es mensaje mío, para no pisar el nombre real con "ESTILO APPLE"
+                if (pushName && !esMio && (!contact.nombre || contact.nombre === cleanPhone || contact.nombre !== pushName)) {
                     updates.nombre = pushName;
                     shouldUpdate = true;
                 }
