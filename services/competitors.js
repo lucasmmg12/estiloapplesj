@@ -10,62 +10,62 @@ const MIS_COORDENADAS = [-31.538537, -68.558371]; // Estilo Apple SJ - Ubicació
 const COMPETITORS = [
     {
         id: 1,
-        name: "IP SAN JUAN",
-        address: "Jujuy 510 Sur, San Juan",
-        coords: [-31.5372, -68.5295], // Jujuy 510 Sur
-        adsActive: true,
-        strength: "25k seguidores IG, financiación y canje",
-        weakness: "Precios premium",
+        name: "Club del iPhone",
+        address: "Rivadavia, San Juan Capital",
+        coords: [-31.5380, -68.5265], // Peatonal Rivadavia
+        adsActive: true, // ✅ VERIFICADO: Competidor directo con ADS activos
+        strength: "Ubicación prime, múltiples sucursales",
+        weakness: "Atención variable según sucursal",
         score: 9.2
     },
     {
         id: 2,
-        name: "Movitek",
-        address: "Av. Rioja Nte. 145, San Juan",
-        coords: [-31.5345, -68.5320], // Av. Rioja Norte
-        adsActive: true,
-        strength: "Sorteos interactivos, stock iPhone 11/Ultra",
-        weakness: "Menor presencia digital que líderes",
-        score: 7.8
+        name: "Digital Station",
+        address: "San Juan Capital",
+        coords: [-31.5365, -68.5340], // Zona comercial
+        adsActive: true, // ✅ VERIFICADO: Competidor directo con ADS activos
+        strength: "Accesorios variados, servicio técnico",
+        weakness: "Menor especialización en Apple",
+        score: 8.8
     },
     {
         id: 3,
-        name: "iPhone San Juan",
-        address: "Entre Ríos Nte. 221, San Juan",
-        coords: [-31.5355, -68.5285], // Entre Ríos Norte
-        adsActive: true,
-        strength: "33k seguidores, equipos nuevos y usados",
-        weakness: "Competencia en precios de usados",
-        score: 8.9
+        name: "IP SAN JUAN",
+        address: "Jujuy 510 Sur, San Juan",
+        coords: [-31.5372, -68.5295], // Jujuy 510 Sur
+        adsActive: false, // ❌ Sin anuncios activos
+        strength: "25k seguidores IG, financiación y canje",
+        weakness: "Sin inversión en pauta digital",
+        score: 8.5
     },
     {
         id: 4,
-        name: "Apple Repair San Juan",
-        address: "Av. Leandro N. Alem Sur 141",
-        coords: [-31.5410, -68.5310], // Alem Sur
-        adsActive: true,
-        strength: "Servicio express, diagnóstico gratis",
-        weakness: "Repuestos no originales",
+        name: "iPhone San Juan",
+        address: "Entre Ríos Nte. 221, San Juan",
+        coords: [-31.5355, -68.5285], // Entre Ríos Norte
+        adsActive: false, // ❌ Sin anuncios activos
+        strength: "33k seguidores, equipos nuevos y usados",
+        weakness: "Dependencia de tráfico orgánico",
         score: 8.1
     },
     {
         id: 5,
-        name: "Club del iPhone",
-        address: "Rivadavia, San Juan Capital",
-        coords: [-31.5380, -68.5265], // Peatonal Rivadavia
-        adsActive: true,
-        strength: "Ubicación prime, múltiples sucursales",
-        weakness: "Atención variable según sucursal",
-        score: 8.5
+        name: "Apple Repair San Juan",
+        address: "Av. Leandro N. Alem Sur 141",
+        coords: [-31.5410, -68.5310], // Alem Sur
+        adsActive: false, // ❌ Sin anuncios activos
+        strength: "Servicio express, diagnóstico gratis",
+        weakness: "Repuestos no originales",
+        score: 7.8
     },
     {
         id: 6,
-        name: "Digital Station",
-        address: "San Juan Capital",
-        coords: [-31.5365, -68.5340], // Zona comercial
-        adsActive: true,
-        strength: "Accesorios variados, servicio técnico",
-        weakness: "Menor especialización en Apple",
+        name: "Movitek",
+        address: "Av. Rioja Nte. 145, San Juan",
+        coords: [-31.5345, -68.5320], // Av. Rioja Norte
+        adsActive: false, // ❌ Sin anuncios activos
+        strength: "Sorteos interactivos, stock variado",
+        weakness: "Baja inversión en marketing digital",
         score: 7.5
     }
 ];
