@@ -1470,3 +1470,68 @@ body::before {
     font-size: 0.8rem;
     color: var(--gray-500);
 }
+
+/* ============================================
+   ESTILOS ERP Y FINANZAS
+   ============================================ */
+
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, rgba(30, 30, 30, 0.6) 0%, rgba(20, 20, 20, 0.8) 100%);
+}
+
+.kpi-value {
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin: 0.5rem 0;
+}
+
+.radio-chip {
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.radio-chip:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: var(--primary) !important;
+}
+
+.radio-chip input:checked+span {
+    color: #fff;
+    font-weight: bold;
+}
+
+.radio-chip:has(input:checked) {
+    background: rgba(128, 0, 32, 0.3) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 10px rgba(128, 0, 32, 0.2);
+}
+
+.input-lg {
+    height: 3.5rem;
+    font-size: 1.5rem !important;
+    font-weight: bold;
+    color: #fff !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.select-lg {
+    height: 3rem;
+    font-size: 1.1rem !important;
+}
+
+.erp-form label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--gray-400);
+}
+
+.rotating {
+    animation: spin 1s linear infinite;
+}

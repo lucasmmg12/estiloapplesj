@@ -409,4 +409,75 @@ export function suscribirseAClientes(callback) {
         .subscribe();
 }
 
+// ============================================
+// Funciones de ERP & FINANZAS
+// ============================================
+
+export async function obtenerUltimasTransacciones(limite = 50) {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+            *,
+            transaction_categories (name, type),
+            payment_methods (name)
+        `)
+        .order('date', { ascending: false })
+        .limit(limite);
+
+    if (error) throw error;
+    return data;
+}
+
+export async function crearTransaccion(transaccion) {
+    // 1. Obtener cotización si no viene definida (o usar la del dia)
+    if (!transaccion.exchange_rate) {
+        const cotizacion = await obtenerCotizacionDolar();
+        transaccion.exchange_rate = cotizacion.valor;
+    }
+
+    const { data, error } = await supabase
+        .from('transactions')
+        .insert([transaccion])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
+    // Esta función idealmente usaría una RPC en Supabase, pero por ahora sumamos en cliente
+    // Traemos todas las transacciones del rango (cuidado con volumen alto)
+    const { data, error } = await supabase
+        .from('transactions')
+        .select('amount, type, currency, exchange_rate, category_id, transaction_categories(type)')
+        .gte('date', fechaInicio)
+        .lte('date', fechaFin);
+
+    if (error) throw error;
+    return data;
+}
+
+export async function registrarMovimientoInventario(movimiento) {
+    const { data, error } = await supabase
+        .from('inventory_movements')
+        .insert([movimiento])
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function obtenerCategoriasTransaccion() {
+    // Cachear esto sería buena idea
+    const { data, error } = await supabase
+        .from('transaction_categories')
+        .select('*')
+        .order('name');
+
+    if (error) throw error;
+    return data;
+}
+
 export default supabase;

@@ -47,14 +47,15 @@
             <!-- Filtros y Tabs -->
             <div class="controls-section">
                 <div class="tabs">
-                    <button class="tab active" data-tab="conversaciones">
+                    <!-- TABS CRM OCULTAS -->
+                    <button class="tab" data-tab="conversaciones" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
                         Conversaciones
                     </button>
-                    <button class="tab" data-tab="clientes">
+                    <button class="tab" data-tab="clientes" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -64,7 +65,7 @@
                         </svg>
                         Clientes
                     </button>
-                    <button class="tab" data-tab="vendedores">
+                    <button class="tab" data-tab="vendedores" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
@@ -74,14 +75,14 @@
                         </svg>
                         Vendedores
                     </button>
-                    <button class="tab" data-tab="embudo">
+                    <button class="tab" data-tab="embudo" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
                         </svg>
                         Embudo de Ventas
                     </button>
-                    <button class="tab" data-tab="estadisticas">
+                    <button class="tab" data-tab="estadisticas" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M18 20V10"></path>
@@ -90,7 +91,7 @@
                         </svg>
                         Estadísticas
                     </button>
-                    <button class="tab" data-tab="mensajes">
+                    <button class="tab" data-tab="mensajes" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
@@ -98,7 +99,7 @@
                         </svg>
                         Mensajes Automáticos
                     </button>
-                    <button class="tab" data-tab="programados">
+                    <button class="tab" data-tab="programados" style="display: none;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -108,6 +109,19 @@
                         </svg>
                         Programados
                     </button>
+
+                    <!-- NUEVA TAB ERP -->
+                    <button class="tab active" data-tab="erp">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        ERP & Finanzas
+                    </button>
+
                     <button class="tab" data-tab="catalogo">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -115,7 +129,7 @@
                             <line x1="8" y1="21" x2="16" y2="21"></line>
                             <line x1="12" y1="17" x2="12" y2="21"></line>
                         </svg>
-                        Catálogo
+                        Inventario
                     </button>
                     <button class="tab" id="btnLiveChat" onclick="window.location.href='chat.html'">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -150,8 +164,256 @@
                 </div>
             </div>
 
+            <!-- Tab: ERP & FINANZAS -->
+            <div class="tab-content active" id="tabErp">
+                <!-- Dashboard de Resumen (KPIs) -->
+                <div class="kpi-grid"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="glass-card kpi-card">
+                        <h3 class="kpi-title" style="font-size: 0.9rem; color: var(--gray-400);">Caja Total (Hoy)</h3>
+                        <p class="kpi-value" id="kpiCajaTotal"
+                            style="font-size: 1.8rem; font-weight: 800; color: var(--primary);">$0</p>
+                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Financiero Real</span>
+                    </div>
+                    <div class="glass-card kpi-card">
+                        <h3 class="kpi-title" style="font-size: 0.9rem; color: var(--gray-400);">Ventas Hoy</h3>
+                        <p class="kpi-value" id="kpiVentasHoy"
+                            style="font-size: 1.8rem; font-weight: 800; color: #00ff88;">$0</p>
+                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Equipos + Acc.</span>
+                    </div>
+                    <div class="glass-card kpi-card">
+                        <h3 class="kpi-title" style="font-size: 0.9rem; color: var(--gray-400);">Gastos Hoy</h3>
+                        <p class="kpi-value" id="kpiGastosHoy"
+                            style="font-size: 1.8rem; font-weight: 800; color: #ff4d4d;">$0</p>
+                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Salidas</span>
+                    </div>
+                    <div class="glass-card kpi-card">
+                        <h3 class="kpi-title" style="font-size: 0.9rem; color: var(--gray-400);">Rentabilidad Est.</h3>
+                        <p class="kpi-value" id="kpiRentabilidad"
+                            style="font-size: 1.8rem; font-weight: 800; color: var(--warning);">$0</p>
+                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Económico (CMV)</span>
+                    </div>
+                </div>
+
+                <div class="erp-main-layout"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 3rem;">
+
+                    <!-- COLUMNA IZQUIERDA: FORMULARIOS DE INGRESO -->
+                    <div class="left-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                        <!-- Panel de Ventas (Ingresos) -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Registrar Ingreso / Venta</h2>
+                                <span class="badge"
+                                    style="background: rgba(0,255,136,0.1); color: #00ff88;">Entrada</span>
+                            </div>
+                            <form id="formIngreso" class="erp-form">
+                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Categoría *</label>
+                                        <div class="radio-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                            <label class="radio-chip"
+                                                style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                <input type="radio" name="ingresoCategoria" value="Venta de Equipos"
+                                                    required>
+                                                <span>📱 Equipos</span>
+                                            </label>
+                                            <label class="radio-chip"
+                                                style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                <input type="radio" name="ingresoCategoria" value="Venta de Accesorios">
+                                                <span>🎧 Accesorios</span>
+                                            </label>
+                                            <label class="radio-chip"
+                                                style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                <input type="radio" name="ingresoCategoria" value="Servicio Tecnico">
+                                                <span>🔧 Servicio</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Moneda</label>
+                                        <div class="radio-group" style="display: flex; gap: 1rem;">
+                                            <label class="radio-input">
+                                                <input type="radio" name="ingresoMoneda" value="USD" checked> USD
+                                            </label>
+                                            <label class="radio-input">
+                                                <input type="radio" name="ingresoMoneda" value="ARS"> ARS
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1.5;">
+                                        <label>Monto</label>
+                                        <input type="number" id="ingresoMonto" step="0.01" class="input-lg"
+                                            placeholder="0.00" required style="font-size: 1.2rem; padding: 0.5rem;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group" id="selectorEquipoContainer"
+                                    style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                    <label style="color: #00ff88;">Seleccionar Equipo del Stock</label>
+                                    <select id="ingresoProductoId" class="select-lg"
+                                        style="width: 100%; padding: 0.5rem;">
+                                        <option value="">Buscar modelo...</option>
+                                        <!-- Se llena con JS -->
+                                    </select>
+                                    <small style="color: var(--gray-400);">Se descontará 1 unidad del
+                                        inventario.</small>
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Medio de Pago</label>
+                                        <select id="ingresoMetodo" class="select-std">
+                                            <option value="Efectivo">Efectivo</option>
+                                            <option value="Transferencia">Transferencia</option>
+                                            <option value="USDT">USDT</option>
+                                            <option value="MercadoPago">MercadoPago</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Fecha</label>
+                                        <input type="date" id="ingresoFecha" class="input-std" required>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Registrar Venta
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Panel de Gastos (Egresos) -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title" style="color: #ff4d4d;">Registrar Gasto</h2>
+                                <span class="badge"
+                                    style="background: rgba(255,77,77,0.1); color: #ff4d4d;">Salida</span>
+                            </div>
+                            <form id="formGasto" class="erp-form">
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label>Categoría de Gasto *</label>
+                                    <select id="gastoCategoria" class="select-std" required>
+                                        <option value="">Seleccionar...</option>
+                                        <option value="Proveedores">Proveedores</option>
+                                        <option value="Comisiones">Comisiones</option>
+                                        <option value="Envios">Envíos</option>
+                                        <option value="Alquiler">Alquiler</option>
+                                        <option value="Servicios">Servicios (Luz, Internet)</option>
+                                        <option value="Herramientas">Herramientas</option>
+                                        <option value="Empleados local">Empleados local</option>
+                                        <option value="Pago Prestamos">Pago Préstamos</option>
+                                        <option value="Contador / Abogado">Contador / Abogado</option>
+                                        <option value="Mantenimiento">Mantenimiento</option>
+                                        <option value="Marketing">Marketing / Publicidad</option>
+                                        <option value="Impuestos">Impuestos</option>
+                                        <option value="Limpieza">Limpieza</option>
+                                        <option value="Otros">Otros</option>
+                                        <option value="Distribucion Ganancias Socios">Distribución Socios</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Moneda</label>
+                                        <div class="radio-group" style="display: flex; gap: 1rem;">
+                                            <label class="radio-input">
+                                                <input type="radio" name="gastoMoneda" value="USD" checked> USD
+                                            </label>
+                                            <label class="radio-input">
+                                                <input type="radio" name="gastoMoneda" value="ARS"> ARS
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" style="flex: 1.5;">
+                                        <label>Monto</label>
+                                        <input type="number" id="gastoMonto" step="0.01" class="input-lg"
+                                            placeholder="0.00" required style="font-size: 1.2rem; padding: 0.5rem;">
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label>Comentario (Opcional)</label>
+                                    <input type="text" id="gastoComentario" class="input-std"
+                                        placeholder="Detalle del gasto...">
+                                </div>
+
+                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                    <div class="form-group" style="flex: 1;">
+                                        <label>Fecha</label>
+                                        <input type="date" id="gastoFecha" class="input-std" required>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-secondary"
+                                    style="width: 100%; border-color: #ff4d4d; color: #ff4d4d; justify-content: center;">
+                                    Registrar Gasto
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA DERECHA: TABLAS Y GRAFICOS -->
+                    <div class="right-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                        <!-- Ultimos Movimientos -->
+                        <div class="glass-card" style="flex: 1; min-height: 400px;">
+                            <div class="card-header">
+                                <h2 class="card-title">Últimos Movimientos</h2>
+                                <button class="btn-refresh-sm" id="btnRefreshErp">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                        </path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Tipo</th>
+                                            <th>Categoría</th>
+                                            <th>Monto</th>
+                                            <th>Detalle</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaMovimientos">
+                                        <!-- JS Fill -->
+                                        <tr>
+                                            <td colspan="5" style="text-align:center;">Cargando...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico Financiero -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Análisis Financiero Mes Actual</h2>
+                            </div>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartFinanzas"></canvas>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
             <!-- Tab: Conversaciones -->
-            <div class="tab-content active" id="tabConversaciones">
+            <div class="tab-content" id="tabConversaciones">
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="card-title">Historial de Conversaciones</h2>

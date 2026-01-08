@@ -5,6 +5,7 @@
 
 import * as supabaseService from './services/supabase-client.js';
 import * as builderbotAPI from './services/builderbot-api.js';
+import * as erpService from './services/admin-finance.js';
 
 // ============================================
 // ESTADO GLOBAL
@@ -40,6 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Cargar datos iniciales
     await cargarDatos();
+
+    // Inicializar ERP
+    await erpService.initErp();
 
     // Configurar suscripciones en tiempo real
     configurarSuscripciones();
