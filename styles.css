@@ -2107,3 +2107,104 @@ body::before {
         width: 100%;
     }
 }
+/* ============================================
+   FIX: TEXT COLOR OVERRIDES (Black to Pastel)
+   ============================================ */
+
+/* Forzar color pastel en elementos de texto principales */
+body {
+    color: var(--accent-light);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    color: var(--accent-light) !important;
+}
+
+label,
+.form-label,
+.col-form-label {
+    color: var(--accent-light) !important;
+    font-weight: 500;
+}
+
+/* Tarjetas y Estadísticas */
+.card-title,
+.card-subtitle,
+.card-text,
+.stat-value,
+.stat-label,
+.kpi-title,
+.kpi-value,
+.kpi-label {
+    color: var(--accent-light) !important;
+}
+
+/* Tablas */
+th,
+td,
+.table th,
+.table td,
+.data-table th,
+.data-table td {
+    color: var(--accent-light) !important;
+}
+
+/* Formularios e Inputs */
+input,
+select,
+textarea,
+.form-control,
+.form-select {
+    color: var(--accent-light) !important;
+    background-color: rgba(255, 255, 255, 0.05);
+    /* Asegurar contraste */
+    border-color: rgba(252, 228, 236, 0.2);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: rgba(252, 228, 236, 0.5) !important;
+}
+
+/* Excepciones para colores semánticos (mantenerlos si tienen clase específica) */
+.text-success,
+.text-green {
+    color: var(--success) !important;
+}
+
+.text-danger,
+.text-red {
+    color: var(--danger) !important;
+}
+
+.text-warning,
+.text-yellow {
+    color: var(--warning) !important;
+}
+
+.text-info,
+.text-blue {
+    color: #38bdf8 !important;
+}
+
+/* Badges específicos */
+.badge {
+    color: var(--accent-light);
+}
+
+/* Asegurar que los botones mantengan su color de texto legible */
+.btn-primary {
+    color: #ffffff !important;
+    /* Blanco sobre borravino es mejor */
+}
