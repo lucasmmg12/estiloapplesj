@@ -11,8 +11,8 @@ const COMPETITORS = [
     {
         id: 1,
         name: "Club del iPhone",
-        address: "Rivadavia, San Juan Capital",
-        coords: [-31.5380, -68.5265], // Peatonal Rivadavia
+        address: "Manuel Zavalla Nte. 855, Rivadavia",
+        coords: [-31.5425, -68.5180], // Manuel Zavalla Norte 855, Rivadavia
         adsActive: true, // ✅ VERIFICADO: Competidor directo con ADS activos
         strength: "Ubicación prime, múltiples sucursales",
         weakness: "Atención variable según sucursal",
@@ -21,8 +21,8 @@ const COMPETITORS = [
     {
         id: 2,
         name: "Digital Station",
-        address: "San Juan Capital",
-        coords: [-31.5365, -68.5340], // Zona comercial
+        address: "Av. de la Roza Oeste 1946, San Juan",
+        coords: [-31.538632, -68.554614], // Av. José Ignacio de la Roza Oeste 1946
         adsActive: true, // ✅ VERIFICADO: Competidor directo con ADS activos
         strength: "Accesorios variados, servicio técnico",
         weakness: "Menor especialización en Apple",
