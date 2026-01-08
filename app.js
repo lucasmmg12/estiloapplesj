@@ -1928,146 +1928,145 @@ window.eliminarProgramacion = async (id) => {
         mostrarToast('Error al cancelar', 'error');
     }
 };
-/ /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
- 
- / /   N U E V A   L √  G I C A   D E   N A V E G A C I √  N   A G R U P A D A 
- 
- / /   = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = 
- 
- 
- 
- f u n c t i o n   i n i t G r o u p e d N a v i g a t i o n ( )   { 
- 
-         c o n s t   n a v T a b s   =   d o c u m e n t . q u e r y S e l e c t o r A l l ( ' . n a v - t a b ' ) ; 
- 
-         c o n s t   s u b N a v P a n e l   =   d o c u m e n t . g e t E l e m e n t B y I d ( ' s u b N a v P a n e l ' ) ; 
- 
-         c o n s t   s u b N a v C o n t e n t s   =   d o c u m e n t . q u e r y S e l e c t o r A l l ( ' . s u b - n a v - c o n t e n t ' ) ; 
- 
-         c o n s t   s u b N a v I t e m s   =   d o c u m e n t . q u e r y S e l e c t o r A l l ( ' . s u b - n a v - i t e m ' ) ; 
- 
- 
- 
-         / /   M a n e j a r   c l i c k s   e n   c a t e g o r √ ≠ a s   p r i n c i p a l e s 
- 
-         n a v T a b s . f o r E a c h ( t a b   = >   { 
- 
-                 t a b . a d d E v e n t L i s t e n e r ( ' c l i c k ' ,   ( )   = >   { 
- 
-                         c o n s t   c a t e g o r y   =   t a b . d a t a s e t . c a t e g o r y ; 
- 
- 
- 
-                         / /   C a s o   e s p e c i a l :   C h a t   r e d i r i g e   d i r e c t a m e n t e 
- 
-                         i f   ( c a t e g o r y   = = =   ' c h a t ' )   { 
- 
-                                 w i n d o w . l o c a t i o n . h r e f   =   ' c h a t . h t m l ' ; 
- 
-                                 r e t u r n ; 
- 
-                         } 
- 
- 
- 
-                         / /   A c t u a l i z a r   t a b   a c t i v o 
- 
-                         n a v T a b s . f o r E a c h ( t   = >   t . c l a s s L i s t . r e m o v e ( ' a c t i v e ' ) ) ; 
- 
-                         t a b . c l a s s L i s t . a d d ( ' a c t i v e ' ) ; 
- 
- 
- 
-                         / /   M o s t r a r   s u b - n a v e g a c i √ ≥ n   c o r r e s p o n d i e n t e 
- 
-                         s u b N a v C o n t e n t s . f o r E a c h ( c o n t e n t   = >   { 
- 
-                                 c o n t e n t . c l a s s L i s t . r e m o v e ( ' a c t i v e ' ) ; 
- 
-                                 i f   ( c o n t e n t . d a t a s e t . c a t e g o r y   = = =   c a t e g o r y )   { 
- 
-                                         c o n t e n t . c l a s s L i s t . a d d ( ' a c t i v e ' ) ; 
- 
-                                 } 
- 
-                         } ) ; 
- 
- 
- 
-                         / /   A b r i r   p a n e l   s i   n o   e s t √ °   a b i e r t o 
- 
-                         i f   ( ! s u b N a v P a n e l . c l a s s L i s t . c o n t a i n s ( ' o p e n ' ) )   { 
- 
-                                 s u b N a v P a n e l . c l a s s L i s t . a d d ( ' o p e n ' ) ; 
- 
-                         } 
- 
- 
- 
-                         / /   S i   l a   c a t e g o r √ ≠ a   s o l o   t i e n e   u n   s u b - i t e m ,   a c t i v a r l o   a u t o m √ ° t i c a m e n t e 
- 
-                         c o n s t   a c t i v e C o n t e n t   =   d o c u m e n t . q u e r y S e l e c t o r ( ` . s u b - n a v - c o n t e n t [ d a t a - c a t e g o r y = " $ { c a t e g o r y } " ] ` ) ; 
- 
-                         c o n s t   i t e m s   =   a c t i v e C o n t e n t ? . q u e r y S e l e c t o r A l l ( ' . s u b - n a v - i t e m ' ) ; 
- 
-                         i f   ( i t e m s   & &   i t e m s . l e n g t h   = = =   1 )   { 
- 
-                                 i t e m s [ 0 ] . c l i c k ( ) ; 
- 
-                         } 
- 
-                 } ) ; 
- 
-         } ) ; 
- 
- 
- 
-         / /   M a n e j a r   c l i c k s   e n   s u b - i t e m s 
- 
-         s u b N a v I t e m s . f o r E a c h ( i t e m   = >   { 
- 
-                 i t e m . a d d E v e n t L i s t e n e r ( ' c l i c k ' ,   ( )   = >   { 
- 
-                         c o n s t   t a b N a m e   =   i t e m . d a t a s e t . t a b ; 
- 
- 
- 
-                         / /   A c t u a l i z a r   s u b - i t e m   a c t i v o   d e n t r o   d e   s u   c a t e g o r √ ≠ a 
- 
-                         c o n s t   p a r e n t C o n t e n t   =   i t e m . c l o s e s t ( ' . s u b - n a v - c o n t e n t ' ) ; 
- 
-                         p a r e n t C o n t e n t . q u e r y S e l e c t o r A l l ( ' . s u b - n a v - i t e m ' ) . f o r E a c h ( i   = >   { 
- 
-                                 i . c l a s s L i s t . r e m o v e ( ' a c t i v e ' ) ; 
- 
-                         } ) ; 
- 
-                         i t e m . c l a s s L i s t . a d d ( ' a c t i v e ' ) ; 
- 
- 
- 
-                         / /   C a m b i a r   a l   t a b   c o r r e s p o n d i e n t e 
- 
-                         c a m b i a r T a b ( t a b N a m e ) ; 
- 
-                 } ) ; 
- 
-         } ) ; 
- 
- 
- 
-         / /   I n i c i a l i z a r :   A b r i r   p a n e l   d e   C l i e n t e s   p o r   d e f e c t o 
- 
-         s u b N a v P a n e l . c l a s s L i s t . a d d ( ' o p e n ' ) ; 
- 
- } 
- 
- 
- 
- / /   L l a m a r   e s t a   f u n c i √ ≥ n   d e s p u √ © s   d e   D O M C o n t e n t L o a d e d 
- 
- / /   A g r e g a r   e n   a p p . j s   d e s p u √ © s   d e   c o n f i g u r a r E v e n t L i s t e n e r s ( ) : 
- 
- / /   i n i t G r o u p e d N a v i g a t i o n ( ) ; 
- 
- 
+// ============================================
+
+// NUEVA L√ GICA DE NAVEGACI√ N AGRUPADA
+
+// ============================================
+
+
+
+function initGroupedNavigation() {
+
+    const navTabs = document.querySelectorAll('.nav-tab');
+
+    const subNavPanel = document.getElementById('subNavPanel');
+
+    const subNavContents = document.querySelectorAll('.sub-nav-content');
+
+    const subNavItems = document.querySelectorAll('.sub-nav-item');
+
+
+
+    // Manejar clicks en categor√≠as principales
+
+    navTabs.forEach(tab => {
+
+        tab.addEventListener('click', () => {
+
+            const category = tab.dataset.category;
+
+
+
+            // Caso especial: Chat redirige directamente
+
+            if (category === 'chat') {
+
+                window.location.href = 'chat.html';
+
+                return;
+
+            }
+
+
+
+            // Actualizar tab activo
+
+            navTabs.forEach(t => t.classList.remove('active'));
+
+            tab.classList.add('active');
+
+
+
+            // Mostrar sub-navegaci√≥n correspondiente
+
+            subNavContents.forEach(content => {
+
+                content.classList.remove('active');
+
+                if (content.dataset.category === category) {
+
+                    content.classList.add('active');
+
+                }
+
+            });
+
+
+
+            // Abrir panel si no est√° abierto
+
+            if (!subNavPanel.classList.contains('open')) {
+
+                subNavPanel.classList.add('open');
+
+            }
+
+
+
+            // Si la categor√≠a solo tiene un sub-item, activarlo autom√°ticamente
+
+            const activeContent = document.querySelector(`.sub-nav-content[data-category="${category}"]`);
+
+            const items = activeContent?.querySelectorAll('.sub-nav-item');
+
+            if (items && items.length === 1) {
+
+                items[0].click();
+
+            }
+
+        });
+
+    });
+
+
+
+    // Manejar clicks en sub-items
+
+    subNavItems.forEach(item => {
+
+        item.addEventListener('click', () => {
+
+            const tabName = item.dataset.tab;
+
+
+
+            // Actualizar sub-item activo dentro de su categor√≠a
+
+            const parentContent = item.closest('.sub-nav-content');
+
+            parentContent.querySelectorAll('.sub-nav-item').forEach(i => {
+
+                i.classList.remove('active');
+
+            });
+
+            item.classList.add('active');
+
+
+
+            // Cambiar al tab correspondiente
+
+            cambiarTab(tabName);
+
+        });
+
+    });
+
+
+
+    // Inicializar: Abrir panel de Clientes por defecto
+
+    subNavPanel.classList.add('open');
+
+}
+
+
+
+// Llamar esta funci√≥n despu√©s de DOMContentLoaded
+
+// Agregar en app.js despu√©s de configurarEventListeners():
+
+// initGroupedNavigation();
+
