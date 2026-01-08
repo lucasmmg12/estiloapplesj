@@ -12,7 +12,7 @@ const COMPETITORS = [
         id: 1,
         name: "Club del iPhone",
         address: "Manuel Zavalla Nte. 855, Rivadavia",
-        coords: [-31.5425, -68.5180], // Manuel Zavalla Norte 855, Rivadavia
+        coords: [-31.520041, -68.5794657], // Coordenadas exactas de Google Maps
         adsActive: true, // ✅ VERIFICADO: Competidor directo con ADS activos
         strength: "Ubicación prime, múltiples sucursales",
         weakness: "Atención variable según sucursal",
