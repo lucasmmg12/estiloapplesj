@@ -6,6 +6,7 @@
 import * as supabaseService from './services/supabase-client.js';
 import * as builderbotAPI from './services/builderbot-api.js';
 import * as erpService from './services/admin-finance.js';
+import * as competitorService from './services/competitors.js';
 
 // ============================================
 // ESTADO GLOBAL
@@ -44,6 +45,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Inicializar ERP
     await erpService.initErp();
+
+    // Inicializar Inteligencia Competitiva
+    await competitorService.initCompetitors();
 
     // Configurar suscripciones en tiempo real
     configurarSuscripciones();
