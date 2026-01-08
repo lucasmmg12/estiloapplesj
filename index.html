@@ -50,112 +50,146 @@
     <main class="main-content">
         <div class="container">
 
-            <!-- Filtros y Tabs -->
+                        <!-- Filtros y Nueva Navegación Agrupada -->
             <div class="controls-section">
-                <div class="tabs">
-                    <!-- TABS CRM OCULTAS -->
-                    <button class="tab" data-tab="conversaciones">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        Conversaciones
-                    </button>
-                    <button class="tab" data-tab="clientes">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                <!-- NUEVA NAVEGACIÓN PRINCIPAL -->
+                <nav class="main-nav">
+                    <button class="nav-tab active" data-category="clientes">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
                             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
-                        Clientes
+                        <span>Clientes</span>
                     </button>
-                    <button class="tab" data-tab="vendedores">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <line x1="19" y1="8" x2="19" y2="14"></line>
-                            <line x1="22" y1="11" x2="16" y2="11"></line>
-                        </svg>
-                        Vendedores
-                    </button>
-                    <button class="tab" data-tab="embudo">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                        </svg>
-                        Embudo de Ventas
-                    </button>
-                    <button class="tab" data-tab="estadisticas">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+
+                    <button class="nav-tab" data-category="ventas">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 20V10"></path>
                             <path d="M12 20V4"></path>
                             <path d="M6 20v-6"></path>
                         </svg>
-                        Estadísticas
-                    </button>
-                    <button class="tab" data-tab="mensajes">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                        </svg>
-                        Mensajes Automáticos
-                    </button>
-                    <button class="tab" data-tab="programados">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        Programados
+                        <span>Ventas</span>
                     </button>
 
-                    <!-- NUEVA TAB ERP -->
-                    <button class="tab active" data-tab="erp">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                    <button class="nav-tab" data-category="erp">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <rect x="3" y="3" width="7" height="7"></rect>
                             <rect x="14" y="3" width="7" height="7"></rect>
                             <rect x="14" y="14" width="7" height="7"></rect>
                             <rect x="3" y="14" width="7" height="7"></rect>
                         </svg>
-                        ERP & Finanzas
+                        <span>ERP</span>
                     </button>
 
-                    <button class="tab" data-tab="catalogo">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                            <line x1="8" y1="21" x2="16" y2="21"></line>
-                            <line x1="12" y1="17" x2="12" y2="21"></line>
-                        </svg>
-                        Inventario
-                    </button>
-                    <!-- TAB COMPETENCIA (NUEVA) -->
-                    <button class="tab" data-tab="competencia">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                    <button class="nav-tab" data-category="inteligencia">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path
-                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                            </path>
+                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                         </svg>
-                        Inteligencia
+                        <span>Intel</span>
                     </button>
-                    <button class="tab" id="btnLiveChat" onclick="window.location.href='chat.html'">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+
+                    <button class="nav-tab" data-category="chat">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
-                        Live Chat
+                        <span>Chat</span>
                     </button>
+                </nav>
+
+                <!-- PANEL DESLIZANTE PARA SUB-NAVEGACIÓN -->
+                <div class="sub-nav-panel" id="subNavPanel">
+                    <!-- Clientes Sub-Menu -->
+                    <div class="sub-nav-content active" data-category="clientes">
+                        <button class="sub-nav-item active" data-tab="conversaciones">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                            </svg>
+                            Conversaciones
+                        </button>
+                        <button class="sub-nav-item" data-tab="mensajes">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                            </svg>
+                            Mensajes Automáticos
+                        </button>
+                        <button class="sub-nav-item" data-tab="programados">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Programados
+                        </button>
+                    </div>
+
+                    <!-- Ventas Sub-Menu -->
+                    <div class="sub-nav-content" data-category="ventas">
+                        <button class="sub-nav-item" data-tab="embudo">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                            </svg>
+                            Embudo de Ventas
+                        </button>
+                        <button class="sub-nav-item" data-tab="vendedores">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <line x1="19" y1="8" x2="19" y2="14"></line>
+                                <line x1="22" y1="11" x2="16" y2="11"></line>
+                            </svg>
+                            Vendedores
+                        </button>
+                        <button class="sub-nav-item" data-tab="estadisticas">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 20V10"></path>
+                                <path d="M12 20V4"></path>
+                                <path d="M6 20v-6"></path>
+                            </svg>
+                            Estadísticas
+                        </button>
+                    </div>
+
+                    <!-- ERP Sub-Menu -->
+                    <div class="sub-nav-content" data-category="erp">
+                        <button class="sub-nav-item" data-tab="erp">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            Finanzas
+                        </button>
+                        <button class="sub-nav-item" data-tab="catalogo">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            Inventario
+                        </button>
+                    </div>
+
+                    <!-- Inteligencia (sin sub-menú) -->
+                    <div class="sub-nav-content" data-category="inteligencia">
+                        <button class="sub-nav-item" data-tab="competencia">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            Análisis Competitivo
+                        </button>
+                    </div>
+
+                    <!-- Chat (sin sub-menú, redirige directo) -->
+                    <div class="sub-nav-content" data-category="chat">
+                        <!-- No sub-items, el click en Chat abre directamente chat.html -->
+                    </div>
                 </div>
 
                 <div class="filters">
