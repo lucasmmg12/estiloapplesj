@@ -2208,3 +2208,75 @@ textarea::placeholder {
     color: #ffffff !important;
     /* Blanco sobre borravino es mejor */
 }
+/* ============================================
+   NUCLEAR FIX: FORCE PASTEL TEXT
+   ============================================ */
+
+/* Aplicar color pastel a TODO excepto componentes que definen su propio color semántico */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+li,
+label,
+th,
+td,
+.card-title,
+.stat-value,
+.stat-label {
+    color: #fce4ec !important;
+}
+
+/* Inputs específicos */
+input,
+select,
+textarea,
+.form-control,
+.form-select {
+    color: #fce4ec !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(252, 228, 236, 0.2) !important;
+}
+
+/* Placeholders */
+::placeholder {
+    color: rgba(252, 228, 236, 0.5) !important;
+    opacity: 1;
+}
+
+:-ms-input-placeholder {
+    color: rgba(252, 228, 236, 0.5) !important;
+}
+
+::-ms-input-placeholder {
+    color: rgba(252, 228, 236, 0.5) !important;
+}
+
+/* Excepciones Críticas (Botones y Badges) */
+.btn-primary {
+    color: white !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-success {
+    color: #10b981 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+/* Iconos SVG */
+svg {
+    fill: currentColor;
+}
