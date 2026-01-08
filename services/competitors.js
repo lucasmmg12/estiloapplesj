@@ -10,43 +10,63 @@ const MIS_COORDENADAS = [-31.538537, -68.558371]; // Estilo Apple SJ - Ubicació
 const COMPETITORS = [
     {
         id: 1,
-        name: "iTech San Juan",
-        address: "Av. Libertador 123 Oeste",
-        coords: [-31.5350, -68.5610],
+        name: "IP SAN JUAN",
+        address: "Jujuy 510 Sur, San Juan",
+        coords: [-31.5372, -68.5295], // Jujuy 510 Sur
         adsActive: true,
-        strength: "Precios bajos en pantallas",
-        weakness: "Repuestos genéricos",
-        score: 8.5
+        strength: "25k seguidores IG, financiación y canje",
+        weakness: "Precios premium",
+        score: 9.2
     },
     {
         id: 2,
-        name: "Dr. Manzana",
-        address: "Mendoza 456 Sur",
-        coords: [-31.5420, -68.5550],
-        adsActive: false,
-        strength: "Taller a la vista",
-        weakness: "Demora 48hs",
-        score: 7.2
+        name: "Movitek",
+        address: "Av. Rioja Nte. 145, San Juan",
+        coords: [-31.5345, -68.5320], // Av. Rioja Norte
+        adsActive: true,
+        strength: "Sorteos interactivos, stock iPhone 11/Ultra",
+        weakness: "Menor presencia digital que líderes",
+        score: 7.8
     },
     {
         id: 3,
-        name: "FixPhone Cuyo",
-        address: "Gral. Acha 789 Norte",
-        coords: [-31.5310, -68.5620],
+        name: "iPhone San Juan",
+        address: "Entre Ríos Nte. 221, San Juan",
+        coords: [-31.5355, -68.5285], // Entre Ríos Norte
         adsActive: true,
-        strength: "Servicio a domicilio",
-        weakness: "Poca variedad de accesorios",
-        score: 9.1
+        strength: "33k seguidores, equipos nuevos y usados",
+        weakness: "Competencia en precios de usados",
+        score: 8.9
     },
     {
         id: 4,
-        name: "Apple Store Fake",
-        address: "Peatonal Rivadavia",
-        coords: [-31.5385, -68.5490],
-        adsActive: false,
-        strength: "Ubicación prime",
-        weakness: "Mala atención",
-        score: 6.0
+        name: "Apple Repair San Juan",
+        address: "Av. Leandro N. Alem Sur 141",
+        coords: [-31.5410, -68.5310], // Alem Sur
+        adsActive: true,
+        strength: "Servicio express, diagnóstico gratis",
+        weakness: "Repuestos no originales",
+        score: 8.1
+    },
+    {
+        id: 5,
+        name: "Club del iPhone",
+        address: "Rivadavia, San Juan Capital",
+        coords: [-31.5380, -68.5265], // Peatonal Rivadavia
+        adsActive: true,
+        strength: "Ubicación prime, múltiples sucursales",
+        weakness: "Atención variable según sucursal",
+        score: 8.5
+    },
+    {
+        id: 6,
+        name: "Digital Station",
+        address: "San Juan Capital",
+        coords: [-31.5365, -68.5340], // Zona comercial
+        adsActive: true,
+        strength: "Accesorios variados, servicio técnico",
+        weakness: "Menor especialización en Apple",
+        score: 7.5
     }
 ];
 
