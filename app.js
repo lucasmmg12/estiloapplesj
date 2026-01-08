@@ -1094,6 +1094,14 @@ function cambiarTab(tabName) {
     } else if (tabName === 'programados') {
         document.getElementById('tabProgramados').classList.add('active');
         renderizarProgramados();
+    } else if (tabName === 'erp') {
+        document.getElementById('tabErp').classList.add('active');
+    } else if (tabName === 'competencia') {
+        document.getElementById('tabCompetencia').classList.add('active');
+        // Trigger map resize to fix Leaflet rendering issue
+        if (window.competitorMapInstance) {
+            setTimeout(() => window.competitorMapInstance.invalidateSize(), 200);
+        }
     }
 }
 

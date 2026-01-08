@@ -5,14 +5,14 @@
 
 // --- DATA MOCK ---
 
-const MIS_COORDENADAS = [-31.5375, -68.5364]; // Centro San Juan
+const MIS_COORDENADAS = [-31.538537, -68.558371]; // Estilo Apple SJ - Ubicación exacta
 
 const COMPETITORS = [
     {
         id: 1,
         name: "iTech San Juan",
         address: "Av. Libertador 123 Oeste",
-        coords: [-31.5350, -68.5410],
+        coords: [-31.5350, -68.5610],
         adsActive: true,
         strength: "Precios bajos en pantallas",
         weakness: "Repuestos genéricos",
@@ -22,7 +22,7 @@ const COMPETITORS = [
         id: 2,
         name: "Dr. Manzana",
         address: "Mendoza 456 Sur",
-        coords: [-31.5420, -68.5320],
+        coords: [-31.5420, -68.5550],
         adsActive: false,
         strength: "Taller a la vista",
         weakness: "Demora 48hs",
@@ -32,7 +32,7 @@ const COMPETITORS = [
         id: 3,
         name: "FixPhone Cuyo",
         address: "Gral. Acha 789 Norte",
-        coords: [-31.5310, -68.5350],
+        coords: [-31.5310, -68.5620],
         adsActive: true,
         strength: "Servicio a domicilio",
         weakness: "Poca variedad de accesorios",
@@ -42,7 +42,7 @@ const COMPETITORS = [
         id: 4,
         name: "Apple Store Fake",
         address: "Peatonal Rivadavia",
-        coords: [-31.5385, -68.5290],
+        coords: [-31.5385, -68.5490],
         adsActive: false,
         strength: "Ubicación prime",
         weakness: "Mala atención",
@@ -174,6 +174,7 @@ function initMap() {
     });
 
     mapInitialized = true;
+    window.competitorMapInstance = mapInstance; // Expose globally for tab switching
 }
 
 function initChartJS() {
