@@ -193,24 +193,41 @@ async function handleGastoSubmit(e) {
 }
 
 async function actualizarKPIs() {
-    // Calculo simple local por ahora
+    // Calculo en PESOS ARGENTINOS (ARS)
     const hoy = new Date().toISOString().split('T')[0];
     const transacciones = await supabaseService.obtenerResumenFinanciero(hoy, new Date().toISOString());
 
-    let ingresosHoy = 0;
-    let gastosHoy = 0;
+    let ingresosARS = 0;
+    let gastosARS = 0;
 
-    transacciones.forEach(t => {
-        // Normalizar a USD para el KPI (o ARS)
-        let montoUSD = t.currency === 'USD' ? t.amount : (t.amount / t.exchange_rate);
-
-        if (t.type === 'INCOME') ingresosHoy += montoUSD;
-        if (t.type === 'EXPENSE') gastosHoy += montoUSD;
+    // Formateador para ARS
+    const formatoARS = new Intl.NumberFormat('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     });
 
-    document.getElementById('kpiCajaTotal').textContent = `$${(ingresosHoy - gastosHoy).toFixed(2)} USD`;
-    document.getElementById('kpiVentasHoy').textContent = `$${ingresosHoy.toFixed(2)} USD`;
-    document.getElementById('kpiGastosHoy').textContent = `$${gastosHoy.toFixed(2)} USD`;
+    transacciones.forEach(t => {
+        // Normalizar a ARS
+        // Si currency es ARS -> Valor directo
+        // Si currency es USD -> Valor * exchange_rate
+        let tasa = t.exchange_rate || 1200; // Fallback por seguridad
+        let montoARS = t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+
+        if (t.type === 'INCOME') ingresosARS += montoARS;
+        if (t.type === 'EXPENSE') gastosARS += montoARS;
+    });
+
+    const cajaTotal = ingresosARS - gastosARS;
+
+    // Actualizar DOM con formato ARS
+    document.getElementById('kpiCajaTotal').textContent = formatoARS.format(cajaTotal);
+    document.getElementById('kpiVentasHoy').textContent = formatoARS.format(ingresosARS);
+    document.getElementById('kpiGastosHoy').textContent = formatoARS.format(gastosARS);
+
+    // Rentabilidad (Estimar simple por ahora, pendiente lógica real de CMV)
+    // document.getElementById('kpiRentabilidad').textContent = ... 
 }
 
 async function cargarTablaMovimientos() {
