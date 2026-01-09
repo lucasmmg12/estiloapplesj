@@ -1141,16 +1141,18 @@ async function aplicarFiltros() {
 // ============================================
 
 function actualizarEstadisticas() {
-    // Total de clientes Ãºnicos
+    // Total de clientes únicos
     const clientesUnicos = new Set(conversaciones.map(c => c.cliente_id));
-    document.getElementById('totalClientes').textContent = clientesUnicos.size;
+    const elTotal = document.getElementById('totalClientes');
+    if (elTotal) elTotal.textContent = clientesUnicos.size;
 
     // Conversaciones de hoy
     const hoy = new Date().toDateString();
     const conversacionesHoy = conversaciones.filter(c =>
         new Date(c.created_at).toDateString() === hoy
     );
-    document.getElementById('conversacionesHoy').textContent = conversacionesHoy.length;
+    const elHoy = document.getElementById('conversacionesHoy');
+    if (elHoy) elHoy.textContent = conversacionesHoy.length;
 }
 
 // ============================================
