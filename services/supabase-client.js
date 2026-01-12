@@ -50,41 +50,63 @@ export async function obtenerClientePorId(clienteId) {
 // ============================================
 
 export async function obtenerConversaciones(clienteId = null) {
+    // NUEVA LOGICA: Usar 'clientes' como fuente de verdad
     let query = supabase
-        .from('conversaciones')
-        .select(`
-      *,
-      clientes (*)
-    `)
-        .order('created_at', { ascending: false });
+        .from('clientes')
+        .select('*')
+        .order('ultima_interaccion', { ascending: false });
 
+    // Filtrado opcional
     if (clienteId) {
-        query = query.eq('cliente_id', clienteId);
+        query = query.eq('id', clienteId);
     }
 
-    const { data, error } = await query;
+    const { data: clientes, error } = await query;
 
     if (error) throw error;
-    return data;
+
+    // Adaptador: Convertir clientes a objetos 'conversacion' para la UI
+    return clientes.map(c => ({
+        id: c.id,
+        created_at: c.ultima_interaccion || c.created_at,
+        cliente_id: c.id,
+        clientes: c, // El objeto cliente completo
+        // Campos que antes estaban en 'conversaciones', ahora intentamos leerlos del cliente
+        // o proveemos fallbacks
+        resumen_breve: c.resumen || c.notas_ia || "...",
+        intencion_detectada: c.intencion || "Consulta",
+        crm_stage: c.crm_stage || 'consulta',
+        vendedor_asignado: c.vendedor_asignado,
+        // Flags para UI
+        no_leido: false
+    }));
 }
 
 export async function obtenerConversacionPorId(conversacionId) {
-    const { data, error } = await supabase
-        .from('conversaciones')
-        .select(`
-      *,
-      clientes (*)
-    `)
+    // Ahora 'conversacionId' es realmente el 'clienteId'
+    const { data: cliente, error } = await supabase
+        .from('clientes')
+        .select('*')
         .eq('id', conversacionId)
         .single();
 
     if (error) throw error;
-    return data;
+
+    return {
+        id: cliente.id,
+        created_at: cliente.ultima_interaccion,
+        clientes: cliente,
+        resumen_breve: cliente.resumen,
+        resumen_detallado: cliente.resumen_ia || cliente.resumen,
+        intencion_detectada: cliente.intencion || "General",
+        historial_completo: [] // La UI ya carga los mensajes de la tabla 'mensajes'
+    };
 }
 
 export async function actualizarConversacion(conversacionId, updates) {
+    // Actualizamos el CLIENTE
     const { data, error } = await supabase
-        .from('conversaciones')
+        .from('clientes')
         .update(updates)
         .eq('id', conversacionId)
         .select();
@@ -98,37 +120,29 @@ export async function actualizarConversacion(conversacionId, updates) {
 // ============================================
 
 export async function obtenerHistorialMensajes(telefono) {
-    // 1. Intentar buscar en `messages` (tabla estándar)
-    // Nota: El usuario mencionó "mensajes que llegan desde el chat", asumo 'messages' o 'chat_history'
-
-    // Primero obtenemos el cliente para tener su ID si fuera necesario, pero la búsqueda suele ser por telefono (from/to)
-    // Asumiremos una estructura donde 'from' o 'to' coinciden con el telefono del cliente.
-
-    // Normalizar telefono (quitar + y espacios)
+    // 1. Normalizar telefono para búsqueda exacta
     const telLimpio = telefono.replace(/\D/g, '');
 
-    // Consulta flexible: Mensajes donde el cliente sea el remitente O el destinatario
-    // Importante: Esto asume una tabla 'messages' con campos 'from', 'to', 'body', 'timestamp', 'fromMe'
-
-    // NOTA: Si esta tabla no existe, fallará. Es un "best guess" para la implementación.
-    const { data: messages, error } = await supabase
-        .from('messages')
+    // Consulta a la tabla REAL de mensajes
+    const { data, error } = await supabase
+        .from('mensajes')
         .select('*')
-        .or(`from.eq.${telLimpio},to.eq.${telLimpio},from.eq.${telefono},to.eq.${telefono}`)
-        .order('created_at', { ascending: true }); // Orden cronológico para el chat
+        .eq('cliente_telefono', telLimpio)
+        .order('created_at', { ascending: true });
 
     if (error) {
-        console.warn("Tabla 'messages' error:", error);
-        // Fallback: Si no existe, devolver array vacío para no romper la UI
+        console.warn("Error obteniendo historial de tabla 'mensajes':", error);
         return [];
     }
-    return messages;
+    return data;
 }
 
 // Relacionado con Conversaciones (recuperar resumen e intencion)
 export async function eliminarConversacion(conversacionId) {
+    // Eliminar (o ocultar) el cliente
+    // ATENCION: Esto elimina al cliente de la base de datos.
     const { error } = await supabase
-        .from('conversaciones')
+        .from('clientes')
         .delete()
         .eq('id', conversacionId);
 
@@ -315,6 +329,7 @@ export async function crearProducto(producto) {
         precio_ars,
         cuotas_3,
         cuotas_6,
+        cuotas_12,
         cuotas_12,
         activo: true
     };
@@ -558,6 +573,33 @@ export async function obtenerCategoriasTransaccion() {
 
     if (error) throw error;
     return data;
+}
+
+export async function analizarHistorialIA(mensajes) {
+    try {
+        if (!mensajes || mensajes.length === 0) return null;
+
+        // Formatear chat para la IA
+        // Tomamos los últimos N mensajes para no exceder tokens
+        const ultimosMensajes = mensajes.slice(-50);
+
+        const chatLog = ultimosMensajes.map(m => {
+            const role = m.es_mio ? 'Vendedor' : 'Cliente';
+            // Manejo de contenido multimeda
+            const texto = m.contenido || (m.media_url ? '[Imagen/Archivo]' : '[Mensaje vacío]');
+            return `${role}: ${texto}`;
+        }).join('\n');
+
+        const { data, error } = await supabase.functions.invoke('analizar-historial', {
+            body: { chatLog }
+        });
+
+        if (error) throw error;
+        return data; // { resumen_breve, intencion, bullets, ... }
+    } catch (e) {
+        console.error("Error analizando historial con IA:", e);
+        return null; // Fail gracefully
+    }
 }
 
 export default supabase;
