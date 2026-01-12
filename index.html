@@ -263,7 +263,7 @@
                     <div class="left-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
 
                         <!-- Panel de Ventas (Ingresos) -->
-                        <div class="glass-card">
+                        <div class="glass-card card-ingreso">
                             <div class="card-header">
                                 <h2 class="card-title">Registrar Ingreso / Venta</h2>
                                 <span class="badge"
@@ -392,7 +392,7 @@
                     </div>
 
                     <!-- Panel de Gastos (Egresos) -->
-                    <div class="glass-card">
+                    <div class="glass-card card-gasto">
                         <div class="card-header">
                             <h2 class="card-title" style="color: #ff4d4d;">Registrar Gasto</h2>
                             <span class="badge" style="background: rgba(255,77,77,0.1); color: #ff4d4d;">Salida</span>
@@ -497,25 +497,7 @@
                         </div>
                     </div>
 
-                    <!-- Gráfico Financiero -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Balance Ingresos vs Gastos</h2>
-                        </div>
-                        <div style="height: 250px; position: relative;">
-                            <canvas id="chartFinanzas"></canvas>
-                        </div>
-                    </div>
 
-                    <!-- Gráfico Categorías -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Distribución por Categoría</h2>
-                        </div>
-                        <div style="height: 250px; position: relative;">
-                            <canvas id="chartCategorias"></canvas>
-                        </div>
-                    </div>
 
                 </div>
             </div>
@@ -743,6 +725,26 @@
                     </div>
                     <div style="height: 300px; position: relative; display: flex; justify-content: center;">
                         <canvas id="chartPlataforma"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Financiero -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Balance Ingresos vs Gastos</h2>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chartFinanzas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Gráfico Categorías -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Distribución por Categoría</h2>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chartCategorias"></canvas>
                     </div>
                 </div>
 

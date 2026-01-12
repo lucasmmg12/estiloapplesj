@@ -3460,9 +3460,12 @@ body::before {
     color: var(--gray-400);
 }
 
+/* Force readable options in all selects */
+select option,
 .erp-form select option {
-    color: #000;
-    background-color: #fff;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-weight: 500;
 }
 
 /* Modal de Éxito Profesional en CSS Puro */
@@ -3528,34 +3531,56 @@ body::before {
 /* Equipos - Azul/Purpura estilo iOS */
 .radio-chip:has(input[value="Venta de Equipos"]) {
     border-left: 3px solid #00d4ff;
+    background: rgba(0, 212, 255, 0.05);
+    /* Slight tint default */
+    border-color: rgba(0, 212, 255, 0.3);
 }
 
 .radio-chip:has(input[value="Venta de Equipos"]:checked) {
-    background: rgba(0, 212, 255, 0.2) !important;
+    background: rgba(0, 212, 255, 0.25) !important;
     border-color: #00d4ff !important;
-    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
 }
 
 /* Accesorios - Naranja/Gold */
 .radio-chip:has(input[value="Venta de Accesorios"]) {
     border-left: 3px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.05);
+    /* Slight tint default */
+    border-color: rgba(245, 158, 11, 0.3);
 }
 
 .radio-chip:has(input[value="Venta de Accesorios"]:checked) {
-    background: rgba(245, 158, 11, 0.2) !important;
+    background: rgba(245, 158, 11, 0.25) !important;
     border-color: #f59e0b !important;
-    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
 }
 
 /* Servicio - Verde/Teal */
 .radio-chip:has(input[value="Servicio Tecnico"]) {
     border-left: 3px solid #10b981;
+    background: rgba(16, 185, 129, 0.05);
+    /* Slight tint default */
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 .radio-chip:has(input[value="Servicio Tecnico"]:checked) {
-    background: rgba(16, 185, 129, 0.2) !important;
+    background: rgba(16, 185, 129, 0.25) !important;
     border-color: #10b981 !important;
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Diferenciación Ingreso vs Gasto */
+.card-ingreso {
+    border-top: 2px solid #00ff88;
+    box-shadow: 0 4px 30px rgba(0, 255, 136, 0.05);
+    background: linear-gradient(180deg, rgba(0, 255, 136, 0.03) 0%, rgba(10, 10, 10, 0.6) 100%);
+}
+
+.card-gasto {
+    border-top: 2px solid #ff4d4d;
+    box-shadow: 0 4px 30px rgba(255, 77, 77, 0.05);
+    background: linear-gradient(180deg, rgba(255, 77, 77, 0.03) 0%, rgba(10, 10, 10, 0.6) 100%);
 }
 
 .tactic-list {

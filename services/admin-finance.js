@@ -107,6 +107,16 @@ function setupEventListeners() {
         formGasto.addEventListener('submit', handleGastoSubmit);
     }
 
+    // Listar botón de Estadísticas para renderizar gráficos
+    const btnEstadisticas = document.querySelector('.sub-nav-item[data-tab="estadisticas"]');
+    if (btnEstadisticas) {
+        btnEstadisticas.addEventListener('click', () => {
+            setTimeout(() => {
+                renderizarGraficos();
+            }, 200);
+        });
+    }
+
     // Botón Refresh
     const btnRefresh = document.getElementById('btnRefreshErp');
     if (btnRefresh) {
@@ -405,7 +415,7 @@ function obtenerNombreProducto(id) {
 let chartFinanzasInstance = null;
 let chartCategoriasInstance = null;
 
-async function renderizarGraficos() {
+export async function renderizarGraficos() {
     try {
         const hoy = new Date();
         const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
