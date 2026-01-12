@@ -292,26 +292,51 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
     modalChat.classList.add('active');
     document.getElementById('chatClienteNombre').textContent = clienteNombre;
     document.getElementById('chatClienteTelefono').textContent = clienteTelefono;
-    resumenTexto.textContent = "Cargando análisis...";
-    resumenTexto.style.opacity = "0.5";
-    intencionBadge.textContent = "...";
-    intencionBadge.className = "badge"; // Reset colors
+    resumenTexto.textContent = "Analizando conversación en tiempo real...";
+    resumenTexto.style.opacity = "0.7";
+    intencionBadge.textContent = "IA PROCESANDO...";
+    intencionBadge.className = "badge";
 
     chatContainer.innerHTML = `
         <div style="text-align: center; color: var(--gray-400); margin-top: 2rem;">
             <div class="loading-spinner"></div>
-            <p>Recuperando mensajes encriptados...</p>
+            <p>Cargando historial...</p>
         </div>
     `;
 
     try {
         // 2. Fetch de datos en paralelo (Conversación + Mensajes)
-        const [conversacionData, mensajes] = await Promise.all([
-            // Obtener datos frescos de la conversacion (intent, summary)
-            supabaseService.obtenerConversacionPorId(conversacionId),
-            // Obtener historial de msjs usando el telefono
-            supabaseService.obtenerHistorialMensajes(clienteTelefono)
-        ]);
+        // 2. Fetch de datos en paralelo (Conversación + Mensajes REALES)
+        // Ya no dependemos de la tabla 'conversaciones' para el historial estático
+        // Sino que vamos a la tabla 'mensajes'
+        const mensajes = await supabaseService.obtenerHistorialMensajes(clienteTelefono);
+        const conversacionData = await supabaseService.obtenerConversacionPorId(conversacionId);
+
+        // 3. Analizar con IA en paralelo (si hay mensajes y queremos actualizar)
+        if (mensajes && mensajes.length > 0) {
+            // Lanzamos el análisis (no await si queremos que sea rapido, pero aquí esperamos para mostrar el resumen)
+            // O podemos dejarlo asincrono
+            supabaseService.analizarHistorialIA(mensajes).then(analisis => {
+                if (analisis) {
+                    resumenTexto.textContent = analisis.resumen_detallado || analisis.resumen_breve || "Sin resumen.";
+                    resumenTexto.style.opacity = "1";
+
+                    const intent = analisis.intencion || "DESCONOCIDO";
+                    intencionBadge.textContent = intent.toUpperCase();
+
+                    if (intent.includes('Compra') || intent.includes('Venta')) {
+                        intencionBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                        intencionBadge.style.color = "#10b981";
+                    } else if (intent.includes('Reclamo') || intent.includes('Soporte')) {
+                        intencionBadge.style.background = "rgba(239, 68, 68, 0.2)";
+                        intencionBadge.style.color = "#ef4444";
+                    } else {
+                        intencionBadge.style.background = "rgba(255, 255, 255, 0.1)";
+                        intencionBadge.style.color = "var(--gray-300)";
+                    }
+                }
+            });
+        }
 
         // 3. Renderizar Header (Intent + Summary)
         if (conversacionData) {
@@ -356,7 +381,7 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
 
         mensajes.forEach(msg => {
             // Separador de Fecha
-            const fechaMsg = new Date(msg.created_at || msg.timestamp);
+            const fechaMsg = new Date(msg.created_at);
             const diaStr = fechaMsg.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
 
             if (diaStr !== ultimoDia) {
@@ -369,19 +394,15 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
 
             // Burbuja
             const divBubble = document.createElement('div');
-            // 'fromMe' suele ser booleano en tablas de WA providers, o comparamos el 'from'
-            // Asumiremos un campo 'fromMe' o checkeamos si 'from' != cliente
-            let isSent = false;
-            if (msg.fromMe !== undefined) isSent = msg.fromMe;
-            else if (msg.role && msg.role === 'assistant') isSent = true;
-            else if (msg.from) isSent = msg.from !== clienteTelefono.replace(/\D/g, '');
+            // Usamos 'es_mio' directamente
+            const isSent = msg.es_mio;
 
             divBubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
 
             // Contenido (Texto o Media)
-            let contenido = `<p style="margin:0">${msg.body || msg.content || ''}</p>`;
-            if (msg.mediaUrl || msg.type === 'image') {
-                contenido = `<img src="${msg.mediaUrl || msg.body}" style="max-width:100%; border-radius:12px; margin-bottom:0.5rem;">` + contenido;
+            let contenido = `<p style="margin:0">${msg.contenido || ''}</p>`;
+            if (msg.media_url) {
+                contenido = `<img src="${msg.media_url}" style="max-width:100%; border-radius:12px; margin-bottom:0.5rem;" loading="lazy">` + contenido;
             }
 
             divBubble.innerHTML = `
@@ -435,16 +456,27 @@ function renderizarConversaciones() {
     if (!conversaciones || conversaciones.length === 0) {
         tbody.innerHTML = `
             <tr class="loading-row">
-                <td colspan="8">
-                    <p>No hay conversaciones registradas</p>
-                </td>
-            </tr>
-        `;
-        badge.textContent = '0 conversaciones';
+                <td colspan="8"><p>No hay conversaciones registradas</p></td>
+            </tr>`;
+        badge.textContent = '0 clientes';
         return;
     }
 
-    tbody.innerHTML = conversaciones.map(conv => {
+    // AGRUPAR POR TELÉFONO (CLIENTE ÚNICO)
+    const clientesMap = new Map();
+    conversaciones.forEach(conv => {
+        if (!conv.clientes) return;
+        const telefono = conv.clientes.telefono;
+        // Si no existe o esta conv es más reciente, guardamos
+        if (!clientesMap.has(telefono) || new Date(conv.created_at) > new Date(clientesMap.get(telefono).created_at)) {
+            clientesMap.set(telefono, conv);
+        }
+    });
+
+    const conversacionesUnicas = Array.from(clientesMap.values());
+    badge.textContent = `${conversacionesUnicas.length} clientes`;
+
+    tbody.innerHTML = conversacionesUnicas.map(conv => {
         const cliente = conv.clientes;
         const fecha = new Date(conv.created_at).toLocaleString('es-AR');
         const vendedor = conv.vendedor || { nombre: 'Sin asignar', color: 'transparent', border: 'transparent' };
