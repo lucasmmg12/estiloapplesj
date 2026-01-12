@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Configurar event listeners
     configurarEventListeners();
 
-    // Inicializar nueva navegaciÛn agrupada
+    // Inicializar nueva navegacin agrupada
     initGroupedNavigation();
 
     // Cargar datos iniciales
@@ -279,6 +279,152 @@ function mostrarCargando() {
 }
 
 // ============================================
+// L√ìGICA DE HISTORIAL DE CHAT (PREMIUM)
+// ============================================
+
+window.verHistorialChat = async function (clienteNombre, clienteTelefono, conversacionId) {
+    const modalChat = document.getElementById('modalChat');
+    const chatContainer = document.getElementById('chatContainer');
+    const resumenTexto = document.getElementById('chatResumenTexto');
+    const intencionBadge = document.getElementById('chatIntencionBadge');
+
+    // 1. Abrir Modal y Resetear UI
+    modalChat.classList.add('active');
+    document.getElementById('chatClienteNombre').textContent = clienteNombre;
+    document.getElementById('chatClienteTelefono').textContent = clienteTelefono;
+    resumenTexto.textContent = "Cargando an√°lisis...";
+    resumenTexto.style.opacity = "0.5";
+    intencionBadge.textContent = "...";
+    intencionBadge.className = "badge"; // Reset colors
+
+    chatContainer.innerHTML = `
+        <div style="text-align: center; color: var(--gray-400); margin-top: 2rem;">
+            <div class="loading-spinner"></div>
+            <p>Recuperando mensajes encriptados...</p>
+        </div>
+    `;
+
+    try {
+        // 2. Fetch de datos en paralelo (Conversaci√≥n + Mensajes)
+        const [conversacionData, mensajes] = await Promise.all([
+            // Obtener datos frescos de la conversacion (intent, summary)
+            supabaseService.obtenerConversacionPorId(conversacionId),
+            // Obtener historial de msjs usando el telefono
+            supabaseService.obtenerHistorialMensajes(clienteTelefono)
+        ]);
+
+        // 3. Renderizar Header (Intent + Summary)
+        if (conversacionData) {
+            resumenTexto.textContent = conversacionData.summary || conversacionData.resumen_detallado || "No hay resumen disponible.";
+            resumenTexto.style.opacity = "1";
+
+            const intent = conversacionData.intencion_detectada || "DESCONOCIDO";
+            intencionBadge.textContent = intent.toUpperCase();
+
+            // Color coding por intent
+            if (intent.includes('COMPRA') || intent.includes('INTERESADO')) {
+                intencionBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                intencionBadge.style.color = "#10b981";
+            } else if (intent.includes('RECLAMO') || intent.includes('PROBLEMA')) {
+                intencionBadge.style.background = "rgba(239, 68, 68, 0.2)";
+                intencionBadge.style.color = "#ef4444";
+            } else {
+                intencionBadge.style.background = "rgba(255, 255, 255, 0.1)";
+                intencionBadge.style.color = "var(--gray-300)";
+            }
+        }
+
+        // 4. Renderizar Mensajes
+        chatContainer.innerHTML = '';
+
+        if (!mensajes || mensajes.length === 0) {
+            // Fallback al historial_completo del objeto conversacion si la tabla de mensajes falla
+            if (conversacionData && conversacionData.historial_completo && conversacionData.historial_completo.length > 0) {
+                renderizarHistorialLegacy(chatContainer, conversacionData.historial_completo);
+            } else {
+                chatContainer.innerHTML = `
+                    <div style="text-align: center; color: var(--gray-400); margin-top: 3rem;">
+                        <p style="font-size: 3rem; margin-bottom: 1rem;">üì≠</p>
+                        <p>No se encontraron mensajes previos.</p>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        let ultimoDia = null;
+
+        mensajes.forEach(msg => {
+            // Separador de Fecha
+            const fechaMsg = new Date(msg.created_at || msg.timestamp);
+            const diaStr = fechaMsg.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+
+            if (diaStr !== ultimoDia) {
+                const divFecha = document.createElement('div');
+                divFecha.className = 'chat-date-divider';
+                divFecha.textContent = diaStr;
+                chatContainer.appendChild(divFecha);
+                ultimoDia = diaStr;
+            }
+
+            // Burbuja
+            const divBubble = document.createElement('div');
+            // 'fromMe' suele ser booleano en tablas de WA providers, o comparamos el 'from'
+            // Asumiremos un campo 'fromMe' o checkeamos si 'from' != cliente
+            let isSent = false;
+            if (msg.fromMe !== undefined) isSent = msg.fromMe;
+            else if (msg.role && msg.role === 'assistant') isSent = true;
+            else if (msg.from) isSent = msg.from !== clienteTelefono.replace(/\D/g, '');
+
+            divBubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
+
+            // Contenido (Texto o Media)
+            let contenido = `<p style="margin:0">${msg.body || msg.content || ''}</p>`;
+            if (msg.mediaUrl || msg.type === 'image') {
+                contenido = `<img src="${msg.mediaUrl || msg.body}" style="max-width:100%; border-radius:12px; margin-bottom:0.5rem;">` + contenido;
+            }
+
+            divBubble.innerHTML = `
+                ${contenido}
+                <span class="chat-timestamp">${fechaMsg.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
+            `;
+
+            chatContainer.appendChild(divBubble);
+        });
+
+        // Scroll al final
+        setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 100);
+
+    } catch (e) {
+        console.error("Error cargando chat:", e);
+        chatContainer.innerHTML = `
+            <div style="text-align: center; color: var(--accent-red); margin-top: 2rem;">
+                <p>‚ö†Ô∏è Error al cargar la conversaci√≥n</p>
+                <small>${e.message}</small>
+            </div>
+        `;
+    }
+};
+
+function renderizarHistorialLegacy(container, historial) {
+    historial.forEach(msg => {
+        const divBubble = document.createElement('div');
+        // Detectar rol
+        const isSent = (msg.role === 'assistant' || msg.role === 'system');
+        // System often ignored in bubbles but here we show as sent for context or specialized style
+        if (msg.role === 'system') return; // Skip system prompts
+
+        divBubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
+        divBubble.innerHTML = `
+                <p style="margin:0">${msg.content || ''}</p>
+            `;
+        container.appendChild(divBubble);
+    });
+}
+
+// ============================================
 // RENDERIZADO DE CONVERSACIONES
 // ============================================
 
@@ -343,7 +489,7 @@ function renderizarConversaciones() {
                             <option value="Averiguar">Averiguar</option>
                             <option value="Reclamo">Reclamo</option>
                         </select>
-                        <button class="btn-action" onclick="event.stopPropagation(); window.verDetallesConversacion('${conv.id}')">
+                        <button class="btn-action" onclick="event.stopPropagation(); window.verHistorialChat('${cliente.nombre}', '${cliente.telefono}', '${conv.id}')">
                             Ver
                         </button>
                     </div>
@@ -1141,7 +1287,7 @@ async function aplicarFiltros() {
 // ============================================
 
 function actualizarEstadisticas() {
-    // Total de clientes ˙nicos
+    // Total de clientes nicos
     const clientesUnicos = new Set(conversaciones.map(c => c.cliente_id));
     const elTotal = document.getElementById('totalClientes');
     if (elTotal) elTotal.textContent = clientesUnicos.size;
@@ -1932,7 +2078,7 @@ window.eliminarProgramacion = async (id) => {
 };
 // ============================================
 
-// NUEVA L√ GICA DE NAVEGACI√ N AGRUPADA
+// NUEVA L GICA DE NAVEGACI N AGRUPADA
 
 // ============================================
 

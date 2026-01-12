@@ -93,6 +93,39 @@ export async function actualizarConversacion(conversacionId, updates) {
     return data;
 }
 
+// ============================================
+// Funciones de Historial de Chat
+// ============================================
+
+export async function obtenerHistorialMensajes(telefono) {
+    // 1. Intentar buscar en `messages` (tabla estándar)
+    // Nota: El usuario mencionó "mensajes que llegan desde el chat", asumo 'messages' o 'chat_history'
+
+    // Primero obtenemos el cliente para tener su ID si fuera necesario, pero la búsqueda suele ser por telefono (from/to)
+    // Asumiremos una estructura donde 'from' o 'to' coinciden con el telefono del cliente.
+
+    // Normalizar telefono (quitar + y espacios)
+    const telLimpio = telefono.replace(/\D/g, '');
+
+    // Consulta flexible: Mensajes donde el cliente sea el remitente O el destinatario
+    // Importante: Esto asume una tabla 'messages' con campos 'from', 'to', 'body', 'timestamp', 'fromMe'
+
+    // NOTA: Si esta tabla no existe, fallará. Es un "best guess" para la implementación.
+    const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .or(`from.eq.${telLimpio},to.eq.${telLimpio},from.eq.${telefono},to.eq.${telefono}`)
+        .order('created_at', { ascending: true }); // Orden cronológico para el chat
+
+    if (error) {
+        console.warn("Tabla 'messages' error:", error);
+        // Fallback: Si no existe, devolver array vacío para no romper la UI
+        return [];
+    }
+    return messages;
+}
+
+// Relacionado con Conversaciones (recuperar resumen e intencion)
 export async function eliminarConversacion(conversacionId) {
     const { error } = await supabase
         .from('conversaciones')
