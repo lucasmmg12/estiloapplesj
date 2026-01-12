@@ -294,465 +294,385 @@
                                     </div>
                                 </div>
 
-                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                                    <div class="form-group" style="flex: 1;">
-                                        <label>Moneda</label>
-                                        <div class="radio-group" style="display: flex; gap: 1rem;">
-                                            <label class="radio-input">
-                                                <input type="radio" name="ingresoMoneda" value="USD" checked> USD
-                                            </label>
-                                            <label class="radio-input">
-                                                <input type="radio" name="ingresoMoneda" value="ARS"> ARS
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1.5;">
-                                        <label>Monto</label>
-                                        <input type="number" id="ingresoMonto" name="ingresoMonto" step="0.01"
-                                            class="input-lg" placeholder="0.00" required
-                                            style="font-size: 1.2rem; padding: 0.5rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Moneda</label>
+                                    <div class="radio-group" style="display: flex; gap: 1rem;">
+                                        <label class="radio-input">
+                                            <input type="radio" name="ingresoMoneda" value="USD" checked> USD
+                                        </label>
+                                        <label class="radio-input">
+                                            <input type="radio" name="ingresoMoneda" value="ARS"> ARS
+                                        </label>
                                     </div>
                                 </div>
+                                <!-- Monto Total Display -->
+                                <div class="form-group" style="flex: 1.5; text-align: right;">
+                                    <label>Total Operación</label>
+                                    <div id="displayTotalIngreso"
+                                        style="font-size: 2rem; font-weight: 800; color: var(--success);">$0.00</div>
+                                </div>
+                        </div>
 
-                                <div class="form-group" id="selectorEquipoContainer"
-                                    style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                                    <label style="color: #00ff88;">Seleccionar Equipo del Stock</label>
-                                    <select id="ingresoProductoId" name="ingresoProductoId" class="select-lg"
-                                        style="width: 100%; padding: 0.5rem;">
-                                        <option value="">Buscar modelo...</option>
-                                        <!-- Se llena con JS -->
+                        <div class="form-group" id="selectorEquipoContainer"
+                            style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                            <label style="color: #00ff88;">Seleccionar Equipo del Stock</label>
+                            <select id="ingresoProductoId" name="ingresoProductoId" class="select-lg"
+                                style="width: 100%; padding: 0.5rem;">
+                                <option value="">Buscar modelo...</option>
+                                <!-- Se llena con JS -->
+                            </select>
+                            <small style="color: var(--gray-400);">Se descontará 1 unidad del
+                                inventario.</small>
+                        </div>
+
+                        <div class="form-group" id="selectorServicioContainer"
+                            style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
+                            <label style="color: var(--primary);">Tipo de Servicio</label>
+                            <select id="ingresoTipoServicio" name="ingresoTipoServicio" class="select-lg"
+                                style="width: 100%; padding: 0.5rem;">
+                                <option value="">Seleccionar servicio...</option>
+                                <option value="Diagnóstico">Diagnóstico</option>
+                                <option value="Cambio de batería">Cambio de batería</option>
+                                <option value="Cambio de pantalla">Cambio de pantalla</option>
+                                <option value="Cambio de tapa">Cambio de tapa</option>
+                                <option value="Cambio de flex">Cambio de flex</option>
+                                <option value="Cambio de cámara">Cambio de cámara</option>
+                                <option value="Placa">Placa</option>
+                                <option value="Sistema">Sistema</option>
+                                <option value="Copia de información">Copia de información</option>
+                                <option value="Cambio de piezas en general">Cambio de piezas en general</option>
+                            </select>
+                        </div>
+
+                        <!-- SECCION DE PAGOS MULTIPLES -->
+                        <div class="form-group"
+                            style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px;">
+                            <label style="color: var(--secondary); margin-bottom: 0.5rem; display: block;">Detalle de
+                                Pago (Múltiples métodos permitidos)</label>
+
+                            <div id="contenedorPagosIngreso">
+                                <!-- Fila Inicial por Defecto -->
+                                <div class="pago-row" style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
+                                    <select name="metodoPago[]" class="select-std" style="flex: 1;">
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                        <option value="USDT">USDT</option>
+                                        <option value="MercadoPago">MercadoPago</option>
+                                        <option value="Tarjeta">Tarjeta</option>
                                     </select>
-                                    <small style="color: var(--gray-400);">Se descontará 1 unidad del
-                                        inventario.</small>
+                                    <input type="number" name="montoPago[]" placeholder="Monto" step="0.01"
+                                        class="input-std monto-parcial" style="flex: 1;" required>
+                                    <button type="button" class="btn-action danger btn-eliminar-pago"
+                                        style="padding: 0.5rem;">✕</button>
                                 </div>
+                            </div>
 
-                                <div class="form-group" id="selectorServicioContainer"
-                                    style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
-                                    <label style="color: var(--primary);">Tipo de Servicio</label>
-                                    <select id="ingresoTipoServicio" name="ingresoTipoServicio" class="select-lg"
-                                        style="width: 100%; padding: 0.5rem;">
-                                        <option value="">Seleccionar servicio...</option>
-                                        <option value="Diagnóstico">Diagnóstico</option>
-                                        <option value="Cambio de batería">Cambio de batería</option>
-                                        <option value="Cambio de pantalla">Cambio de pantalla</option>
-                                        <option value="Cambio de tapa">Cambio de tapa</option>
-                                        <option value="Cambio de flex">Cambio de flex</option>
-                                        <option value="Cambio de cámara">Cambio de cámara</option>
-                                        <option value="Placa">Placa</option>
-                                        <option value="Sistema">Sistema</option>
-                                        <option value="Copia de información">Copia de información</option>
-                                        <option value="Cambio de piezas en general">Cambio de piezas en general</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                                    <div class="form-group" style="flex: 1;">
-                                        <label>Medio de Pago</label>
-                                        <select id="ingresoMetodo" name="ingresoMetodo" class="select-std">
-                                            <option value="Efectivo">Efectivo</option>
-                                            <option value="Transferencia">Transferencia</option>
-                                            <option value="USDT">USDT</option>
-                                            <option value="MercadoPago">MercadoPago</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group" style="flex: 1;">
-                                        <label>Fecha</label>
-                                        <input type="date" id="ingresoFecha" name="ingresoFecha" class="input-std"
-                                            required>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    Registrar Venta
-                                </button>
-                            </form>
+                            <button type="button" id="btnAgregarPago" class="btn-secondary"
+                                style="width: 100%; margin-top: 0.5rem; font-size: 0.8rem;">
+                                + Agregar otro método
+                            </button>
                         </div>
 
-                        <!-- Panel de Gastos (Egresos) -->
-                        <div class="glass-card">
-                            <div class="card-header">
-                                <h2 class="card-title" style="color: #ff4d4d;">Registrar Gasto</h2>
-                                <span class="badge"
-                                    style="background: rgba(255,77,77,0.1); color: #ff4d4d;">Salida</span>
-                            </div>
-                            <form id="formGasto" class="erp-form">
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label>Categoría de Gasto *</label>
-                                    <select id="gastoCategoria" name="gastoCategoria" class="select-std" required>
-                                        <option value="">Seleccionar...</option>
-                                        <option value="Proveedores">Proveedores</option>
-                                        <option value="Comisiones">Comisiones</option>
-                                        <option value="Envios">Envíos</option>
-                                        <option value="Alquiler">Alquiler</option>
-                                        <option value="Servicios">Servicios (Luz, Internet)</option>
-                                        <option value="Herramientas">Herramientas</option>
-                                        <option value="Empleados local">Empleados local</option>
-                                        <option value="Pago Prestamos">Pago Préstamos</option>
-                                        <option value="Contador / Abogado">Contador / Abogado</option>
-                                        <option value="Mantenimiento">Mantenimiento</option>
-                                        <option value="Marketing">Marketing / Publicidad</option>
-                                        <option value="Impuestos">Impuestos</option>
-                                        <option value="Limpieza">Limpieza</option>
-                                        <option value="Otros">Otros</option>
-                                        <option value="Distribucion Ganancias Socios">Distribución Socios</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                                    <div class="form-group" style="flex: 1;">
-                                        <label>Moneda</label>
-                                        <div class="radio-group" style="display: flex; gap: 1rem;">
-                                            <label class="radio-input">
-                                                <input type="radio" name="gastoMoneda" value="USD" checked> USD
-                                            </label>
-                                            <label class="radio-input">
-                                                <input type="radio" name="gastoMoneda" value="ARS"> ARS
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="form-group" style="flex: 1.5;">
-                                        <label>Monto</label>
-                                        <input type="number" id="gastoMonto" name="gastoMonto" step="0.01"
-                                            class="input-lg" placeholder="0.00" required
-                                            style="font-size: 1.2rem; padding: 0.5rem;">
-                                    </div>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 1rem;">
-                                    <label>Comentario (Opcional)</label>
-                                    <input type="text" id="gastoComentario" name="gastoComentario" class="input-std"
-                                        placeholder="Detalle del gasto...">
-                                </div>
-
-                                <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                                    <div class="form-group" style="flex: 1;">
-                                        <label>Fecha</label>
-                                        <input type="date" id="gastoFecha" name="gastoFecha" class="input-std" required>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="btn-secondary"
-                                    style="width: 100%; border-color: #ff4d4d; color: #ff4d4d; justify-content: center;">
-                                    Registrar Gasto
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- COLUMNA DERECHA: TABLAS Y GRAFICOS -->
-                    <div class="right-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
-
-                        <!-- Ultimos Movimientos -->
-                        <div class="glass-card" style="flex: 1; min-height: 400px;">
-                            <div class="card-header">
-                                <h2 class="card-title">Últimos Movimientos</h2>
-                                <button class="btn-refresh-sm" id="btnRefreshErp">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2">
-                                        <path d="M23 4v6h-6M1 20v-6h6"></path>
-                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
-                                        </path>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="table-container" style="max-height: 350px; overflow-y: auto;">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Tipo</th>
-                                            <th>Categoría</th>
-                                            <th>Monto</th>
-                                            <th>Detalle</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tablaMovimientos">
-                                        <!-- JS Fill -->
-                                        <tr>
-                                            <td colspan="5" style="text-align:center;">Cargando...</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div class="form-group" style="flex: 1;">
+                                <label>Fecha</label>
+                                <input type="date" id="ingresoFecha" name="ingresoFecha" class="input-std" required>
                             </div>
                         </div>
 
-                        <!-- Gráfico Financiero -->
-                        <div class="glass-card">
-                            <div class="card-header">
-                                <h2 class="card-title">Análisis Financiero Mes Actual</h2>
-                            </div>
-                            <div style="height: 250px; position: relative;">
-                                <canvas id="chartFinanzas"></canvas>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Conversaciones -->
-            <div class="tab-content" id="tabConversaciones">
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Historial de Conversaciones</h2>
-                        <span class="badge" id="badgeTotal">0 conversaciones</span>
-                    </div>
-
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Vendedor</th>
-                                    <th>Cliente</th>
-                                    <th>Teléfono</th>
-                                    <th>Plataforma</th>
-                                    <th>Resumen</th>
-                                    <th>Intención</th>
-                                    <th>Última Interacción</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaConversaciones">
-                                <tr class="loading-row">
-                                    <td colspan="8">
-                                        <div class="loading-spinner"></div>
-                                        <p>Cargando conversaciones...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB COMPETENCIA -->
-            <div class="tab-content" id="tabCompetencia">
-
-                <!-- 1. Mapa de Cobertura (Hero) -->
-                <div class="glass-card full-width-card" style="margin-bottom: 1.5rem;">
-                    <div class="card-header">
-                        <h2 class="card-title">Mapa de Cobertura - San Juan</h2>
-                    </div>
-                    <div id="mapCompetencia" style="height: 400px; width: 100%; border-radius: 12px; z-index: 1;"></div>
-                </div>
-
-                <!-- 2. Métricas de Mercado -->
-                <div class="dashboard-grid">
-                    <!-- Share de Mercado -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Share de Mercado Estimado</h2>
-                        </div>
-                        <div style="height: 300px; position: relative;">
-                            <canvas id="chartMarketShare"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Ranking de Calidad -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Ranking de Calidad & Confianza</h2>
-                        </div>
-                        <div class="ranking-list" id="rankingCompetencia">
-                            <!-- Inyectado por JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. Auditoría de Rivales (Cards) -->
-                <h3 class="section-title" style="margin: 1.5rem 0 1rem; color: #fff;">Auditoría de Competidores</h3>
-                <div class="competitor-grid" id="gridCompetidores">
-                    <!-- Cards inyectadas por JS -->
-                </div>
-
-                <!-- 4. Radar de Eventos -->
-                <div class="glass-card full-width-card" style="margin-top: 1.5rem;">
-                    <div class="card-header">
-                        <h2 class="card-title">Radar de Estrategia Comercial</h2>
-                    </div>
-
-                    <div class="events-timeline" id="eventsTimeline">
-                        <!-- Botones de Eventos -->
-                    </div>
-
-                    <div class="event-details" id="eventDetailsPanel"
-                        style="display:none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <!-- Detalles del evento seleccionado -->
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="tab-content" id="tabClientes">
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Historial de Clientes</h2>
-                        <span class="badge" id="badgeClientes">0 clientes</span>
-                    </div>
-
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Teléfono</th>
-                                    <th>Plataforma</th>
-                                    <th>Total Conversaciones</th>
-                                    <th>Última Interacción</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaClientes">
-                                <tr class="loading-row">
-                                    <td colspan="6">
-                                        <div class="loading-spinner"></div>
-                                        <p>Cargando clientes...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Vendedores -->
-            <div class="tab-content" id="tabVendedores">
-                <!-- Vista Principal de Vendedores -->
-                <div id="vendedoresMain">
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Equipo de Ventas</h2>
-                            <p style="font-size: 0.9rem; color: var(--gray-400);">Gestión y rendimiento del equipo</p>
-                        </div>
-                        <div class="embudo-grid" id="vendedoresGrid">
-                            <!-- Se llena con JS -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Vista Detallada de Vendedor (Oculta por defecto) -->
-                <div id="vendedorDetalle" style="display: none;">
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <button class="btn-secondary" id="btnVolverVendedores">
-                                    ← Volver
-                                </button>
-                                <h2 class="card-title">Historial de <span id="nombreVendedorDetalle"
-                                        style="color: var(--primary);">Vendedor</span></h2>
-                            </div>
-                            <span class="badge" id="badgeVendedorDetalle">0 conversaciones</span>
-                        </div>
-
-                        <div class="table-container">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Cliente</th>
-                                        <th>Teléfono</th>
-                                        <th>Resumen</th>
-                                        <th>Fecha</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaVendedorDetalle">
-                                    <!-- Se llena con JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Embudo de Ventas -->
-            <div class="tab-content" id="tabEmbudo">
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Embudo de Ventas</h2>
-                        <span class="badge" id="badgeEmbudo">0 clientes en seguimiento</span>
-                    </div>
-
-                    <div class="embudo-grid" id="embudoGrid">
-                        <div class="loading-row">
-                            <div class="loading-spinner"></div>
-                            <p>Cargando embudo...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab: Estadísticas -->
-            <div class="tab-content" id="tabEstadisticas">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
-
-                    <!-- Rendimiento Equipo -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Rendimiento del Equipo</h2>
-                        </div>
-                        <div style="height: 300px; position: relative;">
-                            <canvas id="chartEquipo"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Estado del Embudo -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Salud del Embudo (Clientes)</h2>
-                        </div>
-                        <div style="height: 300px; position: relative;">
-                            <canvas id="chartEmbudo"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Origen Tráfico -->
-                    <div class="glass-card">
-                        <div class="card-header">
-                            <h2 class="card-title">Origen de Conversaciones</h2>
-                        </div>
-                        <div style="height: 300px; position: relative; display: flex; justify-content: center;">
-                            <canvas id="chartPlataforma"></canvas>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- Tab: Mensajes Automáticos -->
-            <div class="tab-content" id="tabMensajes">
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Configuración de Mensajes Automáticos</h2>
-                        <button class="btn-primary" id="btnNuevoMensaje">
+                        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Nuevo Mensaje
+                            Registrar Venta
                         </button>
+                        </form>
                     </div>
 
-                    <div class="mensajes-grid" id="mensajesGrid">
-                        <div class="loading-row">
-                            <div class="loading-spinner"></div>
-                            <p>Cargando mensajes...</p>
+                    <!-- Panel de Gastos (Egresos) -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2 class="card-title" style="color: #ff4d4d;">Registrar Gasto</h2>
+                            <span class="badge" style="background: rgba(255,77,77,0.1); color: #ff4d4d;">Salida</span>
                         </div>
+                        <form id="formGasto" class="erp-form">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label>Categoría de Gasto *</label>
+                                <select id="gastoCategoria" name="gastoCategoria" class="select-std" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="Proveedores">Proveedores</option>
+                                    <option value="Comisiones">Comisiones</option>
+                                    <option value="Envios">Envíos</option>
+                                    <option value="Alquiler">Alquiler</option>
+                                    <option value="Servicios">Servicios (Luz, Internet)</option>
+                                    <option value="Herramientas">Herramientas</option>
+                                    <option value="Empleados local">Empleados local</option>
+                                    <option value="Pago Prestamos">Pago Préstamos</option>
+                                    <option value="Contador / Abogado">Contador / Abogado</option>
+                                    <option value="Mantenimiento">Mantenimiento</option>
+                                    <option value="Marketing">Marketing / Publicidad</option>
+                                    <option value="Impuestos">Impuestos</option>
+                                    <option value="Limpieza">Limpieza</option>
+                                    <option value="Otros">Otros</option>
+                                    <option value="Distribucion Ganancias Socios">Distribución Socios</option>
+                                </select>
+                            </div>
+
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Moneda</label>
+                                    <div class="radio-group" style="display: flex; gap: 1rem;">
+                                        <label class="radio-input">
+                                            <input type="radio" name="gastoMoneda" value="USD" checked> USD
+                                        </label>
+                                        <label class="radio-input">
+                                            <input type="radio" name="gastoMoneda" value="ARS"> ARS
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="flex: 1.5;">
+                                    <label>Monto</label>
+                                    <input type="number" id="gastoMonto" name="gastoMonto" step="0.01" class="input-lg"
+                                        placeholder="0.00" required style="font-size: 1.2rem; padding: 0.5rem;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label>Comentario (Opcional)</label>
+                                <input type="text" id="gastoComentario" name="gastoComentario" class="input-std"
+                                    placeholder="Detalle del gasto...">
+                            </div>
+
+                            <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <div class="form-group" style="flex: 1;">
+                                    <label>Fecha</label>
+                                    <input type="date" id="gastoFecha" name="gastoFecha" class="input-std" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-secondary"
+                                style="width: 100%; border-color: #ff4d4d; color: #ff4d4d; justify-content: center;">
+                                Registrar Gasto
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: TABLAS Y GRAFICOS -->
+                <div class="right-column" style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                    <!-- Ultimos Movimientos -->
+                    <div class="glass-card" style="flex: 1; min-height: 400px;">
+                        <div class="card-header">
+                            <h2 class="card-title">Últimos Movimientos</h2>
+                            <button class="btn-refresh-sm" id="btnRefreshErp">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Tipo</th>
+                                        <th>Categoría</th>
+                                        <th>Monto</th>
+                                        <th>Detalle</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaMovimientos">
+                                    <!-- JS Fill -->
+                                    <tr>
+                                        <td colspan="5" style="text-align:center;">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Financiero -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Balance Ingresos vs Gastos</h2>
+                        </div>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="chartFinanzas"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico Categorías -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Distribución por Categoría</h2>
+                        </div>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="chartCategorias"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Conversaciones -->
+        <div class="tab-content" id="tabConversaciones">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Historial de Conversaciones</h2>
+                    <span class="badge" id="badgeTotal">0 conversaciones</span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Vendedor</th>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Plataforma</th>
+                                <th>Resumen</th>
+                                <th>Intención</th>
+                                <th>Última Interacción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaConversaciones">
+                            <tr class="loading-row">
+                                <td colspan="8">
+                                    <div class="loading-spinner"></div>
+                                    <p>Cargando conversaciones...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB COMPETENCIA -->
+        <div class="tab-content" id="tabCompetencia">
+
+            <!-- 1. Mapa de Cobertura (Hero) -->
+            <div class="glass-card full-width-card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Mapa de Cobertura - San Juan</h2>
+                </div>
+                <div id="mapCompetencia" style="height: 400px; width: 100%; border-radius: 12px; z-index: 1;"></div>
+            </div>
+
+            <!-- 2. Métricas de Mercado -->
+            <div class="dashboard-grid">
+                <!-- Share de Mercado -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Share de Mercado Estimado</h2>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chartMarketShare"></canvas>
+                    </div>
+                </div>
+
+                <!-- Ranking de Calidad -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Ranking de Calidad & Confianza</h2>
+                    </div>
+                    <div class="ranking-list" id="rankingCompetencia">
+                        <!-- Inyectado por JS -->
                     </div>
                 </div>
             </div>
 
-            <!-- Tab: Mensajes Programados -->
-            <div class="tab-content" id="tabProgramados">
+            <!-- 3. Auditoría de Rivales (Cards) -->
+            <h3 class="section-title" style="margin: 1.5rem 0 1rem; color: #fff;">Auditoría de Competidores</h3>
+            <div class="competitor-grid" id="gridCompetidores">
+                <!-- Cards inyectadas por JS -->
+            </div>
+
+            <!-- 4. Radar de Eventos -->
+            <div class="glass-card full-width-card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h2 class="card-title">Radar de Estrategia Comercial</h2>
+                </div>
+
+                <div class="events-timeline" id="eventsTimeline">
+                    <!-- Botones de Eventos -->
+                </div>
+
+                <div class="event-details" id="eventDetailsPanel"
+                    style="display:none; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <!-- Detalles del evento seleccionado -->
+                </div>
+            </div>
+
+        </div>
+
+        <div class="tab-content" id="tabClientes">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Historial de Clientes</h2>
+                    <span class="badge" id="badgeClientes">0 clientes</span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Teléfono</th>
+                                <th>Plataforma</th>
+                                <th>Total Conversaciones</th>
+                                <th>Última Interacción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaClientes">
+                            <tr class="loading-row">
+                                <td colspan="6">
+                                    <div class="loading-spinner"></div>
+                                    <p>Cargando clientes...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Vendedores -->
+        <div class="tab-content" id="tabVendedores">
+            <!-- Vista Principal de Vendedores -->
+            <div id="vendedoresMain">
                 <div class="glass-card">
                     <div class="card-header">
-                        <h2 class="card-title">Envíos Programados</h2>
-                        <span class="badge" id="badgeProgramados">0 pendientes</span>
+                        <h2 class="card-title">Equipo de Ventas</h2>
+                        <p style="font-size: 0.9rem; color: var(--gray-400);">Gestión y rendimiento del equipo</p>
+                    </div>
+                    <div class="embudo-grid" id="vendedoresGrid">
+                        <!-- Se llena con JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista Detallada de Vendedor (Oculta por defecto) -->
+            <div id="vendedorDetalle" style="display: none;">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <button class="btn-secondary" id="btnVolverVendedores">
+                                ← Volver
+                            </button>
+                            <h2 class="card-title">Historial de <span id="nombreVendedorDetalle"
+                                    style="color: var(--primary);">Vendedor</span></h2>
+                        </div>
+                        <span class="badge" id="badgeVendedorDetalle">0 conversaciones</span>
                     </div>
 
                     <div class="table-container">
@@ -760,105 +680,211 @@
                             <thead>
                                 <tr>
                                     <th>Cliente</th>
-                                    <th>Intención</th>
-                                    <th>Fecha Programada</th>
-                                    <th>Estado</th>
+                                    <th>Teléfono</th>
+                                    <th>Resumen</th>
+                                    <th>Fecha</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="tablaProgramados">
-                                <tr class="loading-row">
-                                    <td colspan="5">
-                                        <div class="loading-spinner"></div>
-                                        <p>Cargando programados...</p>
-                                    </td>
-                                </tr>
+                            <tbody id="tablaVendedorDetalle">
+                                <!-- Se llena con JS -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Tab: Catálogo de Productos -->
-            <div class="tab-content" id="tabCatalogo">
+        <!-- Tab: Embudo de Ventas -->
+        <div class="tab-content" id="tabEmbudo">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Embudo de Ventas</h2>
+                    <span class="badge" id="badgeEmbudo">0 clientes en seguimiento</span>
+                </div>
+
+                <div class="embudo-grid" id="embudoGrid">
+                    <div class="loading-row">
+                        <div class="loading-spinner"></div>
+                        <p>Cargando embudo...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Estadísticas -->
+        <div class="tab-content" id="tabEstadisticas">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+
+                <!-- Rendimiento Equipo -->
                 <div class="glass-card">
                     <div class="card-header">
-                        <h2 class="card-title">Catálogo de Productos</h2>
-                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                            <button class="btn-secondary" id="btnActualizarDolar">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>
-                                Dólar: $<span id="valorDolar">-</span>
-                            </button>
-                            <button class="btn-primary" id="btnVerCatalogoPublico">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                                </svg>
-                                Catálogo Público
-                            </button>
-                            <button class="btn-primary" id="btnNuevoProducto">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                                </svg>
-                                Nuevo Producto
-                            </button>
-                            <span class="badge" id="badgeCatalogo">0 productos</span>
-                        </div>
+                        <h2 class="card-title">Rendimiento del Equipo</h2>
                     </div>
-
-                    <!-- Barra de búsqueda y filtros -->
-                    <div class="catalogo-controls">
-                        <input type="text" id="buscarProducto" class="search-input" placeholder="Buscar por modelo...">
-                        <select id="filtroAlmacenamiento" class="filter-select">
-                            <option value="">Todos los almacenamientos</option>
-                            <option value="64 GB">64 GB</option>
-                            <option value="128 GB">128 GB</option>
-                            <option value="256 GB">256 GB</option>
-                            <option value="512 GB">512 GB</option>
-                            <option value="1 TB">1 TB</option>
-                        </select>
-                        <select id="ordenarPor" class="filter-select">
-                            <option value="modelo">Modelo</option>
-                            <option value="precio_asc">Precio: Menor a Mayor</option>
-                            <option value="precio_desc">Precio: Mayor a Menor</option>
-                        </select>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chartEquipo"></canvas>
                     </div>
+                </div>
 
-                    <div class="table-container">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Modelo</th>
-                                    <th>Colores</th>
-                                    <th>Almacenamiento</th>
-                                    <th>Batería</th>
-                                    <th>Precio USD</th>
-                                    <th>Precio ARS</th>
-                                    <th>3 Cuotas</th>
-                                    <th>6 Cuotas</th>
-                                    <th>12 Cuotas</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaCatalogo">
-                                <tr class="loading-row">
-                                    <td colspan="10">
-                                        <div class="loading-spinner"></div>
-                                        <p>Cargando catálogo...</p>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- Estado del Embudo -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Salud del Embudo (Clientes)</h2>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chartEmbudo"></canvas>
+                    </div>
+                </div>
+
+                <!-- Origen Tráfico -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Origen de Conversaciones</h2>
+                    </div>
+                    <div style="height: 300px; position: relative; display: flex; justify-content: center;">
+                        <canvas id="chartPlataforma"></canvas>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Tab: Mensajes Automáticos -->
+        <div class="tab-content" id="tabMensajes">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Configuración de Mensajes Automáticos</h2>
+                    <button class="btn-primary" id="btnNuevoMensaje">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Nuevo Mensaje
+                    </button>
+                </div>
+
+                <div class="mensajes-grid" id="mensajesGrid">
+                    <div class="loading-row">
+                        <div class="loading-spinner"></div>
+                        <p>Cargando mensajes...</p>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Tab: Mensajes Programados -->
+        <div class="tab-content" id="tabProgramados">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Envíos Programados</h2>
+                    <span class="badge" id="badgeProgramados">0 pendientes</span>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Intención</th>
+                                <th>Fecha Programada</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaProgramados">
+                            <tr class="loading-row">
+                                <td colspan="5">
+                                    <div class="loading-spinner"></div>
+                                    <p>Cargando programados...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Catálogo de Productos -->
+        <div class="tab-content" id="tabCatalogo">
+            <div class="glass-card">
+                <div class="card-header">
+                    <h2 class="card-title">Catálogo de Productos</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        <button class="btn-secondary" id="btnActualizarDolar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            Dólar: $<span id="valorDolar">-</span>
+                        </button>
+                        <button class="btn-primary" id="btnVerCatalogoPublico">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                            Catálogo Público
+                        </button>
+                        <button class="btn-primary" id="btnNuevoProducto">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Nuevo Producto
+                        </button>
+                        <span class="badge" id="badgeCatalogo">0 productos</span>
+                    </div>
+                </div>
+
+                <!-- Barra de búsqueda y filtros -->
+                <div class="catalogo-controls">
+                    <input type="text" id="buscarProducto" class="search-input" placeholder="Buscar por modelo...">
+                    <select id="filtroAlmacenamiento" class="filter-select">
+                        <option value="">Todos los almacenamientos</option>
+                        <option value="64 GB">64 GB</option>
+                        <option value="128 GB">128 GB</option>
+                        <option value="256 GB">256 GB</option>
+                        <option value="512 GB">512 GB</option>
+                        <option value="1 TB">1 TB</option>
+                    </select>
+                    <select id="ordenarPor" class="filter-select">
+                        <option value="modelo">Modelo</option>
+                        <option value="precio_asc">Precio: Menor a Mayor</option>
+                        <option value="precio_desc">Precio: Mayor a Menor</option>
+                    </select>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th>Colores</th>
+                                <th>Almacenamiento</th>
+                                <th>Batería</th>
+                                <th>Precio USD</th>
+                                <th>Precio ARS</th>
+                                <th>3 Cuotas</th>
+                                <th>6 Cuotas</th>
+                                <th>12 Cuotas</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCatalogo">
+                            <tr class="loading-row">
+                                <td colspan="10">
+                                    <div class="loading-spinner"></div>
+                                    <p>Cargando catálogo...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         </div>
     </main>
@@ -1175,6 +1201,23 @@
         </div>
     </div>
 
+    <!-- MODAL DE ÉXITO -->
+    <div id="modalExito" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="success-modal">
+            <div class="modal-body">
+                <div class="checkmark-circle">
+                    <svg class="checkmark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <path fill="none" stroke="currentColor" stroke-width="5" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                    </svg>
+                </div>
+                <h3 class="success-title">¡Operación Exitosa!</h3>
+                <p class="success-message" id="mensajeExito">Los datos se han guardado correctamente.</p>
+                <button class="btn-primary btn-success-modal" onclick="cerrarModalExito()">ACEPTAR</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="main-footer">
         <div class="container">
@@ -1238,6 +1281,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="config.js" type="module"></script>
     <script src="services/supabase-client.js" type="module"></script>
     <script src="services/builderbot-api.js" type="module"></script>

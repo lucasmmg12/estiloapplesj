@@ -52,6 +52,53 @@ function setupEventListeners() {
                 }
             });
         });
+
+        // ---------------------------------------------------------
+        // LOGICA MULTI-PAGO
+        // ---------------------------------------------------------
+        const btnAgregarPago = document.getElementById('btnAgregarPago');
+        const contenedorPagos = document.getElementById('contenedorPagosIngreso');
+
+        // Agregar Fila
+        btnAgregarPago?.addEventListener('click', () => {
+            const nuevaFila = document.createElement('div');
+            nuevaFila.className = 'pago-row';
+            nuevaFila.style.display = "flex";
+            nuevaFila.style.gap = "1rem";
+            nuevaFila.style.marginBottom = "0.5rem";
+            nuevaFila.innerHTML = `
+                <select name="metodoPago[]" class="select-std" style="flex: 1;">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="USDT">USDT</option>
+                    <option value="MercadoPago">MercadoPago</option>
+                     <option value="Tarjeta">Tarjeta</option>
+                </select>
+                <input type="number" name="montoPago[]" placeholder="Monto" step="0.01" class="input-std monto-parcial" style="flex: 1;" required>
+                <button type="button" class="btn-action danger btn-eliminar-pago" style="padding: 0.5rem;">✕</button>
+            `;
+            contenedorPagos.appendChild(nuevaFila);
+        });
+
+        // Eliminar Fila y Actualizar Total
+        contenedorPagos?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-eliminar-pago')) {
+                // No eliminar la última fila si es la única (opcional, pero buena UX)
+                if (contenedorPagos.querySelectorAll('.pago-row').length > 1) {
+                    e.target.closest('.pago-row').remove();
+                    actualizarTotalDisplay();
+                } else {
+                    alert("Debe haber al menos un método de pago.");
+                }
+            }
+        });
+
+        // Actualizar Total al escribir
+        contenedorPagos?.addEventListener('input', (e) => {
+            if (e.target.classList.contains('monto-parcial')) {
+                actualizarTotalDisplay();
+            }
+        });
     }
 
     // Formulario de Gastos
@@ -69,6 +116,25 @@ function setupEventListeners() {
             setTimeout(() => btnRefresh.classList.remove('rotating'), 1000);
         });
     }
+
+    // Exponer cierre modal
+    window.cerrarModalExito = function () {
+        document.getElementById('modalExito').classList.remove('active');
+    };
+
+    // Función global eliminar (para llamarla desde HTML string)
+    window.eliminarMovimiento = async function (id) {
+        if (!confirm('¿Estás seguro de que deseas eliminar este movimiento? Esta acción es irreversible.')) return;
+
+        try {
+            await supabaseService.eliminarTransaccion(id);
+            mostrarModalExito('Movimiento eliminado correctamente');
+            await cargarDatosIniciales();
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar: ' + error.message);
+        }
+    };
 }
 
 async function cargarDatosIniciales() {
@@ -86,6 +152,9 @@ async function cargarDatosIniciales() {
 
         // Cargar Tabla Últimos Movimientos
         await cargarTablaMovimientos();
+
+        // Renderizar Gráficos
+        await renderizarGraficos();
 
     } catch (error) {
         console.error('Error cargando datos ERP:', error);
@@ -106,48 +175,82 @@ function llenarSelectorProductos(productos) {
     });
 }
 
+function actualizarTotalDisplay() {
+    const inputs = document.querySelectorAll('.monto-parcial');
+    let total = 0;
+    inputs.forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('displayTotalIngreso').textContent = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+}
+
+function mostrarModalExito(mensaje) {
+    const modal = document.getElementById('modalExito');
+    const mensajeElement = document.getElementById('modalExitoMensaje');
+    if (modal && mensajeElement) {
+        mensajeElement.textContent = mensaje;
+        modal.classList.add('active');
+    }
+}
+
 async function handleIngresoSubmit(e) {
     e.preventDefault();
 
     try {
         const formData = new FormData(e.target);
-        const categoriaNombre = formData.get('ingresoCategoria'); // "Venta de Equipos", etc.
+        const categoriaNombre = formData.get('ingresoCategoria');
         const categoriaObj = categoriasCache.find(c => c.name === categoriaNombre && c.type === 'INCOME');
 
         if (!categoriaObj) throw new Error(`Categoría no encontrada: ${categoriaNombre}`);
 
         const moneda = formData.get('ingresoMoneda');
-        const monto = parseFloat(formData.get('ingresoMonto'));
         const fecha = new Date(formData.get('ingresoFecha')).toISOString();
-        const metodoPagoNombre = document.getElementById('ingresoMetodo').value;
-        const productoId = formData.get('ingresoProductoId'); // Opcional
-        const tipoServicio = formData.get('ingresoTipoServicio'); // Opcional
+        const productoId = formData.get('ingresoProductoId');
+        const tipoServicio = formData.get('ingresoTipoServicio');
 
-        let descripcion = categoriaNombre;
+        // Recolectar Pagos
+        const filasPago = document.querySelectorAll('.pago-row');
+        const pagos = [];
+        let totalMonto = 0;
 
+        filasPago.forEach(row => {
+            const select = row.querySelector('select');
+            const input = row.querySelector('input');
+            const metodo = select.value;
+            const monto = parseFloat(input.value);
+
+            if (monto > 0) {
+                pagos.push({ metodo, monto });
+                totalMonto += monto;
+            }
+        });
+
+        if (pagos.length === 0) throw new Error("Debe ingresar al menos un monto válido.");
+
+        // Construir Descripción General
+        let descripcionBase = categoriaNombre;
         if (categoriaNombre === 'Venta de Equipos' && productoId) {
-            descripcion = `Venta: ${obtenerNombreProducto(productoId)}`;
+            descripcionBase = `Venta: ${obtenerNombreProducto(productoId)}`;
         } else if (categoriaNombre === 'Servicio Tecnico' && tipoServicio) {
-            descripcion = `Servicio: ${tipoServicio}`;
+            descripcionBase = `Servicio: ${tipoServicio}`;
         }
 
-        // 1. Crear Transacción
-        const transaccion = {
-            date: fecha,
-            type: 'INCOME',
-            amount: monto,
-            currency: moneda,
-            category_id: categoriaObj.id,
-            description: descripcion,
-            created_at: new Date().toISOString()
-        };
+        // Crear una transacción por cada pago parcial
+        const promesas = pagos.map(pago => {
+            return supabaseService.crearTransaccion({
+                date: fecha,
+                type: 'INCOME',
+                amount: pago.monto,
+                currency: moneda,
+                category_id: categoriaObj.id,
+                description: `${descripcionBase} (${pago.metodo})`,
+                created_at: new Date().toISOString()
+            });
+        });
 
-        // TODO: Buscar ID de Payment Method (o asumirlo)
-        // Por simplicidad, asumimos que existen en DB.
+        await Promise.all(promesas);
 
-        await supabaseService.crearTransaccion(transaccion);
-
-        // 2. Si es Venta de Equipo -> Descontar Stock
+        // Actualizar Stock (SOLO UNA VEZ, no por cada pago)
         if (categoriaNombre === 'Venta de Equipos' && productoId) {
             const producto = await supabaseService.obtenerProductoPorId(productoId);
             if (producto) {
@@ -164,9 +267,22 @@ async function handleIngresoSubmit(e) {
             }
         }
 
-        alert('Ingreso registrado correctamente ✅');
+        mostrarModalExito('Venta registrada correctamente ✅');
         e.target.reset();
-        await cargarDatosIniciales(); // Recargar tablas
+
+        // Reset manual UI
+        document.getElementById('selectorEquipoContainer').style.display = 'none';
+        document.getElementById('selectorServicioContainer').style.display = 'none';
+        // Reset rows to 1
+        const contenedor = document.getElementById('contenedorPagosIngreso');
+        if (contenedor) {
+            while (contenedor.children.length > 1) {
+                contenedor.removeChild(contenedor.lastChild);
+            }
+        }
+        actualizarTotalDisplay();
+
+        await cargarDatosIniciales();
 
     } catch (error) {
         console.error(error);
@@ -201,7 +317,7 @@ async function handleGastoSubmit(e) {
 
         await supabaseService.crearTransaccion(transaccion);
 
-        alert('Gasto registrado correctamente 📉');
+        mostrarModalExito('Gasto registrado correctamente 📉');
         e.target.reset();
         await cargarDatosIniciales();
 
@@ -255,7 +371,7 @@ async function cargarTablaMovimientos() {
     tbody.innerHTML = '';
 
     if (movimientos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay movimientos recientes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos recientes</td></tr>';
         return;
     }
 
@@ -271,6 +387,11 @@ async function cargarTablaMovimientos() {
             <td>${m.transaction_categories?.name || 'Otro'}</td>
             <td style="color: ${color}">${simbolo} $${m.amount} ${m.currency}</td>
             <td>${m.description || '-'}</td>
+             <td style="text-align: center;">
+                <button class="btn-action danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">
+                    🗑️
+                </button>
+            </td>
         `;
         tbody.appendChild(tr);
     });
@@ -281,6 +402,140 @@ function obtenerNombreProducto(id) {
     return p ? p.modelo : 'Desconocido';
 }
 
-function renderizarGraficos() {
-    // Implementar Chart.js aquí
+let chartFinanzasInstance = null;
+let chartCategoriasInstance = null;
+
+async function renderizarGraficos() {
+    try {
+        const hoy = new Date();
+        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
+        const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString();
+
+        // Obtener datos del mes
+        const transacciones = await supabaseService.obtenerResumenFinanciero(inicioMes, finMes);
+
+        // --- Procesar Datos Chart 1: Balance ---
+        let totalIngresos = 0;
+        let totalGastos = 0;
+
+        transacciones.forEach(t => {
+            // Conversión simplificada a ARS o USD unificado (Supongamos USD base para gráficos o visualización mixta)
+            // Para ser precisos, deberíamos normalizar. Usaremos valor nominal si es moneda principal, o conversión.
+            // Asumimos visualización en Moneda Base (ej. USD o ARS según configuración). 
+            // Por ahora sumamos todo nominal si es coincidente o aplicamos tasa.
+            // *Mejor enfoque:* Usar la lógica de KPIs para normalizar a una moneda (ej ARS).
+
+            let tasa = t.exchange_rate || 1200;
+            let montoNormalizado = t.currency === 'ARS' ? (t.amount / tasa) : t.amount; // A VER: Lógica inversa.
+            // Si quiero ver todo en USD: ARS / Tasa. USD = USD.
+            // Si quiero ver todo en ARS: USD * Tasa. ARS = ARS.
+            // Vamos a mostrar en USD Estimado.
+
+            if (t.type === 'INCOME') totalIngresos += montoNormalizado;
+            if (t.type === 'EXPENSE') totalGastos += montoNormalizado;
+        });
+
+        // --- Procesar Datos Chart 2: Categorías Ingresos ---
+        const categoriasMap = {};
+        transacciones.filter(t => t.type === 'INCOME').forEach(t => {
+            const catName = t.transaction_categories?.type || 'Varios'; // Ajustar si no viene el join deep
+            // El servicio trae: transaction_categories (name, type).
+            // Entonces acceso es t.transaction_categories.name
+            const nombre = t.transaction_categories?.name || 'Otros';
+
+            let tasa = t.exchange_rate || 1200;
+            let monto = t.currency === 'ARS' ? (t.amount / tasa) : t.amount; // Normalizado a USD
+
+            categoriasMap[nombre] = (categoriasMap[nombre] || 0) + monto;
+        });
+
+        // --- Render Chart 1: Balance ---
+        const ctxBalance = document.getElementById('chartFinanzas');
+        if (ctxBalance) {
+            if (chartFinanzasInstance) chartFinanzasInstance.destroy();
+
+            chartFinanzasInstance = new Chart(ctxBalance, {
+                type: 'bar',
+                data: {
+                    labels: ['Ingresos', 'Gastos'],
+                    datasets: [{
+                        label: 'Usuario (USD Est.)',
+                        data: [totalIngresos, totalGastos],
+                        backgroundColor: ['#00ff88', '#ff4d4d'],
+                        borderRadius: 8,
+                        barThickness: 50
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return '$ ' + context.raw.toFixed(2) + ' USD';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#888' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#fff', font: { weight: 'bold' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Render Chart 2: Categorías ---
+        const ctxCat = document.getElementById('chartCategorias');
+        if (ctxCat) {
+            if (chartCategoriasInstance) chartCategoriasInstance.destroy();
+
+            const labels = Object.keys(categoriasMap);
+            const data = Object.values(categoriasMap);
+            const colors = ['#00d4ff', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899'];
+
+            chartCategoriasInstance = new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#ccc', usePointStyle: true }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return context.label + ': $' + context.raw.toFixed(2) + ' USD';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+
+    } catch (e) {
+        console.error("Error renderizando gráficos ERP:", e);
+    }
 }

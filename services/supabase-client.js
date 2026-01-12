@@ -445,6 +445,16 @@ export async function crearTransaccion(transaccion) {
     return data;
 }
 
+export async function eliminarTransaccion(id) {
+    const { error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return true;
+}
+
 export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
     // Esta función idealmente usaría una RPC en Supabase, pero por ahora sumamos en cliente
     // Traemos todas las transacciones del rango (cuidado con volumen alto)
