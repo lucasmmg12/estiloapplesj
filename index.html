@@ -465,8 +465,22 @@
 
                     <!-- Ultimos Movimientos -->
                     <div class="glass-card" style="flex: 1; min-height: 400px;">
-                        <div class="card-header">
-                            <h2 class="card-title">Últimos Movimientos</h2>
+                        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                            <h2 class="card-title">Movimientos</h2>
+                            <div class="date-filters" style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="date" id="filtroFechaDesde" class="input-std"
+                                    style="padding: 0.4rem; font-size: 0.8rem;">
+                                <span style="color: var(--gray-400);">→</span>
+                                <input type="date" id="filtroFechaHasta" class="input-std"
+                                    style="padding: 0.4rem; font-size: 0.8rem;">
+                                <button class="btn-refresh-sm" id="btnFiltrarFechas" title="Filtrar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </button>
+                            </div>
                             <button class="btn-refresh-sm" id="btnRefreshErp">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2">
@@ -1198,6 +1212,60 @@
                 <button class="btn-secondary" id="btnCancelarDolar">Cancelar</button>
                 <button class="btn-primary" id="btnGuardarDolar">Actualizar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDICIÓN TRANSACCIÓN -->
+    <div id="modalEdicionTransaccion" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Movimiento</h3>
+                <button class="modal-close" onclick="cerrarModalEdicionTransaccion()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="formEdicionTransaccion">
+                <input type="hidden" id="editTransaccionId">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Fecha</label>
+                        <input type="date" id="editTransaccionFecha" class="input-std" required>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Descripción / Detalle</label>
+                        <input type="text" id="editTransaccionDescripcion" class="input-std" required>
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Monto</label>
+                            <input type="number" id="editTransaccionMonto" step="0.01" class="input-std" required>
+                        </div>
+                        <div class="form-group" style="flex: 0.5;">
+                            <label>Moneda</label>
+                            <select id="editTransaccionMoneda" class="select-std">
+                                <option value="USD">USD</option>
+                                <option value="ARS">ARS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Movimiento</label>
+                        <select id="editTransaccionTipo" class="select-std" disabled>
+                            <option value="INCOME">Ingreso</option>
+                            <option value="EXPENSE">Gasto</option>
+                        </select>
+                        <small style="color: var(--gray-400);">El tipo de movimiento no se puede cambiar.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary"
+                        onclick="cerrarModalEdicionTransaccion()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
         </div>
     </div>
 

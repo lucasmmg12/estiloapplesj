@@ -14,8 +14,28 @@ export async function initErp() {
     // 2. Cargar Datos Iniciales (KPIs, Tablas, Selectors)
     await cargarDatosIniciales();
 
-    // 3. Renderizar Gráficos
+    // 3. Establecer fechas por defecto (Hoy)
+    establecerFechasPorDefecto();
+
+    // 4. Renderizar Gráficos
     renderizarGraficos();
+}
+
+function establecerFechasPorDefecto() {
+    const hoy = new Date().toISOString().split('T')[0];
+    const camposFecha = [
+        'ingresoFecha',
+        'gastoFecha',
+        'filtroFechaDesde',
+        'filtroFechaHasta'
+    ];
+
+    camposFecha.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && !el.value) {
+            el.value = hoy;
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -127,12 +147,48 @@ function setupEventListeners() {
         });
     }
 
-    // Exponer cierre modal
+    // Filtros de Fecha
+    const btnFiltrar = document.getElementById('btnFiltrarFechas');
+    if (btnFiltrar) {
+        btnFiltrar.addEventListener('click', async () => {
+            await cargarTablaMovimientos();
+        });
+    }
+
+    // Formulario Edición
+    const formEdicion = document.getElementById('formEdicionTransaccion');
+    if (formEdicion) {
+        formEdicion.addEventListener('submit', handleEdicionSubmit);
+    }
+
+    // Exponer funciones globales
     window.cerrarModalExito = function () {
         document.getElementById('modalExito').classList.remove('active');
     };
 
-    // Función global eliminar (para llamarla desde HTML string)
+    window.cerrarModalEdicionTransaccion = function () {
+        document.getElementById('modalEdicionTransaccion').classList.remove('active');
+    };
+
+    window.abrirModalEdicion = async function (id) {
+        try {
+            const m = await supabaseService.obtenerTransaccionPorId(id);
+            if (!m) return;
+
+            document.getElementById('editTransaccionId').value = m.id;
+            document.getElementById('editTransaccionFecha').value = m.date.split('T')[0];
+            document.getElementById('editTransaccionDescripcion').value = m.description || '';
+            document.getElementById('editTransaccionMonto').value = m.amount;
+            document.getElementById('editTransaccionMoneda').value = m.currency;
+            document.getElementById('editTransaccionTipo').value = m.type;
+
+            document.getElementById('modalEdicionTransaccion').classList.add('active');
+        } catch (error) {
+            console.error(error);
+            alert('Error al cargar datos: ' + error.message);
+        }
+    };
+
     window.eliminarMovimiento = async function (id) {
         if (!confirm('¿Estás seguro de que deseas eliminar este movimiento? Esta acción es irreversible.')) return;
 
@@ -191,7 +247,7 @@ function actualizarTotalDisplay() {
     inputs.forEach(input => {
         total += parseFloat(input.value) || 0;
     });
-    document.getElementById('displayTotalIngreso').textContent = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 2 })}`;
+    document.getElementById('displayTotalIngreso').textContent = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 function mostrarModalExito(mensaje) {
@@ -247,15 +303,22 @@ async function handleIngresoSubmit(e) {
 
         // Crear una transacción por cada pago parcial
         const promesas = pagos.map(pago => {
-            return supabaseService.crearTransaccion({
+            const transaccion = {
                 date: fecha,
                 type: 'INCOME',
                 amount: pago.monto,
-                currency: moneda,
+                currency: pago.metodo === 'USDT' ? 'USDT' : moneda,
                 category_id: categoriaObj.id,
                 description: `${descripcionBase} (${pago.metodo})`,
                 created_at: new Date().toISOString()
-            });
+            };
+
+            // Lógica de sucursal según año
+            if (new Date(fecha).getFullYear() >= 2026) {
+                transaccion.branch = "Estilo Apple SJ";
+            }
+
+            return supabaseService.crearTransaccion(transaccion);
         });
 
         await Promise.all(promesas);
@@ -325,6 +388,11 @@ async function handleGastoSubmit(e) {
             created_at: new Date().toISOString()
         };
 
+        // Lógica de sucursal según año
+        if (new Date(fecha).getFullYear() >= 2026) {
+            transaccion.branch = "Estilo Apple SJ";
+        }
+
         await supabaseService.crearTransaccion(transaccion);
 
         mostrarModalExito('Gasto registrado correctamente 📉');
@@ -334,6 +402,35 @@ async function handleGastoSubmit(e) {
     } catch (error) {
         console.error(error);
         alert('Error al registrar gasto: ' + error.message);
+    }
+}
+
+async function handleEdicionSubmit(e) {
+    e.preventDefault();
+
+    try {
+        const id = document.getElementById('editTransaccionId').value;
+        const fecha = new Date(document.getElementById('editTransaccionFecha').value).toISOString();
+        const descripcion = document.getElementById('editTransaccionDescripcion').value;
+        const monto = parseFloat(document.getElementById('editTransaccionMonto').value);
+        const moneda = document.getElementById('editTransaccionMoneda').value;
+        const tipo = document.getElementById('editTransaccionTipo').value; // No se edita, pero se mantiene
+
+        const datosActualizados = {
+            date: fecha,
+            description: descripcion,
+            amount: monto,
+            currency: moneda,
+            // type y category_id no se editan en este modal simplificado
+        };
+
+        await supabaseService.actualizarTransaccion(id, datosActualizados);
+        mostrarModalExito('Movimiento actualizado correctamente ✅');
+        window.cerrarModalEdicionTransaccion();
+        await cargarDatosIniciales();
+    } catch (error) {
+        console.error(error);
+        alert('Error al actualizar movimiento: ' + error.message);
     }
 }
 
@@ -354,10 +451,7 @@ async function actualizarKPIs() {
     });
 
     transacciones.forEach(t => {
-        // Normalizar a ARS
-        // Si currency es ARS -> Valor directo
-        // Si currency es USD -> Valor * exchange_rate
-        let tasa = t.exchange_rate || 1200; // Fallback por seguridad
+        let tasa = t.exchange_rate || 1485;
         let montoARS = t.currency === 'ARS' ? t.amount : (t.amount * tasa);
 
         if (t.type === 'INCOME') ingresosARS += montoARS;
@@ -366,41 +460,80 @@ async function actualizarKPIs() {
 
     const cajaTotal = ingresosARS - gastosARS;
 
-    // Actualizar DOM con formato ARS
-    document.getElementById('kpiCajaTotal').textContent = formatoARS.format(cajaTotal);
-    document.getElementById('kpiVentasHoy').textContent = formatoARS.format(ingresosARS);
-    document.getElementById('kpiGastosHoy').textContent = formatoARS.format(gastosARS);
+    // Actualizar DOM con formato ARS y estilos dinámicos
+    const elCaja = document.getElementById('kpiCajaTotal');
+    const elVentas = document.getElementById('kpiVentasHoy');
+    const elGastos = document.getElementById('kpiGastosHoy');
 
-    // Rentabilidad (Estimar simple por ahora, pendiente lógica real de CMV)
-    // document.getElementById('kpiRentabilidad').textContent = ... 
+    if (elCaja) {
+        elCaja.textContent = formatoARS.format(cajaTotal);
+        elCaja.style.fontWeight = 'bold';
+        elCaja.style.color = cajaTotal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+    }
+    if (elVentas) {
+        elVentas.textContent = formatoARS.format(ingresosARS);
+        elVentas.style.fontWeight = 'bold';
+        elVentas.style.color = 'var(--accent-green)';
+    }
+    if (elGastos) {
+        elGastos.textContent = formatoARS.format(gastosARS);
+        elGastos.style.fontWeight = 'bold';
+        elGastos.style.color = 'var(--accent-red)';
+    }
 }
 
 async function cargarTablaMovimientos() {
-    const movimientos = await supabaseService.obtenerUltimasTransacciones(10);
+    const filtros = {
+        fechaInicio: document.getElementById('filtroFechaDesde').value,
+        fechaFin: document.getElementById('filtroFechaHasta').value
+    };
+
+    if (filtros.fechaInicio) filtros.fechaInicio = new Date(filtros.fechaInicio).toISOString();
+    if (filtros.fechaFin) {
+        const hasta = new Date(filtros.fechaFin);
+        hasta.setHours(23, 59, 59, 999);
+        filtros.fechaFin = hasta.toISOString();
+    }
+
+    const movimientos = await supabaseService.obtenerUltimasTransacciones(100, filtros);
     const tbody = document.getElementById('tablaMovimientos');
     tbody.innerHTML = '';
 
     if (movimientos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos recientes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos que coincidan</td></tr>';
         return;
     }
 
     movimientos.forEach(m => {
         const tr = document.createElement('tr');
-        const fecha = new Date(m.date).toLocaleDateString();
-        const color = m.type === 'INCOME' ? '#00ff88' : '#ff4d4d';
-        const simbolo = m.type === 'INCOME' ? '+' : '-';
+        const fecha = new Date(m.date).toLocaleDateString('es-AR');
+        const isIncome = m.type === 'INCOME';
+        const color = isIncome ? 'var(--accent-green)' : 'var(--accent-red)';
+        const simbolo = isIncome ? '+' : '-';
+
+        // Formatear monto con separadores de miles
+        const montoFormateado = m.amount.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
         tr.innerHTML = `
-            <td>${fecha}</td>
-            <td><span style="color: ${color}; font-weight: bold;">${m.type === 'INCOME' ? 'Ingreso' : 'Gasto'}</span></td>
-            <td>${m.transaction_categories?.name || 'Otro'}</td>
-            <td style="color: ${color}">${simbolo} $${m.amount} ${m.currency}</td>
-            <td>${m.description || '-'}</td>
+            <td style="color: var(--gray-400); font-size: 0.85rem;">${fecha}</td>
+            <td><span style="color: ${color}; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">${isIncome ? 'Ingreso' : 'Gasto'}</span></td>
+            <td style="font-weight: 500;">
+                <div style="font-size: 0.9rem;">${m.transaction_categories?.name || 'Otro'}</div>
+                <div style="font-size: 0.7rem; color: var(--gray-400);">${m.branch || ''}</div>
+            </td>
+            <td style="color: ${color}; font-weight: 800; font-family: 'Inter', monospace;">
+                ${simbolo} $${montoFormateado} <span style="font-size: 0.7rem; opacity: 0.7;">${m.currency}</span>
+            </td>
+            <td style="color: var(--gray-100); font-size: 0.9rem;">${m.description || '-'}</td>
              <td style="text-align: center;">
-                <button class="btn-action danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">
-                    🗑️
-                </button>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="btn-action" onclick="abrirModalEdicion('${m.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 6px; border-radius: 8px; color: var(--gray-100);">
+                        ✏️
+                    </button>
+                    <button class="btn-action danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 6px; border-radius: 8px;">
+                        🗑️
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);

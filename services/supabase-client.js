@@ -413,16 +413,50 @@ export function suscribirseAClientes(callback) {
 // Funciones de ERP & FINANZAS
 // ============================================
 
-export async function obtenerUltimasTransacciones(limite = 50) {
-    const { data, error } = await supabase
+export async function obtenerUltimasTransacciones(limite = 50, filtros = {}) {
+    let query = supabase
         .from('transactions')
         .select(`
             *,
             transaction_categories (name, type),
             payment_methods (name)
         `)
-        .order('date', { ascending: false })
-        .limit(limite);
+        .order('date', { ascending: false });
+
+    if (filtros.fechaInicio) {
+        query = query.gte('date', filtros.fechaInicio);
+    }
+    if (filtros.fechaFin) {
+        query = query.lte('date', filtros.fechaFin);
+    }
+
+    const { data, error } = await query.limit(limite);
+
+    if (error) throw error;
+    return data;
+}
+
+export async function obtenerTransaccionPorId(id) {
+    const { data, error } = await supabase
+        .from('transactions')
+        .select(`
+            *,
+            transaction_categories (name, type)
+        `)
+        .eq('id', id)
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function actualizarTransaccion(id, cambios) {
+    const { data, error } = await supabase
+        .from('transactions')
+        .update(cambios)
+        .eq('id', id)
+        .select()
+        .single();
 
     if (error) throw error;
     return data;

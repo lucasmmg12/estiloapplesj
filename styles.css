@@ -18,89 +18,37 @@
 
 
 :root {
-
-    /* Colores principales - Estilo Apple SJ (Borravino & Pastel) */
-
+    /* Colores Principales - Apple Premium */
     --primary: #800020;
-
     /* Burgundy */
-
-    --primary-dark: #5e0018;
-
+    --primary-glow: rgba(128, 0, 32, 0.5);
     --secondary: #d4a373;
+    /* Gold */
+    --accent-blue: #0071e3;
+    --accent-green: #30d158;
+    --accent-red: #ff453a;
+    --accent-orange: #ff9f0a;
 
-    /* Gold/Tan accent for admin panel */
-
-    --accent-light: #fce4ec;
-
-    /* Pastel Pink */
-
-
-
-    --success: #10b981;
-
-    --warning: #f59e0b;
-
-    --danger: #ef4444;
-
-
+    /* Fondos - Profundidad Apple */
+    --bg-dark: #000000;
+    --bg-surface: #0a0a0c;
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-hover: rgba(255, 255, 255, 0.08);
 
     /* Grises */
-
-    --gray-50: #f9fafb;
-
-    --gray-100: #f3f4f6;
-
-    --gray-200: #e5e7eb;
-
-    --gray-300: #d1d5db;
-
-    --gray-400: #9ca3af;
-
-    --gray-500: #6b7280;
-
-    --gray-600: #4b5563;
-
-    --gray-700: #374151;
-
-    --gray-800: #1f2937;
-
-    --gray-900: #111827;
-
-
-
-    /* Fondos oscuros */
-
-    --bg-dark: #0f0505;
-
-    --bg-card: rgba(45, 10, 16, 0.4);
-
-    /* Glass Burgundy */
-
-    --bg-hover: rgba(128, 0, 32, 0.1);
-
-
+    --gray-50: #f5f5f7;
+    --gray-100: #e8e8ed;
+    --gray-400: #86868b;
+    --gray-600: #424245;
 
     /* Efectos */
-
-    --blur: 20px;
-
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-
-    --shadow-glow: 0 0 20px rgba(128, 0, 32, 0.4);
-
-
-
-    /* Transiciones */
-
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
+    --blur: 40px;
+    --radius-sm: 12px;
+    --radius-md: 20px;
+    --radius-lg: 28px;
+    --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.4);
+    --transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 
@@ -695,32 +643,143 @@ body::before {
 
 
 
+/* ============================================
+   GLASS CARDS PREMIUM
+   ============================================ */
+
 .glass-card {
-
-    background: var(--bg-card);
-
-    backdrop-filter: blur(var(--blur));
-
-    border: 1px solid rgba(255, 255, 255, 0.1);
-
-    border-radius: 20px;
-
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--blur)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
     padding: 2rem;
-
-    box-shadow: var(--shadow-xl);
-
+    box-shadow: var(--shadow-premium);
     transition: var(--transition);
-
+    overflow: hidden;
+    position: relative;
 }
 
-
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.03),
+            transparent);
+    transition: 0.5s;
+    pointer-events: none;
+}
 
 .glass-card:hover {
-
+    transform: translateY(-5px);
     border-color: rgba(255, 255, 255, 0.15);
+    background: var(--glass-hover);
+}
 
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+.glass-card:hover::before {
+    left: 100%;
+}
 
+/* Dashboard KPI Styles */
+.dashboard-hero {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 160px;
+}
+
+.kpi-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.kpi-icon.blue {
+    background: rgba(0, 113, 227, 0.15);
+    color: #00d4ff;
+}
+
+.kpi-icon.green {
+    background: rgba(48, 209, 88, 0.15);
+    color: #30d158;
+}
+
+.kpi-icon.red {
+    background: rgba(255, 69, 58, 0.15);
+    color: #ff453a;
+}
+
+.kpi-icon.orange {
+    background: rgba(255, 159, 10, 0.15);
+    color: #ff9f0a;
+}
+
+.kpi-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--gray-400);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.kpi-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    letter-spacing: -1px;
+}
+
+.kpi-trend {
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.trend-up {
+    color: var(--accent-green);
+}
+
+.trend-down {
+    color: var(--accent-red);
+}
+
+/* Charts Layout */
+.charts-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+}
+
+.chart-box {
+    min-height: 400px;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-hero {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 
@@ -3043,7 +3102,8 @@ body::before {
 
 
 
-============================================*/ .dashboard-grid {
+/* ============================================ */
+.dashboard-grid {
 
     display: grid;
 
