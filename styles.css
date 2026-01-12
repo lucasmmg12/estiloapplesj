@@ -4369,7 +4369,152 @@ textarea,
     color: #f59e0b !important;
 }
 
-/* Iconos SVG */
+/* ============================================
+   ESTILOS PREMIUM: TABLA MOVIMIENTOS & FILTROS
+   ============================================ */
+
+.filter-chips {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.chip-filter {
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--gray-400) !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip-filter:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.chip-filter.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
+}
+
+.date-range-capsule {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.4rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    color: var(--gray-100);
+}
+
+.input-minimal {
+    background: transparent !important;
+    border: none !important;
+    color: white !important;
+    font-size: 0.8rem;
+    padding: 0 !important;
+    cursor: pointer;
+    width: auto;
+}
+
+.btn-search-inner {
+    background: var(--primary);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-search-inner:hover {
+    transform: scale(1.1);
+}
+
+/* Paginación */
+.table-pagination-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.segmented-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 3px;
+    border-radius: 12px;
+}
+
+.seg-btn {
+    padding: 0.4rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--gray-400) !important;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.seg-btn.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white !important;
+}
+
+.pagination-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-nav-arrow {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-nav-arrow:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    font-size: 0.8rem;
+    color: var(--gray-400);
+}
+
+/* Ajuste Gráfico Rendimiento */
+#chartRendimiento {
+    max-height: 250px !important;
+}
+
+/* Fix SVG Icons global */
 svg {
-    fill: currentColor;
+    fill: none;
 }

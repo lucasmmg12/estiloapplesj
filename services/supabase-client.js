@@ -413,14 +413,17 @@ export function suscribirseAClientes(callback) {
 // Funciones de ERP & FINANZAS
 // ============================================
 
-export async function obtenerUltimasTransacciones(limite = 50, filtros = {}) {
+export async function obtenerUltimasTransacciones(filtros = {}, page = 1, pageSize = 50) {
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
     let query = supabase
         .from('transactions')
         .select(`
             *,
             transaction_categories (name, type),
             payment_methods (name)
-        `)
+        `, { count: 'exact' })
         .order('date', { ascending: false });
 
     if (filtros.fechaInicio) {
@@ -430,10 +433,10 @@ export async function obtenerUltimasTransacciones(limite = 50, filtros = {}) {
         query = query.lte('date', filtros.fechaFin);
     }
 
-    const { data, error } = await query.limit(limite);
+    const { data, compute, count, error } = await query.range(from, to);
 
     if (error) throw error;
-    return data;
+    return { data, total: count };
 }
 
 export async function obtenerTransaccionPorId(id) {

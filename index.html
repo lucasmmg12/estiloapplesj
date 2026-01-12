@@ -465,32 +465,55 @@
 
                     <!-- Ultimos Movimientos -->
                     <div class="glass-card" style="flex: 1; min-height: 400px;">
-                        <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
-                            <h2 class="card-title">Movimientos</h2>
-                            <div class="date-filters" style="display: flex; gap: 0.5rem; align-items: center;">
-                                <input type="date" id="filtroFechaDesde" class="input-std"
-                                    style="padding: 0.4rem; font-size: 0.8rem;">
-                                <span style="color: var(--gray-400);">→</span>
-                                <input type="date" id="filtroFechaHasta" class="input-std"
-                                    style="padding: 0.4rem; font-size: 0.8rem;">
-                                <button class="btn-refresh-sm" id="btnFiltrarFechas" title="Filtrar">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        <div class="card-header"
+                            style="flex-direction: column; align-items: flex-start; gap: 1.2rem; padding: 1.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                                <h2 class="card-title" style="margin: 0;">Movimientos</h2>
+                                <button class="btn-refresh-sm" id="btnRefreshErp">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2">
-                                        <circle cx="11" cy="11" r="8"></circle>
-                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        <path d="M23 4v6h-6M1 20v-6h6"></path>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
+                                        </path>
                                     </svg>
                                 </button>
                             </div>
-                            <button class="btn-refresh-sm" id="btnRefreshErp">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2">
-                                    <path d="M23 4v6h-6M1 20v-6h6"></path>
-                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15">
-                                    </path>
-                                </svg>
-                            </button>
+
+                            <div class="filter-controls"
+                                style="display: flex; flex-wrap: wrap; gap: 1rem; width: 100%; align-items: center;">
+                                <!-- Chips de Tiempo -->
+                                <div class="filter-chips" style="display: flex; gap: 0.5rem;">
+                                    <button class="chip-filter active" data-preset="today">Hoy</button>
+                                    <button class="chip-filter" data-preset="week">Semana</button>
+                                    <button class="chip-filter" data-preset="month">Este Mes</button>
+                                    <button class="chip-filter" data-preset="year">2026</button>
+                                    <button class="chip-filter" data-preset="all">Todo</button>
+                                </div>
+
+                                <!-- Integrated Date Range -->
+                                <div class="date-range-capsule">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    <input type="date" id="filtroFechaDesde" class="input-minimal">
+                                    <span style="opacity: 0.5;">—</span>
+                                    <input type="date" id="filtroFechaHasta" class="input-minimal">
+                                    <button id="btnFiltrarFechas" class="btn-search-inner">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="table-container" style="max-height: 350px; overflow-y: auto;">
+                        <div class="table-container" style="flex: 1; overflow-y: auto;">
                             <table class="data-table">
                                 <thead>
                                     <tr>
@@ -499,15 +522,49 @@
                                         <th>Categoría</th>
                                         <th>Monto</th>
                                         <th>Detalle</th>
+                                        <th style="text-align: center;">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaMovimientos">
                                     <!-- JS Fill -->
                                     <tr>
-                                        <td colspan="5" style="text-align:center;">Cargando...</td>
+                                        <td colspan="6" style="text-align:center;">Cargando...</td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Paginación Footer -->
+                        <div class="table-pagination-footer">
+                            <div class="page-density">
+                                <span style="font-size: 0.75rem; color: var(--gray-400);">Filas:</span>
+                                <div class="segmented-control" id="paginationDensity">
+                                    <button class="seg-btn" data-size="10">10</button>
+                                    <button class="seg-btn" data-size="20">20</button>
+                                    <button class="seg-btn active" data-size="50">50</button>
+                                </div>
+                            </div>
+
+                            <div class="pagination-info" id="paginationInfo">
+                                Mostrando 0-0 de 0
+                            </div>
+
+                            <div class="pagination-nav">
+                                <button class="btn-nav-arrow" id="btnPrevPage" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                </button>
+                                <span id="currentPageLabel"
+                                    style="font-weight: 600; font-size: 0.9rem; min-width: 20px; text-align: center;">1</span>
+                                <button class="btn-nav-arrow" id="btnNextPage" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -734,23 +791,30 @@
                     <div
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
 
-                        <!-- Rendimiento Equipo -->
-                        <div class="glass-card">
+                        <!-- Rendimiento y Salud del Embudo -->
+                        <div class="glass-card" style="grid-column: span 2;">
                             <div class="card-header">
-                                <h2 class="card-title">Rendimiento del Equipo</h2>
+                                <h2 class="card-title">Rendimiento de Equipo y Salud del Embudo</h2>
                             </div>
-                            <div style="height: 300px; position: relative;">
-                                <canvas id="chartEquipo"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Estado del Embudo -->
-                        <div class="glass-card">
-                            <div class="card-header">
-                                <h2 class="card-title">Salud del Embudo (Clientes)</h2>
-                            </div>
-                            <div style="height: 300px; position: relative;">
-                                <canvas id="chartEmbudo"></canvas>
+                            <div style="display: flex; gap: 2rem; flex-wrap: wrap; padding: 1rem;">
+                                <!-- Equipo (Más pequeño) -->
+                                <div style="flex: 1; min-width: 300px;">
+                                    <h4
+                                        style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem; text-align: center;">
+                                        Ventas por Vendedor</h4>
+                                    <div style="height: 200px; position: relative;">
+                                        <canvas id="chartEquipo"></canvas>
+                                    </div>
+                                </div>
+                                <!-- Embudo -->
+                                <div style="flex: 2; min-width: 400px;">
+                                    <h4
+                                        style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem; text-align: center;">
+                                        Estado de Clientes</h4>
+                                    <div style="height: 250px; position: relative;">
+                                        <canvas id="chartEmbudo"></canvas>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

@@ -4,6 +4,9 @@ import * as supabaseService from './supabase-client.js';
 // Estado Local
 let productosCache = [];
 let categoriasCache = [];
+let currentPage = 1;
+let pageSize = 50;
+let totalRecords = 0;
 
 export async function initErp() {
     console.log('Iniciando Módulo ERP...');
@@ -151,9 +154,48 @@ function setupEventListeners() {
     const btnFiltrar = document.getElementById('btnFiltrarFechas');
     if (btnFiltrar) {
         btnFiltrar.addEventListener('click', async () => {
+            currentPage = 1;
             await cargarTablaMovimientos();
         });
     }
+
+    // Chips de Tiempo Presets
+    const chips = document.querySelectorAll('.chip-filter');
+    chips.forEach(chip => {
+        chip.addEventListener('click', async () => {
+            chips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            aplicarPresetTiempo(chip.dataset.preset);
+        });
+    });
+
+    // Paginación: Densidad
+    const segBtns = document.querySelectorAll('#paginationDensity .seg-btn');
+    segBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            segBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            pageSize = parseInt(btn.dataset.size);
+            currentPage = 1;
+            await cargarTablaMovimientos();
+        });
+    });
+
+    // Paginación: Navegación
+    document.getElementById('btnPrevPage')?.addEventListener('click', async () => {
+        if (currentPage > 1) {
+            currentPage--;
+            await cargarTablaMovimientos();
+        }
+    });
+
+    document.getElementById('btnNextPage')?.addEventListener('click', async () => {
+        const totalPages = Math.ceil(totalRecords / pageSize);
+        if (currentPage < totalPages) {
+            currentPage++;
+            await cargarTablaMovimientos();
+        }
+    });
 
     // Formulario Edición
     const formEdicion = document.getElementById('formEdicionTransaccion');
@@ -482,6 +524,34 @@ async function actualizarKPIs() {
     }
 }
 
+function aplicarPresetTiempo(preset) {
+    const hoy = new Date();
+    const hoyISO = hoy.toISOString().split('T')[0];
+    let desde = hoyISO;
+    let hasta = hoyISO;
+
+    if (preset === 'week') {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        desde = d.toISOString().split('T')[0];
+    } else if (preset === 'month') {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        desde = d.toISOString().split('T')[0];
+    } else if (preset === 'year') {
+        desde = '2026-01-01';
+        hasta = '2026-12-31';
+    } else if (preset === 'all') {
+        desde = '';
+        hasta = '';
+    }
+
+    document.getElementById('filtroFechaDesde').value = desde;
+    document.getElementById('filtroFechaHasta').value = hasta;
+
+    currentPage = 1;
+    cargarTablaMovimientos();
+}
+
 async function cargarTablaMovimientos() {
     const filtros = {
         fechaInicio: document.getElementById('filtroFechaDesde').value,
@@ -490,17 +560,21 @@ async function cargarTablaMovimientos() {
 
     if (filtros.fechaInicio) filtros.fechaInicio = new Date(filtros.fechaInicio).toISOString();
     if (filtros.fechaFin) {
-        const hasta = new Date(filtros.fechaFin);
-        hasta.setHours(23, 59, 59, 999);
-        filtros.fechaFin = hasta.toISOString();
+        const h = new Date(filtros.fechaFin);
+        h.setHours(23, 59, 59, 999);
+        filtros.fechaFin = h.toISOString();
     }
 
-    const movimientos = await supabaseService.obtenerUltimasTransacciones(100, filtros);
+    const result = await supabaseService.obtenerUltimasTransacciones(filtros, currentPage, pageSize);
+    const movimientos = result.data;
+    totalRecords = result.total;
+
     const tbody = document.getElementById('tablaMovimientos');
     tbody.innerHTML = '';
 
-    if (movimientos.length === 0) {
+    if (!movimientos || movimientos.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos que coincidan</td></tr>';
+        actualizarPaginacionUI();
         return;
     }
 
@@ -538,6 +612,22 @@ async function cargarTablaMovimientos() {
         `;
         tbody.appendChild(tr);
     });
+
+    actualizarPaginacionUI();
+}
+
+function actualizarPaginacionUI() {
+    const from = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    const to = Math.min(currentPage * pageSize, totalRecords);
+
+    document.getElementById('paginationInfo').textContent = `Mostrando ${from}-${to} de ${totalRecords}`;
+    document.getElementById('currentPageLabel').textContent = currentPage;
+
+    const btnPrev = document.getElementById('btnPrevPage');
+    const btnNext = document.getElementById('btnNextPage');
+
+    if (btnPrev) btnPrev.disabled = currentPage === 1;
+    if (btnNext) btnNext.disabled = to >= totalRecords;
 }
 
 function obtenerNombreProducto(id) {
