@@ -713,180 +713,211 @@
                     <div class="card-header">
                         <h2 class="card-title">Salud del Embudo (Clientes)</h2>
                     </div>
-                    <div style="height: 300px; position: relative;">
-                        <canvas id="chartEmbudo"></canvas>
-                    </div>
-                </div>
+                    <!-- SECCIÓN CRM (Ventas y Equipo) -->
+                    <h3 class="section-subtitle"
+                        style="margin-bottom: 1rem; color: var(--secondary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                        Reporte CRM (Gestión Comercial)</h3>
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
 
-                <!-- Origen Tráfico -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Origen de Conversaciones</h2>
-                    </div>
-                    <div style="height: 300px; position: relative; display: flex; justify-content: center;">
-                        <canvas id="chartPlataforma"></canvas>
-                    </div>
-                </div>
+                        <!-- Rendimiento Equipo -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Rendimiento del Equipo</h2>
+                            </div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="chartEquipo"></canvas>
+                            </div>
+                        </div>
 
-                <!-- Gráfico Financiero -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Balance Ingresos vs Gastos</h2>
+                        <!-- Estado del Embudo -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Salud del Embudo (Clientes)</h2>
+                            </div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="chartEmbudo"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Origen Tráfico -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Origen de Conversaciones</h2>
+                            </div>
+                            <div style="height: 300px; position: relative; display: flex; justify-content: center;">
+                                <canvas id="chartPlataforma"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div style="height: 300px; position: relative;">
-                        <canvas id="chartFinanzas"></canvas>
+
+                    <!-- SECCIÓN ERP (Finanzas) -->
+                    <h3 class="section-subtitle"
+                        style="margin-bottom: 1rem; color: var(--success); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                        Reporte ERP (Financiero)</h3>
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+
+                        <!-- Gráfico Financiero -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Balance Ingresos vs Gastos</h2>
+                            </div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="chartFinanzas"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico Categorías -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2 class="card-title">Distribución por Categoría</h2>
+                            </div>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="chartCategorias"></canvas>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Gráfico Categorías -->
-                <div class="glass-card">
-                    <div class="card-header">
-                        <h2 class="card-title">Distribución por Categoría</h2>
-                    </div>
-                    <div style="height: 300px; position: relative;">
-                        <canvas id="chartCategorias"></canvas>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Tab: Mensajes Automáticos -->
-        <div class="tab-content" id="tabMensajes">
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2 class="card-title">Configuración de Mensajes Automáticos</h2>
-                    <button class="btn-primary" id="btnNuevoMensaje">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Nuevo Mensaje
-                    </button>
-                </div>
-
-                <div class="mensajes-grid" id="mensajesGrid">
-                    <div class="loading-row">
-                        <div class="loading-spinner"></div>
-                        <p>Cargando mensajes...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tab: Mensajes Programados -->
-        <div class="tab-content" id="tabProgramados">
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2 class="card-title">Envíos Programados</h2>
-                    <span class="badge" id="badgeProgramados">0 pendientes</span>
-                </div>
-
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Intención</th>
-                                <th>Fecha Programada</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaProgramados">
-                            <tr class="loading-row">
-                                <td colspan="5">
-                                    <div class="loading-spinner"></div>
-                                    <p>Cargando programados...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
-        </div>
 
-        <!-- Tab: Catálogo de Productos -->
-        <div class="tab-content" id="tabCatalogo">
-            <div class="glass-card">
-                <div class="card-header">
-                    <h2 class="card-title">Catálogo de Productos</h2>
-                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                        <button class="btn-secondary" id="btnActualizarDolar">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <line x1="12" y1="1" x2="12" y2="23"></line>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                            </svg>
-                            Dólar: $<span id="valorDolar">-</span>
-                        </button>
-                        <button class="btn-primary" id="btnVerCatalogoPublico">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                            Catálogo Público
-                        </button>
-                        <button class="btn-primary" id="btnNuevoProducto">
+            <!-- Tab: Mensajes Automáticos -->
+            <div class="tab-content" id="tabMensajes">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Configuración de Mensajes Automáticos</h2>
+                        <button class="btn-primary" id="btnNuevoMensaje">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Nuevo Producto
+                            Nuevo Mensaje
                         </button>
-                        <span class="badge" id="badgeCatalogo">0 productos</span>
+                    </div>
+
+                    <div class="mensajes-grid" id="mensajesGrid">
+                        <div class="loading-row">
+                            <div class="loading-spinner"></div>
+                            <p>Cargando mensajes...</p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Barra de búsqueda y filtros -->
-                <div class="catalogo-controls">
-                    <input type="text" id="buscarProducto" class="search-input" placeholder="Buscar por modelo...">
-                    <select id="filtroAlmacenamiento" class="filter-select">
-                        <option value="">Todos los almacenamientos</option>
-                        <option value="64 GB">64 GB</option>
-                        <option value="128 GB">128 GB</option>
-                        <option value="256 GB">256 GB</option>
-                        <option value="512 GB">512 GB</option>
-                        <option value="1 TB">1 TB</option>
-                    </select>
-                    <select id="ordenarPor" class="filter-select">
-                        <option value="modelo">Modelo</option>
-                        <option value="precio_asc">Precio: Menor a Mayor</option>
-                        <option value="precio_desc">Precio: Mayor a Menor</option>
-                    </select>
-                </div>
+            <!-- Tab: Mensajes Programados -->
+            <div class="tab-content" id="tabProgramados">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Envíos Programados</h2>
+                        <span class="badge" id="badgeProgramados">0 pendientes</span>
+                    </div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Modelo</th>
-                                <th>Colores</th>
-                                <th>Almacenamiento</th>
-                                <th>Batería</th>
-                                <th>Precio USD</th>
-                                <th>Precio ARS</th>
-                                <th>3 Cuotas</th>
-                                <th>6 Cuotas</th>
-                                <th>12 Cuotas</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaCatalogo">
-                            <tr class="loading-row">
-                                <td colspan="10">
-                                    <div class="loading-spinner"></div>
-                                    <p>Cargando catálogo...</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Intención</th>
+                                    <th>Fecha Programada</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaProgramados">
+                                <tr class="loading-row">
+                                    <td colspan="5">
+                                        <div class="loading-spinner"></div>
+                                        <p>Cargando programados...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Tab: Catálogo de Productos -->
+            <div class="tab-content" id="tabCatalogo">
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Catálogo de Productos</h2>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn-secondary" id="btnActualizarDolar">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                                Dólar: $<span id="valorDolar">-</span>
+                            </button>
+                            <button class="btn-primary" id="btnVerCatalogoPublico">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                                </svg>
+                                Catálogo Público
+                            </button>
+                            <button class="btn-primary" id="btnNuevoProducto">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Nuevo Producto
+                            </button>
+                            <span class="badge" id="badgeCatalogo">0 productos</span>
+                        </div>
+                    </div>
+
+                    <!-- Barra de búsqueda y filtros -->
+                    <div class="catalogo-controls">
+                        <input type="text" id="buscarProducto" class="search-input" placeholder="Buscar por modelo...">
+                        <select id="filtroAlmacenamiento" class="filter-select">
+                            <option value="">Todos los almacenamientos</option>
+                            <option value="64 GB">64 GB</option>
+                            <option value="128 GB">128 GB</option>
+                            <option value="256 GB">256 GB</option>
+                            <option value="512 GB">512 GB</option>
+                            <option value="1 TB">1 TB</option>
+                        </select>
+                        <select id="ordenarPor" class="filter-select">
+                            <option value="modelo">Modelo</option>
+                            <option value="precio_asc">Precio: Menor a Mayor</option>
+                            <option value="precio_desc">Precio: Mayor a Menor</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Modelo</th>
+                                    <th>Colores</th>
+                                    <th>Almacenamiento</th>
+                                    <th>Batería</th>
+                                    <th>Precio USD</th>
+                                    <th>Precio ARS</th>
+                                    <th>3 Cuotas</th>
+                                    <th>6 Cuotas</th>
+                                    <th>12 Cuotas</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCatalogo">
+                                <tr class="loading-row">
+                                    <td colspan="10">
+                                        <div class="loading-spinner"></div>
+                                        <p>Cargando catálogo...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </main>
