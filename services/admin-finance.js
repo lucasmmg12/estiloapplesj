@@ -24,20 +24,31 @@ function setupEventListeners() {
     if (formIngreso) {
         formIngreso.addEventListener('submit', handleIngresoSubmit);
 
-        // Listener para selector de Categoria -> Mostrar/Ocultar Selector de Equipos
+        // Listener para selector de Categoria -> Mostrar/Ocultar Selector de Equipos o Servicios
         const radiosCategoria = document.getElementsByName('ingresoCategoria');
         radiosCategoria.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                const container = document.getElementById('selectorEquipoContainer');
+                const containerEquipo = document.getElementById('selectorEquipoContainer');
                 const selectProducto = document.getElementById('ingresoProductoId');
 
+                const containerServicio = document.getElementById('selectorServicioContainer');
+                const selectServicio = document.getElementById('ingresoTipoServicio');
+
+                // Resetear visibilidad
+                containerEquipo.style.display = 'none';
+                selectProducto.required = false;
+                selectProducto.value = '';
+
+                containerServicio.style.display = 'none';
+                selectServicio.required = false;
+                selectServicio.value = '';
+
                 if (e.target.value === 'Venta de Equipos') {
-                    container.style.display = 'block';
+                    containerEquipo.style.display = 'block';
                     selectProducto.required = true;
-                } else {
-                    container.style.display = 'none';
-                    selectProducto.required = false;
-                    selectProducto.value = '';
+                } else if (e.target.value === 'Servicio Tecnico') {
+                    containerServicio.style.display = 'block';
+                    selectServicio.required = true;
                 }
             });
         });
@@ -110,6 +121,15 @@ async function handleIngresoSubmit(e) {
         const fecha = new Date(formData.get('ingresoFecha')).toISOString();
         const metodoPagoNombre = document.getElementById('ingresoMetodo').value;
         const productoId = formData.get('ingresoProductoId'); // Opcional
+        const tipoServicio = formData.get('ingresoTipoServicio'); // Opcional
+
+        let descripcion = categoriaNombre;
+
+        if (categoriaNombre === 'Venta de Equipos' && productoId) {
+            descripcion = `Venta: ${obtenerNombreProducto(productoId)}`;
+        } else if (categoriaNombre === 'Servicio Tecnico' && tipoServicio) {
+            descripcion = `Servicio: ${tipoServicio}`;
+        }
 
         // 1. Crear Transacción
         const transaccion = {
@@ -118,8 +138,7 @@ async function handleIngresoSubmit(e) {
             amount: monto,
             currency: moneda,
             category_id: categoriaObj.id,
-            description: productoId ? `Venta: ${obtenerNombreProducto(productoId)}` : categoriaNombre,
-            // payment_method_id: ... (necesitaríamos buscar el ID del metodo, por ahora hardcode o buscar)
+            description: descripcion,
             created_at: new Date().toISOString()
         };
 

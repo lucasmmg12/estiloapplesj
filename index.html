@@ -308,15 +308,16 @@
                                     </div>
                                     <div class="form-group" style="flex: 1.5;">
                                         <label>Monto</label>
-                                        <input type="number" id="ingresoMonto" step="0.01" class="input-lg"
-                                            placeholder="0.00" required style="font-size: 1.2rem; padding: 0.5rem;">
+                                        <input type="number" id="ingresoMonto" name="ingresoMonto" step="0.01"
+                                            class="input-lg" placeholder="0.00" required
+                                            style="font-size: 1.2rem; padding: 0.5rem;">
                                     </div>
                                 </div>
 
                                 <div class="form-group" id="selectorEquipoContainer"
                                     style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
                                     <label style="color: #00ff88;">Seleccionar Equipo del Stock</label>
-                                    <select id="ingresoProductoId" class="select-lg"
+                                    <select id="ingresoProductoId" name="ingresoProductoId" class="select-lg"
                                         style="width: 100%; padding: 0.5rem;">
                                         <option value="">Buscar modelo...</option>
                                         <!-- Se llena con JS -->
@@ -325,10 +326,29 @@
                                         inventario.</small>
                                 </div>
 
+                                <div class="form-group" id="selectorServicioContainer"
+                                    style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
+                                    <label style="color: var(--primary);">Tipo de Servicio</label>
+                                    <select id="ingresoTipoServicio" name="ingresoTipoServicio" class="select-lg"
+                                        style="width: 100%; padding: 0.5rem;">
+                                        <option value="">Seleccionar servicio...</option>
+                                        <option value="Diagnóstico">Diagnóstico</option>
+                                        <option value="Cambio de batería">Cambio de batería</option>
+                                        <option value="Cambio de pantalla">Cambio de pantalla</option>
+                                        <option value="Cambio de tapa">Cambio de tapa</option>
+                                        <option value="Cambio de flex">Cambio de flex</option>
+                                        <option value="Cambio de cámara">Cambio de cámara</option>
+                                        <option value="Placa">Placa</option>
+                                        <option value="Sistema">Sistema</option>
+                                        <option value="Copia de información">Copia de información</option>
+                                        <option value="Cambio de piezas en general">Cambio de piezas en general</option>
+                                    </select>
+                                </div>
+
                                 <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                                     <div class="form-group" style="flex: 1;">
                                         <label>Medio de Pago</label>
-                                        <select id="ingresoMetodo" class="select-std">
+                                        <select id="ingresoMetodo" name="ingresoMetodo" class="select-std">
                                             <option value="Efectivo">Efectivo</option>
                                             <option value="Transferencia">Transferencia</option>
                                             <option value="USDT">USDT</option>
@@ -337,7 +357,8 @@
                                     </div>
                                     <div class="form-group" style="flex: 1;">
                                         <label>Fecha</label>
-                                        <input type="date" id="ingresoFecha" class="input-std" required>
+                                        <input type="date" id="ingresoFecha" name="ingresoFecha" class="input-std"
+                                            required>
                                     </div>
                                 </div>
 
@@ -362,7 +383,7 @@
                             <form id="formGasto" class="erp-form">
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label>Categoría de Gasto *</label>
-                                    <select id="gastoCategoria" class="select-std" required>
+                                    <select id="gastoCategoria" name="gastoCategoria" class="select-std" required>
                                         <option value="">Seleccionar...</option>
                                         <option value="Proveedores">Proveedores</option>
                                         <option value="Comisiones">Comisiones</option>
@@ -396,21 +417,22 @@
                                     </div>
                                     <div class="form-group" style="flex: 1.5;">
                                         <label>Monto</label>
-                                        <input type="number" id="gastoMonto" step="0.01" class="input-lg"
-                                            placeholder="0.00" required style="font-size: 1.2rem; padding: 0.5rem;">
+                                        <input type="number" id="gastoMonto" name="gastoMonto" step="0.01"
+                                            class="input-lg" placeholder="0.00" required
+                                            style="font-size: 1.2rem; padding: 0.5rem;">
                                     </div>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label>Comentario (Opcional)</label>
-                                    <input type="text" id="gastoComentario" class="input-std"
+                                    <input type="text" id="gastoComentario" name="gastoComentario" class="input-std"
                                         placeholder="Detalle del gasto...">
                                 </div>
 
                                 <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                                     <div class="form-group" style="flex: 1;">
                                         <label>Fecha</label>
-                                        <input type="date" id="gastoFecha" class="input-std" required>
+                                        <input type="date" id="gastoFecha" name="gastoFecha" class="input-std" required>
                                     </div>
                                 </div>
 
