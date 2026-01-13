@@ -678,35 +678,41 @@ export async function analizarHistorialIA(mensajes) {
                 if (Object.keys(updates).length > 0) {
                     console.log("Guardando análisis IA en DB:", updates);
 
-                    const { data: clientData } = await supabase
-                        .from('clientes')
-                        .select('id')
-                        .eq('telefono', telLimpio)
-                        .single();
+                    // ===============================================
+                    // CORRECCIÓN: Usar UPSERT para mayor seguridad
+                    // ===============================================
 
-                    if (clientData) {
-                        await supabase
-                            .from('clientes')
-                            .update(updates)
-                            .eq('telefono', telLimpio);
+                    // Asegurar campos mínimos para un eventual insert
+                    const datosCliente = {
+                        telefono: telLimpio,
+                        plataforma: 'whatsapp', // Default
+                        ...updates
+                    };
+
+                    // Si es inserción nueva (no existe), necesitamos un nombre fallback
+                    if (!datosCliente.nombre) {
+                        datosCliente.nombre = `Cliente ${telLimpio.slice(-4)}`;
+                    }
+
+                    console.log("💾 Guardando/Actualizando cliente con IA:", datosCliente);
+
+                    const { error: errorUpsert } = await supabase
+                        .from('clientes')
+                        .upsert(datosCliente, { onConflict: 'telefono' });
+
+                    if (errorUpsert) {
+                        console.error("❌ Error guardando datos IA en BD:", errorUpsert);
                     } else {
-                        // Si no existe, insertamos con lo que tengamos
-                        await supabase
-                            .from('clientes')
-                            .insert({
-                                telefono: telLimpio,
-                                plataforma: 'whatsapp',
-                                ...updates
-                            });
+                        console.log("✅ Datos IA guardados correctamente.");
                     }
                 }
             }
         }
 
-        return data; // { resumen_breve, intencion, bullets, nombre_detectado... }
+        return data;
     } catch (e) {
         console.error("Error analizando historial con IA:", e);
-        return null; // Fail gracefully
+        return null;
     }
 }
 
