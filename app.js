@@ -305,17 +305,43 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
     `;
 
     try {
-        // 2. Fetch de datos en paralelo (Conversación + Mensajes)
         // 2. Fetch de datos en paralelo (Conversación + Mensajes REALES)
-        // Ya no dependemos de la tabla 'conversaciones' para el historial estático
-        // Sino que vamos a la tabla 'mensajes'
-        const mensajes = await supabaseService.obtenerHistorialMensajes(clienteTelefono);
-        const conversacionData = await supabaseService.obtenerConversacionPorId(conversacionId);
 
-        // 3. Analizar con IA en paralelo (si hay mensajes y queremos actualizar)
+        // Determinar si tenemos un ID válido de cliente/conversación real (UUID)
+        // Si el ID empieza con "temp_", es un ID generado al vuelo y no existe en la tabla clientes/conversaciones
+        const esIdTemporal = conversacionId && conversacionId.toString().startsWith('temp_');
+
+        let conversacionData = null;
+        let mensajes = [];
+
+        // Ejecutamos promesas en parelelo pero con manejo de errores individual
+        const promesas = [
+            supabaseService.obtenerHistorialMensajes(clienteTelefono)
+                .catch(err => { console.error("Error fetching msgs:", err); return []; })
+        ];
+
+        // Solo traemos datos de conversación si NO es temporal
+        if (!esIdTemporal) {
+            promesas.push(
+                supabaseService.obtenerConversacionPorId(conversacionId)
+                    .catch(err => { console.warn("Error fetching conv data (puede que no exista):", err); return null; })
+            );
+        } else {
+            promesas.push(Promise.resolve(null));
+        }
+
+        const resultados = await Promise.all(promesas);
+        mensajes = resultados[0];
+        conversacionData = resultados[1];
+
+        // 3. Analizar con IA en paralelo (si hay mensajes)
+        // IMPORTANTE: Esto debe suceder SIEMPRE que haya mensajes, aunque no tengamos conversacionData
         if (mensajes && mensajes.length > 0) {
-            // Lanzamos el análisis (no await si queremos que sea rapido, pero aquí esperamos para mostrar el resumen)
-            // O podemos dejarlo asincrono
+
+            // Renderizar Mensajes Inmediatamente
+            renderizarMensajesEnChat(chatContainer, mensajes, clienteTelefono);
+
+            // Llamada IA asíncrona - actualiza la UI cuando termina
             supabaseService.analizarHistorialIA(mensajes).then(analisis => {
                 if (analisis) {
                     resumenTexto.textContent = analisis.resumen_detallado || analisis.resumen_breve || "Sin resumen.";
@@ -334,92 +360,39 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
                         intencionBadge.style.background = "rgba(255, 255, 255, 0.1)";
                         intencionBadge.style.color = "var(--gray-300)";
                     }
+                } else {
+                    resumenTexto.textContent = "No se pudo generar el análisis.";
+                    intencionBadge.textContent = "SIN DATOS";
                 }
+            }).catch(err => {
+                console.error("Error en IA post-render:", err);
+                resumenTexto.textContent = "Error analizando conversación.";
+                intencionBadge.textContent = "ERROR";
             });
-        }
 
-        // 3. Renderizar Header (Intent + Summary)
-        if (conversacionData) {
-            resumenTexto.textContent = conversacionData.summary || conversacionData.resumen_detallado || "No hay resumen disponible.";
-            resumenTexto.style.opacity = "1";
-
-            const intent = conversacionData.intencion_detectada || "DESCONOCIDO";
-            intencionBadge.textContent = intent.toUpperCase();
-
-            // Color coding por intent
-            if (intent.includes('COMPRA') || intent.includes('INTERESADO')) {
-                intencionBadge.style.background = "rgba(16, 185, 129, 0.2)";
-                intencionBadge.style.color = "#10b981";
-            } else if (intent.includes('RECLAMO') || intent.includes('PROBLEMA')) {
-                intencionBadge.style.background = "rgba(239, 68, 68, 0.2)";
-                intencionBadge.style.color = "#ef4444";
-            } else {
-                intencionBadge.style.background = "rgba(255, 255, 255, 0.1)";
-                intencionBadge.style.color = "var(--gray-300)";
-            }
-        }
-
-        // 4. Renderizar Mensajes
-        chatContainer.innerHTML = '';
-
-        if (!mensajes || mensajes.length === 0) {
-            // Fallback al historial_completo del objeto conversacion si la tabla de mensajes falla
-            if (conversacionData && conversacionData.historial_completo && conversacionData.historial_completo.length > 0) {
-                renderizarHistorialLegacy(chatContainer, conversacionData.historial_completo);
-            } else {
-                chatContainer.innerHTML = `
-                    <div style="text-align: center; color: var(--gray-400); margin-top: 3rem;">
-                        <p style="font-size: 3rem; margin-bottom: 1rem;">📭</p>
-                        <p>No se encontraron mensajes previos.</p>
-                    </div>
-                `;
-            }
-            return;
-        }
-
-        let ultimoDia = null;
-
-        mensajes.forEach(msg => {
-            // Separador de Fecha
-            const fechaMsg = new Date(msg.created_at);
-            const diaStr = fechaMsg.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
-
-            if (diaStr !== ultimoDia) {
-                const divFecha = document.createElement('div');
-                divFecha.className = 'chat-date-divider';
-                divFecha.textContent = diaStr;
-                chatContainer.appendChild(divFecha);
-                ultimoDia = diaStr;
-            }
-
-            // Burbuja
-            const divBubble = document.createElement('div');
-            // Usamos 'es_mio' directamente
-            const isSent = msg.es_mio;
-
-            divBubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
-
-            // Contenido (Texto o Media)
-            let contenido = `<p style="margin:0">${msg.contenido || ''}</p>`;
-            if (msg.media_url) {
-                contenido = `<img src="${msg.media_url}" style="max-width:100%; border-radius:12px; margin-bottom:0.5rem;" loading="lazy">` + contenido;
-            }
-
-            divBubble.innerHTML = `
-                ${contenido}
-                <span class="chat-timestamp">${fechaMsg.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
+        } else {
+            // Sin mensajes
+            chatContainer.innerHTML = `
+                <div style="text-align: center; color: var(--gray-400); margin-top: 3rem;">
+                    <p style="font-size: 3rem; margin-bottom: 1rem;">📭</p>
+                    <p>No se encontraron mensajes previos.</p>
+                </div>
             `;
+            resumenTexto.textContent = "No hay historial para analizar.";
+            intencionBadge.textContent = "-";
+            return; // Salir
+        }
 
-            chatContainer.appendChild(divBubble);
-        });
-
-        // Scroll al final
-        setTimeout(() => {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }, 100);
+        // 4. Si teníamos datos guardados previamente, los mostramos MIENTRAS la IA carga
+        if (conversacionData && intencionBadge.textContent === "IA PROCESANDO...") {
+            resumenTexto.textContent = conversacionData.summary || conversacionData.resumen_detallado || "Analizando...";
+            if (conversacionData.intencion_detectada) {
+                intencionBadge.textContent = conversacionData.intencion_detectada.toUpperCase();
+            }
+        }
 
     } catch (e) {
-        console.error("Error cargando chat:", e);
+        console.error("Error cargando chat (General Check):", e);
         chatContainer.innerHTML = `
             <div style="text-align: center; color: var(--accent-red); margin-top: 2rem;">
                 <p>⚠️ Error al cargar la conversación</p>
@@ -428,6 +401,50 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
         `;
     }
 };
+
+// Función auxiliar para renderizar mensajes y tener el código ordenado
+function renderizarMensajesEnChat(container, mensajes, clienteTelefono) {
+    container.innerHTML = '';
+    let ultimoDia = null;
+
+    mensajes.forEach(msg => {
+        // Separador de Fecha
+        const fechaMsg = new Date(msg.created_at);
+        const diaStr = fechaMsg.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' });
+
+        if (diaStr !== ultimoDia) {
+            const divFecha = document.createElement('div');
+            divFecha.className = 'chat-date-divider';
+            divFecha.textContent = diaStr;
+            container.appendChild(divFecha);
+            ultimoDia = diaStr;
+        }
+
+        // Burbuja
+        const divBubble = document.createElement('div');
+        const isSent = msg.es_mio;
+
+        divBubble.className = `chat-bubble ${isSent ? 'sent' : 'received'}`;
+
+        // Contenido (Texto o Media)
+        let contenido = `<p style="margin:0">${msg.contenido || ''}</p>`;
+        if (msg.media_url) {
+            contenido = `<img src="${msg.media_url}" style="max-width:100%; border-radius:12px; margin-bottom:0.5rem;" loading="lazy">` + contenido;
+        }
+
+        divBubble.innerHTML = `
+            ${contenido}
+            <span class="chat-timestamp">${fechaMsg.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</span>
+        `;
+
+        container.appendChild(divBubble);
+    });
+
+    // Scroll al final
+    setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+    }, 100);
+}
 
 function renderizarHistorialLegacy(container, historial) {
     historial.forEach(msg => {
@@ -2250,3 +2267,20 @@ function initGroupedNavigation() {
 
 // initGroupedNavigation();
 
+
+// ============================================
+// FUNCIONES GLOBALES DE CIERRE DE MODAL
+// ============================================
+
+window.cerrarModalChat = function () {
+    const modalChat = document.getElementById('modalChat');
+    if (modalChat) modalChat.classList.remove('active');
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnCerrar = document.getElementById('btnCerrarModalChat');
+    const overlay = document.getElementById('modalChatOverlay');
+
+    if (btnCerrar) btnCerrar.addEventListener('click', window.cerrarModalChat);
+    if (overlay) overlay.addEventListener('click', window.cerrarModalChat);
+});
