@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { chatLog, phone } = await req.json()
+    const { chatLog } = await req.json()
 
     if (!chatLog) {
       return new Response(JSON.stringify({ error: 'No chat log provided' }), {
@@ -22,6 +22,20 @@ serve(async (req) => {
     }
 
     const openAiApiKey = Deno.env.get('OPENAI_API_KEY')
+
+    const prompt = `Analiza la siguiente conversación de chat y responde SOLO con un objeto JSON válido (sin bloques de código markdown).
+
+Conversación:
+${chatLog}
+
+Formato JSON requerido:
+{
+  "resumen_breve": "1-3 palabras (ej: Comprar iPhone 14)",
+  "resumen_detallado": "Resumen ejecutivo de lo hablado",
+  "bullets": ["Punto clave 1", "Punto clave 2", "Punto clave 3"],
+  "intencion": "Una de: Comprar, Consulta, Averiguar, Reclamo, Servicio Técnico, Venta",
+  "nombre_detectado": "El nombre del cliente si aparece en el chat (o null si no se encuentra)"
+}`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,21 +48,26 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Eres un asistente experto en ventas y atención al cliente. Tu tarea es analizar el historial de chat de un cliente y proporcionar un resumen ejecutivo corto (máximo 150 palabras) que incluya: Interés principal, tono del cliente, y estado de la negociación o puntos clave pendientes. Sé directo y profesional.'
+            content: 'Eres un estratega de ventas experto. Analizas conversaciones y extraes inteligencia de negocio. Respondes SOLO JSON.'
           },
           {
             role: 'user',
-            content: `Analiza el siguiente historial de chat para el cliente ${phone}:\n\n${chatLog}`
+            content: prompt
           }
         ],
-        max_tokens: 300,
+        temperature: 0.3,
       }),
     })
 
     const aiData = await response.json()
-    const resumen = aiData.choices[0].message.content
+    let content = aiData.choices[0].message.content
 
-    return new Response(JSON.stringify({ resumen }), {
+    // Limpieza de Markdown si la IA lo incluye
+    content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    const analisis = JSON.parse(content)
+
+    return new Response(JSON.stringify(analisis), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })

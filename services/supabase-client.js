@@ -650,7 +650,42 @@ export async function analizarHistorialIA(mensajes) {
         });
 
         if (error) throw error;
-        return data; // { resumen_breve, intencion, bullets, ... }
+
+        // Si la IA detectó un nombre, intentamos actualizarlo en la tabla 'clientes'
+        if (data && data.nombre_detectado && data.nombre_detectado !== 'null') {
+            console.log("IA detectó nombre:", data.nombre_detectado);
+            // Necesitamos el teléfono para actualizar. 
+            // Como 'mensajes' es un array, tomamos el del primer mensaje.
+            const telefono = mensajes[0].cliente_telefono;
+            if (telefono) {
+                const telLimpio = telefono.replace(/\D/g, '');
+                // Upsert ligero: si existe actualizamos, si no, creamos.
+                // Primero chequeamos si ya existe para no sobrescribir datos importantes si la logica varia
+                const { data: clientData } = await supabase
+                    .from('clientes')
+                    .select('id')
+                    .eq('telefono', telLimpio)
+                    .single();
+
+                if (clientData) {
+                    await supabase
+                        .from('clientes')
+                        .update({ nombre: data.nombre_detectado })
+                        .eq('telefono', telLimpio);
+                } else {
+                    // Si no existe, lo creamos basico
+                    await supabase
+                        .from('clientes')
+                        .insert({
+                            telefono: telLimpio,
+                            nombre: data.nombre_detectado,
+                            plataforma: 'whatsapp' // asuncion razonable
+                        });
+                }
+            }
+        }
+
+        return data; // { resumen_breve, intencion, bullets, nombre_detectado... }
     } catch (e) {
         console.error("Error analizando historial con IA:", e);
         return null; // Fail gracefully
