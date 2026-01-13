@@ -7,6 +7,7 @@ import * as supabaseService from './services/supabase-client.js';
 import * as builderbotAPI from './services/builderbot-api.js';
 import * as erpService from './services/admin-finance.js';
 import * as competitorService from './services/competitors.js';
+import { initErrorMonitoring } from './services/error-monitor.js';
 
 // ============================================
 // ESTADO GLOBAL
@@ -35,6 +36,9 @@ let imagenesExistentes = []; // Array de URLs de fotos ya guardadas
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Iniciar Monitor de Errores (Prioridad Máxima)
+    initErrorMonitoring();
+
     console.log('🚀 Iniciando aplicación...');
 
     // Configurar event listeners
