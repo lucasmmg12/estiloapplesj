@@ -670,9 +670,9 @@ export async function analizarHistorialIA(mensajes) {
                     updates.resumen = data.resumen_breve;
                 }
                 // Si tienes columna para resumen detallado o notas IA:
-                if (data.resumen_detallado) {
-                    updates.notas_ia = data.resumen_detallado;
-                }
+                // if (data.resumen_detallado) {
+                //    updates.notas_ia = data.resumen_detallado;
+                // }
 
                 // Solo procedemos si hay algo que actualizar
                 if (Object.keys(updates).length > 0) {
