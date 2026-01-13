@@ -282,6 +282,23 @@ function mostrarCargando() {
 // LÓGICA DE HISTORIAL DE CHAT (PREMIUM)
 // ============================================
 
+// ============================================
+// FUNCIONES GLOBALES DE CIERRE DE MODAL
+// ============================================
+
+window.verDetallesConversacion = function (id) {
+    // Buscar la conversación en el array en memoria
+    if (!conversaciones) return;
+
+    // El ID puede ser string o number, comparar laxo o string
+    const conv = conversaciones.find(c => c.id == id || c.id === id);
+    if (conv && conv.clientes) {
+        window.verHistorialChat(conv.clientes.nombre, conv.clientes.telefono, id);
+    } else {
+        console.warn("No se encontró la conversación con ID:", id);
+    }
+};
+
 window.verHistorialChat = async function (clienteNombre, clienteTelefono, conversacionId) {
     const modalChat = document.getElementById('modalChat');
     const chatContainer = document.getElementById('chatContainer');
@@ -342,7 +359,7 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
             renderizarMensajesEnChat(chatContainer, mensajes, clienteTelefono);
 
             // Llamada IA asíncrona - actualiza la UI cuando termina
-            supabaseService.analizarHistorialIA(mensajes).then(analisis => {
+            supabaseService.analizarHistorialIA(mensajes).then(async (analisis) => {
                 if (analisis) {
                     resumenTexto.textContent = analisis.resumen_detallado || analisis.resumen_breve || "Sin resumen.";
                     resumenTexto.style.opacity = "1";
@@ -360,6 +377,14 @@ window.verHistorialChat = async function (clienteNombre, clienteTelefono, conver
                         intencionBadge.style.background = "rgba(255, 255, 255, 0.1)";
                         intencionBadge.style.color = "var(--gray-300)";
                     }
+
+                    // IMPORTANTE: Si la IA guardó datos nuevos, refrescar la tabla de fondo
+                    // para que aparezca la intención
+                    if (analisis.intencion || analisis.resumen_breve) {
+                        console.log("Refrescando datos en segundo plano...");
+                        await cargarDatos(); // Recarga la lista global para mostrar la nueva info
+                    }
+
                 } else {
                     resumenTexto.textContent = "No se pudo generar el análisis.";
                     intencionBadge.textContent = "SIN DATOS";
