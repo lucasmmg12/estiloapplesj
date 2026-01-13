@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Configurar suscripciones en tiempo real
     configurarSuscripciones();
 
-    console.log('✅ Aplicación iniciada correctamente');
+    console.log('✅ Aplicación iniciada correctamente - v2026.1.12.21');
 });
 
 // ============================================
