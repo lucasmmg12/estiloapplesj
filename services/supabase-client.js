@@ -651,36 +651,54 @@ export async function analizarHistorialIA(mensajes) {
 
         if (error) throw error;
 
-        // Si la IA detectó un nombre, intentamos actualizarlo en la tabla 'clientes'
-        if (data && data.nombre_detectado && data.nombre_detectado !== 'null') {
-            console.log("IA detectó nombre:", data.nombre_detectado);
-            // Necesitamos el teléfono para actualizar. 
-            // Como 'mensajes' es un array, tomamos el del primer mensaje.
+        // Persistencia de datos IA (Nombre, Intención, Resumen)
+        if (data) {
             const telefono = mensajes[0].cliente_telefono;
             if (telefono) {
                 const telLimpio = telefono.replace(/\D/g, '');
-                // Upsert ligero: si existe actualizamos, si no, creamos.
-                // Primero chequeamos si ya existe para no sobrescribir datos importantes si la logica varia
-                const { data: clientData } = await supabase
-                    .from('clientes')
-                    .select('id')
-                    .eq('telefono', telLimpio)
-                    .single();
 
-                if (clientData) {
-                    await supabase
+                // Preparar objeto de actualización
+                const updates = {};
+
+                if (data.nombre_detectado && data.nombre_detectado !== 'null') {
+                    updates.nombre = data.nombre_detectado;
+                }
+                if (data.intencion) {
+                    updates.intencion = data.intencion;
+                }
+                if (data.resumen_breve) {
+                    updates.resumen = data.resumen_breve;
+                }
+                // Si tienes columna para resumen detallado o notas IA:
+                if (data.resumen_detallado) {
+                    updates.notas_ia = data.resumen_detallado;
+                }
+
+                // Solo procedemos si hay algo que actualizar
+                if (Object.keys(updates).length > 0) {
+                    console.log("Guardando análisis IA en DB:", updates);
+
+                    const { data: clientData } = await supabase
                         .from('clientes')
-                        .update({ nombre: data.nombre_detectado })
-                        .eq('telefono', telLimpio);
-                } else {
-                    // Si no existe, lo creamos basico
-                    await supabase
-                        .from('clientes')
-                        .insert({
-                            telefono: telLimpio,
-                            nombre: data.nombre_detectado,
-                            plataforma: 'whatsapp' // asuncion razonable
-                        });
+                        .select('id')
+                        .eq('telefono', telLimpio)
+                        .single();
+
+                    if (clientData) {
+                        await supabase
+                            .from('clientes')
+                            .update(updates)
+                            .eq('telefono', telLimpio);
+                    } else {
+                        // Si no existe, insertamos con lo que tengamos
+                        await supabase
+                            .from('clientes')
+                            .insert({
+                                telefono: telLimpio,
+                                plataforma: 'whatsapp',
+                                ...updates
+                            });
+                    }
                 }
             }
         }
