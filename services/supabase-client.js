@@ -50,36 +50,91 @@ export async function obtenerClientePorId(clienteId) {
 // ============================================
 
 export async function obtenerConversaciones(clienteId = null) {
-    // NUEVA LOGICA: Usar 'clientes' como fuente de verdad
-    let query = supabase
-        .from('clientes')
-        .select('*')
-        .order('ultima_interaccion', { ascending: false });
+    // ESTRATEGIA DEFINITIVA: 
+    // 1. La tabla 'mensajes' es la fuente de verdad de la actividad.
+    // 2. Cruzamos con 'clientes' para enriquecer datos (nombres), pero si no existe, mostramos el número igual.
 
-    // Filtrado opcional
-    if (clienteId) {
-        query = query.eq('id', clienteId);
+    try {
+        // A. Obtener Mapa de Clientes (para nombres y fotos)
+        const { data: clientesData } = await supabase.from('clientes').select('*');
+        const clientesMap = new Map();
+        if (clientesData) {
+            clientesData.forEach(c => {
+                // Normalizar clave del mapa
+                if (c.telefono) clientesMap.set(c.telefono.replace(/\D/g, ''), c);
+            });
+        }
+
+        // B. Obtener Mensajes Recientes (para identificar chats activos)
+        // Traemos los últimos 2000 mensajes para deducir conversaciones recientes
+        const { data: mensajes, error: msgError } = await supabase
+            .from('mensajes')
+            .select('cliente_telefono, created_at, contenido, es_mio')
+            .order('created_at', { ascending: false })
+            .limit(2000);
+
+        if (msgError) {
+            console.error("Error leyendo mensajes:", msgError);
+            return [];
+        }
+
+        // C. Agrupar por Teléfono (Construir "Conversaciones")
+        const chatsUnicos = new Map();
+
+        mensajes.forEach(m => {
+            const telRaw = m.cliente_telefono;
+            if (!telRaw) return;
+            const telLimpio = telRaw.replace(/\D/g, '');
+
+            // Si ya procesamos este teléfono, saltamos (porque ordenamos por fecha desc, el primero es el último real)
+            if (chatsUnicos.has(telLimpio)) return;
+
+            // Buscar datos del cliente si existen
+            const clienteExistente = clientesMap.get(telLimpio);
+
+            // Construir Objeto Cliente (Real o Mock)
+            const clienteObj = clienteExistente || {
+                id: 'temp_' + telLimpio, // ID temporal para UI
+                nombre: telLimpio,       // Si no hay nombre, usamos el teléfono
+                telefono: telLimpio,
+                plataforma: 'whatsapp',  // Default
+                ultima_interaccion: m.created_at,
+                resumen: 'Cliente no registrado'
+            };
+
+            // Construir Objeto Conversacion (Compatible con UI existente)
+            chatsUnicos.set(telLimpio, {
+                id: clienteObj.id, // Usamos ID del cliente como ID de conversación "lógica"
+                created_at: m.created_at,
+                cliente_id: clienteObj.id,
+                clientes: clienteObj,
+
+                // Usar ultimo mensaje como resumen breve
+                resumen_breve: m.contenido ? (m.contenido.substring(0, 40) + '...') : (m.es_mio ? 'Enviaste un archivo' : 'Archivo recibido'),
+
+                // Intentar rescatar datos de la tabla clientes si existen
+                intencion_detectada: clienteObj.intencion || "...",
+                crm_stage: clienteObj.crm_stage || 'consulta',
+                vendedor_asignado: clienteObj.vendedor_asignado || null,
+
+                no_leido: false // TODO: Lógica de leido/no leido
+            });
+        });
+
+        // D. Convertir Mapa a Array y Retornar
+        let resultados = Array.from(chatsUnicos.values());
+
+        // Filtrado opcional por ID específico
+        if (clienteId) {
+            resultados = resultados.filter(c => c.cliente_id === clienteId || c.id === clienteId);
+        }
+
+        return resultados;
+
+    } catch (err) {
+        console.error("Error crítico obteniendo conversaciones:", err);
+        return [];
     }
-
-    const { data: clientes, error } = await query;
-
-    if (error) throw error;
-
-    // Adaptador: Convertir clientes a objetos 'conversacion' para la UI
-    return clientes.map(c => ({
-        id: c.id,
-        created_at: c.ultima_interaccion || c.created_at,
-        cliente_id: c.id,
-        clientes: c, // El objeto cliente completo
-        // Campos que antes estaban en 'conversaciones', ahora intentamos leerlos del cliente
-        // o proveemos fallbacks
-        resumen_breve: c.resumen || c.notas_ia || "...",
-        intencion_detectada: c.intencion || "Consulta",
-        crm_stage: c.crm_stage || 'consulta',
-        vendedor_asignado: c.vendedor_asignado,
-        // Flags para UI
-        no_leido: false
-    }));
 }
 
 export async function obtenerConversacionPorId(conversacionId) {
