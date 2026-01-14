@@ -1500,27 +1500,145 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
 // ----------------------------------------------------------------------
 
 function exportarReportePDF() {
-    const element = document.getElementById('analisisEstrategicoContainer');
-    if (!element) return;
+    try {
+        if (typeof window.jspdf === 'undefined') {
+            alert('Librería jsPDF no disponible. Recarga la página.');
+            return;
+        }
 
-    // Cloning to avoid messing up UI with styles
-    const clone = element.cloneNode(true);
-    clone.style.width = '1000px';
-    clone.style.background = '#111827';
-    clone.style.padding = '20px';
-    clone.style.color = 'white';
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-    // Temporarily append to body to render
-    // document.body.appendChild(clone);
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 20;
+        const usableWidth = pageWidth - (margin * 2);
+        let yPosition = margin;
 
-    const opt = {
-        margin: 0.5,
-        filename: `Reporte_Financiero_EstiloApple_${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: '#111827', useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
-    };
-    html2pdf().set(opt).from(element).save();
+        // === HEADER ===
+        doc.setFillColor(92, 46, 46); // Brand Burgundy
+        doc.rect(0, 0, pageWidth, 35, 'F');
 
-    // document.body.removeChild(clone);
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('📊 Análisis Estratégico IA', margin, 15);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Estilo Apple San Juan', margin, 23);
+        doc.text(`Generado: ${new Date().toLocaleDateString('es-AR')}`, margin, 29);
+
+        yPosition = 45;
+
+        // === CONTENT SECTIONS ===
+        doc.setTextColor(0, 0, 0);
+
+        // Helper: Add Section Title
+        const addSectionTitle = (emoji, title, color) => {
+            doc.setFillColor(color[0], color[1], color[2]);
+            doc.rect(margin, yPosition, usableWidth, 8, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${emoji} ${title}`, margin + 2, yPosition + 5.5);
+            yPosition += 12;
+            doc.setTextColor(50, 50, 50);
+        };
+
+        // Helper: Add Body Text
+        const addBodyText = (text, indent = 0) => {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            const lines = doc.splitTextToSize(text, usableWidth - indent);
+            lines.forEach(line => {
+                if (yPosition > pageHeight - 30) {
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                doc.text(line, margin + indent, yPosition);
+                yPosition += 5;
+            });
+            yPosition += 2;
+        };
+
+        // Helper: Add Bullet Point
+        const addBullet = (text) => {
+            if (yPosition > pageHeight - 30) {
+                doc.addPage();
+                yPosition = margin;
+            }
+            doc.setFontSize(10);
+            doc.text('•', margin + 2, yPosition);
+            const lines = doc.splitTextToSize(text, usableWidth - 10);
+            lines.forEach((line, idx) => {
+                doc.text(line, margin + 7, yPosition + (idx * 5));
+            });
+            yPosition += lines.length * 5 + 2;
+        };
+
+        // === 1. DESCRIPTIVO ===
+        addSectionTitle('📊', '1. Análisis Descriptivo', [59, 130, 246]); // Blue
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.text('¿Qué pasó? Resumen de métricas clave del período.', margin, yPosition);
+        yPosition += 7;
+
+        const descriptivo = document.getElementById('analisisDescriptivo')?.textContent || 'No disponible';
+        addBodyText(descriptivo);
+        yPosition += 5;
+
+        // === 2. DIAGNÓSTICO ===
+        addSectionTitle('🔍', '2. Análisis Diagnóstico', [251, 146, 60]); // Orange
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.text('¿Por qué pasó? Comparativa con período anterior.', margin, yPosition);
+        yPosition += 7;
+
+        const diagnostico = document.getElementById('analisisDiagnostico')?.textContent || 'No disponible';
+        addBodyText(diagnostico);
+        yPosition += 5;
+
+        // === 3. PREDICTIVO ===
+        addSectionTitle('🔮', '3. Análisis Predictivo', [139, 92, 246]); // Purple
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.text('¿Qué pasará? Proyección inteligente basada en tendencias.', margin, yPosition);
+        yPosition += 7;
+
+        const predictivo = document.getElementById('analisisPredictivo')?.textContent || 'No disponible';
+        addBodyText(predictivo);
+        yPosition += 5;
+
+        // === 4. PRESCRIPTIVO ===
+        addSectionTitle('💡', '4. Análisis Prescriptivo', [34, 197, 94]); // Green
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(9);
+        doc.text('¿Qué hacer? Recomendaciones accionables para mejorar.', margin, yPosition);
+        yPosition += 7;
+
+        const prescriptivoList = document.getElementById('analisisPrescriptivo');
+        if (prescriptivoList && prescriptivoList.children.length > 0) {
+            Array.from(prescriptivoList.children).forEach(li => {
+                addBullet(li.textContent);
+            });
+        } else {
+            addBodyText('No hay recomendaciones disponibles.');
+        }
+
+        // === FOOTER ===
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.setFont('helvetica', 'italic');
+        const footer = 'Informe generado por Estilo Apple SJ - Sistema de Gestión Integral';
+        doc.text(footer, pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+        // === SAVE ===
+        const filename = `Analisis_Estrategico_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
+
+    } catch (error) {
+        console.error('Error al generar PDF:', error);
+        alert('Error al generar el PDF: ' + error.message);
+    }
 }
