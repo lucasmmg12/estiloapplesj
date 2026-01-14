@@ -94,7 +94,7 @@ body {
 
     font-family: 'Questrial', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-    background: url('/public/fondoestilo.jpg') center/contain no-repeat fixed;
+    background: url('/public/fondoestilodark.jpg') center/contain no-repeat fixed;
 
     color: var(--text-primary);
 
@@ -740,7 +740,7 @@ body::before {
 
 /* Fluid Apple Background for KPI Cards */
 .kpi-card-fluid {
-    background-image: url('/public/fluid-bg.png');
+    background-image: url('/public/fluid-bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -764,7 +764,7 @@ body::before {
 
 /* Fluid Expense Background for KPI Cards (Gastos) */
 .kpi-card-fluid-expense {
-    background-image: url('/public/fluid-expense-bg.png');
+    background-image: url('/public/fluid-expense-bg.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
