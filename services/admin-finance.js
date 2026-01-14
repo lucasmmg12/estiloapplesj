@@ -835,6 +835,35 @@ async function actualizarKPIs() {
         }
     });
 
+    // AUDIT: Detect Anomalies
+    if (incMonth > 100000000) {
+        let maxTx = null;
+        let maxVal = 0;
+        transacciones.forEach(t => {
+            const tDate = new Date(t.date);
+            if (t.type === 'INCOME' && tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
+                const val = getMontoARS(t);
+                if (val > maxVal) {
+                    maxVal = val;
+                    maxTx = t;
+                }
+            }
+        });
+
+        if (maxTx && maxVal > 20000000) {
+            const formatoMonto = parseFloat(maxTx.amount).toLocaleString('es-AR');
+            alert(`⚠️ ALERTA: Total Mensual Inusualmente Alto ($${(incMonth / 1000000).toFixed(1)}M).
+             
+Se detectó una transacción sospechosa:
+📅 Fecha: ${new Date(maxTx.date).toLocaleDateString()}
+💰 Monto: ${maxTx.currency} ${formatoMonto}
+📝 Detalle: ${maxTx.description || '-'}
+
+Posible error: Se cargó un monto en Pesos pero figura como Dólares (USD).
+Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
+        }
+    }
+
     const fmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 
     // Update DOM

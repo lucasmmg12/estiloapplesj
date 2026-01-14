@@ -279,31 +279,38 @@
                     <!-- KPI GRID -->
                     <div
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
-                        <div class="glass-card" style="position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05;">
+                        <div class="glass-card kpi-card-fluid" style="position: relative; overflow: hidden;">
+                            <div
+                                style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: var(--gray-400);">Hoy</span>
+                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Hoy</span>
                             <div class="value" id="kpiIngresoHoy_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff;">$0</div>
+                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                $0</div>
                         </div>
-                        <div class="glass-card" style="position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05;">
+                        <div class="glass-card kpi-card-fluid" style="position: relative; overflow: hidden;">
+                            <div
+                                style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📈</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: var(--gray-400);">Esta
+                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Esta
                                 Semana</span>
                             <div class="value" id="kpiIngresoSemana_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff;">$0</div>
+                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                $0</div>
                         </div>
-                        <div class="glass-card" style="position: relative; overflow: hidden;">
-                            <div style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05;">
+                        <div class="glass-card kpi-card-fluid" style="position: relative; overflow: hidden;">
+                            <div
+                                style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: var(--gray-400);">Mes en
+                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Mes
+                                en
                                 curso</span>
                             <div class="value" id="kpiTicketPromedio"
-                                style="font-size: 1.8rem; font-weight: 700; color: var(--accent-light);">$0</div>
+                                style="font-size: 1.8rem; font-weight: 700; color: var(--accent-light); position: relative; z-index: 1;">
+                                $0</div>
                         </div>
                     </div>
 
