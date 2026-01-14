@@ -2313,3 +2313,42 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCerrar) btnCerrar.addEventListener('click', window.cerrarModalChat);
     if (overlay) overlay.addEventListener('click', window.cerrarModalChat);
 });
+// ============================================
+// FUNCIONES DE UTILIDAD UI
+// ============================================
+
+function cambiarTab(tabId) {
+    // Caso especial para "erp" que tiene lógica compleja de carga
+    if (tabId === 'erp') {
+        // Redirigir a vista legacy o re-init si es necesario
+        erpService.initErp(); // Re-trigger init logic just in case
+    }
+
+    // Casos especiales de NUEVAS tabs financieras
+    if (tabId === 'ventas-financieras' || tabId === 'gastos-financieros') {
+        erpService.initErp(); // Necesitamos datos cargados (KPIs)
+        // Podríamos tener inits parciales pero erpService maneja todo centralizado bien.
+    }
+
+    // Ocultar todos los contenidos tab
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+
+    // Mostrar el seleccionado
+    const target = document.getElementById(tabId === 'erp' ? 'tabErp' :
+        tabId === 'ventas-financieras' ? 'tabVentasFinancieras' :
+            tabId === 'gastos-financieros' ? 'tabGastosFinancieros' :
+                tabId === 'conversaciones' ? 'tabConversaciones' :
+                    // Mapping legacy IDs or direct IDs
+                    ('tab' + tabId.charAt(0).toUpperCase() + tabId.slice(1)));
+
+    if (target) {
+        target.classList.add('active');
+    } else {
+        // Fallback for simple ID mapping if above fails
+        const simpeTarget = document.getElementById(tabId);
+        if (simpeTarget) simpeTarget.classList.add('active');
+        else console.warn(`Tab content not found for: ${tabId}`);
+    }
+}

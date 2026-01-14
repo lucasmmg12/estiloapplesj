@@ -601,6 +601,8 @@ async function actualizarKPIs() {
     const earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
 
     const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endOfToday);
+    // Fetch Exchange Rate if needed dynamic? Using 1220 as base if fail but we should fetch from DB if possible or use last stored.
+    // For now simplistic.
 
     // Helpers
     const getMontoARS = (t) => {
@@ -641,9 +643,57 @@ async function actualizarKPIs() {
     document.getElementById('kpiIngresoMes').textContent = fmt.format(incMonth);
 
     // Egresos
-    document.getElementById('kpiGastoHoy').textContent = fmt.format(expDay);
+    const kpiGastoHoy = document.getElementById('kpiGastoHoy');
+    if (kpiGastoHoy) kpiGastoHoy.textContent = fmt.format(expDay);
+
     document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
     document.getElementById('kpiGastoMes').textContent = fmt.format(expMonth);
+
+
+    // ------------------------------------------
+    // UPDATE NEW TAB ELEMENTS (If they exist in DOM)
+    // ------------------------------------------
+
+    // TAB: VENTAS
+    const heroIngresos = document.getElementById('heroIngresosMes');
+    if (heroIngresos) {
+        heroIngresos.textContent = fmt.format(incMonth);
+        // Also update sub-kpis
+        document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incDay);
+        document.getElementById('kpiIngresoSemana_Tab').textContent = fmt.format(incWeek);
+
+        // Calculate Ticket Promedio (Month)
+        const incomeTxCount = transacciones.filter(t => t.type === 'INCOME' && periodFilter(t, startOfMonth)).length;
+        const avgTicket = incomeTxCount > 0 ? (incMonth / incomeTxCount) : 0;
+        document.getElementById('kpiTicketPromedio').textContent = fmt.format(avgTicket);
+    }
+
+    // TAB: GASTOS
+    const heroGastos = document.getElementById('heroGastosMes');
+    if (heroGastos) {
+        heroGastos.textContent = fmt.format(expMonth);
+        // Sub-kpis
+        document.getElementById('kpiGastoHoy_Tab').textContent = fmt.format(expDay);
+        document.getElementById('kpiGastoSemana_Tab').textContent = fmt.format(expWeek);
+
+        // Calculate Top Expense Category (Month)
+        const expenseTxs = transacciones.filter(t => t.type === 'EXPENSE' && periodFilter(t, startOfMonth));
+        const catMap = {};
+        expenseTxs.forEach(t => {
+            const catName = t.transaction_categories?.name || 'Otro';
+            catMap[catName] = (catMap[catName] || 0) + getMontoARS(t);
+        });
+
+        let topCat = '-';
+        let topVal = 0;
+        Object.entries(catMap).forEach(([name, val]) => {
+            if (val > topVal) {
+                topVal = val;
+                topCat = name;
+            }
+        });
+        document.getElementById('kpiMayorGastoCat').textContent = `${topCat} (${fmt.format(topVal)})`;
+    }
 }
 
 function aplicarPresetTiempo(preset) {
@@ -929,7 +979,13 @@ export async function renderizarGraficos() {
 // AI ANALYSIS MODULE
 // ----------------------------------------------------------------------
 
+// ----------------------------------------------------------------------
+// AI ANALYSIS MODULE
+// ----------------------------------------------------------------------
+
 function generarAnalisisIA(transacciones, incTrends, expTrends, products, services) {
+    if (!incTrends || !expTrends) return; // Guard clause if trends undefined
+
     // 1. Descriptivo
     const totalInc = incTrends.reduce((a, b) => a + b, 0);
     const totalExp = expTrends.reduce((a, b) => a + b, 0);
@@ -946,7 +1002,8 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
         El mejor día de ventas fue el día ${bestDay}. 
         El producto estrella es "${topProd[0]}" y el servicio más solicitado "${topServ[0]}".
     `;
-    document.getElementById('analisisDescriptivo').textContent = descriptivo;
+    const descEl = document.getElementById('analisisDescriptivo');
+    if (descEl) descEl.textContent = descriptivo;
 
     // 2. Diagnóstico (Simulated Comparison logic)
     // In a real scenario we would fetch prev month data here.
@@ -955,7 +1012,8 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
         ${totalExp > totalInc * 0.5 ? "⚠️ Alerta: Los gastos superan el 50% de los ingresos. Revisar costos de proveedores." : "✅ Los costos se mantienen en niveles saludables."}
         La alta demanda de servicio técnico sugiere un buen posicionamiento en post-venta.
     `;
-    document.getElementById('analisisDiagnostico').textContent = diagnostico;
+    const diagEl = document.getElementById('analisisDiagnostico');
+    if (diagEl) diagEl.textContent = diagnostico;
 
     // 3. Predictivo (Linear Regression Simple Approximation)
     // Avg growth per day?
@@ -968,23 +1026,27 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
         se proyecta cerrar el mes con ingresos aproximados de ARS ${Math.round(projected).toLocaleString()}.
         Se espera un aumento de tráfico los fines de semana.
     `;
-    document.getElementById('analisisPredictivo').textContent = predictivo;
+    const predEl = document.getElementById('analisisPredictivo');
+    if (predEl) predEl.textContent = predictivo;
 
     // 4. Prescriptivo
     const recomendaciones = document.getElementById('analisisPrescriptivo');
-    recomendaciones.innerHTML = '';
-    const recs = [];
-    if (balance < 0) recs.push("Prioridad Crítica: Reducir gastos hormiga inmediatos.");
-    if (topProd[1] > 5) recs.push(`🔥 Tendencia: Asegurar stock de "${topProd[0]}" para evitar quiebre.`);
-    if (topServ[1] > 5) recs.push(`🔧 Oportunidad: Crear pack promocional para "${topServ[0]}".`);
-    recs.push("Sugerencia: Revisar precios de iPhone ante fluctuación del dólar.");
+    if (recomendaciones) {
+        recomendaciones.innerHTML = '';
+        const recs = [];
+        if (balance < 0) recs.push("Prioridad Crítica: Reducir gastos hormiga inmediatos.");
+        if (topProd[1] > 5) recs.push(`🔥 Tendencia: Asegurar stock de "${topProd[0]}" para evitar quiebre.`);
+        if (topServ[1] > 5) recs.push(`🔧 Oportunidad: Crear pack promocional para "${topServ[0]}".`);
+        recs.push("Sugerencia: Revisar precios de iPhone ante fluctuación del dólar.");
 
-    recs.forEach(r => {
-        const li = document.createElement('li');
-        li.textContent = r;
-        recomendaciones.appendChild(li);
-    });
+        recs.forEach(r => {
+            const li = document.createElement('li');
+            li.textContent = r;
+            recomendaciones.appendChild(li);
+        });
+    }
 }
+
 
 // ----------------------------------------------------------------------
 // EXPORT PDF
@@ -992,12 +1054,26 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
 
 function exportarReportePDF() {
     const element = document.getElementById('analisisEstrategicoContainer');
+    if (!element) return;
+
+    // Cloning to avoid messing up UI with styles
+    const clone = element.cloneNode(true);
+    clone.style.width = '1000px';
+    clone.style.background = '#111827';
+    clone.style.padding = '20px';
+    clone.style.color = 'white';
+
+    // Temporarily append to body to render
+    // document.body.appendChild(clone);
+
     const opt = {
         margin: 0.5,
         filename: `Reporte_Financiero_EstiloApple_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
+        html2canvas: { scale: 2, backgroundColor: '#111827', useCORS: true },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
     };
     html2pdf().set(opt).from(element).save();
+
+    // document.body.removeChild(clone);
 }
