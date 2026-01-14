@@ -1285,13 +1285,28 @@ export async function renderizarGraficos() {
             borderWidth: 0
         }], { cutout: '60%' });
 
-        // Payment Methods (General)
+        // Payment Methods (General) - Improved Visual
         const sortedPay = Object.entries(paymentMap).sort((a, b) => b[1] - a[1]);
-        renderChart('chartPaymentMethods', 'polarArea', sortedPay.map(x => x[0]), [{
+        renderChart('chartPaymentMethods', 'doughnut', sortedPay.map(x => x[0]), [{
             data: sortedPay.map(x => x[1]),
-            backgroundColor: ['#ffffffaa', '#00ff88aa', '#00d4ffaa', '#f59e0baa', '#ff4d4daa'],
-            borderWidth: 0
-        }]);
+            backgroundColor: ['#8B949E', '#2ea44f', '#1F6FEB', '#FB8500', '#DC3545'],
+            borderColor: '#1a1a1a',
+            borderWidth: 2
+        }], {
+            cutout: '50%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: '#fff',
+                        font: { size: 13, weight: '600' },
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        });
 
 
         // --- NEW TABS: INGRESOS / VENTAS ---
