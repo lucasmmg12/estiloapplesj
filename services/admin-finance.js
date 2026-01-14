@@ -176,6 +176,15 @@ function setupEventListeners() {
         });
     }
 
+    // Filtro Tipo Movimiento
+    const filtroTipo = document.getElementById('filtroTipoMovimiento');
+    if (filtroTipo) {
+        filtroTipo.addEventListener('change', async () => {
+            currentPage = 1;
+            await cargarTablaMovimientos();
+        });
+    }
+
     // Chips de Tiempo Presets
     const chips = document.querySelectorAll('.chip-filter');
     chips.forEach(chip => {
@@ -742,15 +751,20 @@ function aplicarPresetTiempo(preset) {
 }
 
 async function cargarTablaMovimientos() {
+    // 1. Validar que exista la tabla
+    const tbody = document.getElementById('tablaMovimientos');
+    if (!tbody) return;
+
     const filtros = {
         fechaInicio: document.getElementById('filtroFechaDesde').value,
-        fechaFin: document.getElementById('filtroFechaHasta').value
+        fechaFin: document.getElementById('filtroFechaHasta').value,
+        tipo: document.getElementById('filtroTipoMovimiento')?.value || ''
     };
 
     if (filtros.fechaInicio) filtros.fechaInicio = new Date(filtros.fechaInicio).toISOString();
     if (filtros.fechaFin) {
         const h = new Date(filtros.fechaFin);
-        h.setHours(23, 59, 59, 999);
+        h.setDate(h.getDate() + 1);
         filtros.fechaFin = h.toISOString();
     }
 
@@ -758,51 +772,54 @@ async function cargarTablaMovimientos() {
     const movimientos = result.data;
     totalRecords = result.total;
 
-    const tbody = document.getElementById('tablaMovimientos');
+    // Actualizar labels Paginación
+    const totalLabel = document.getElementById('erpTotalRecords');
+    if (totalLabel) totalLabel.textContent = `${totalRecords} registros`;
+
+    const pageLabel = document.getElementById('erpPageIndicator');
+    if (pageLabel) pageLabel.textContent = currentPage;
+
+    const btnPrev = document.getElementById('btnPrevPageErp');
+    const btnNext = document.getElementById('btnNextPageErp');
+    if (btnPrev) btnPrev.disabled = currentPage === 1;
+    if (btnNext) btnNext.disabled = currentPage * pageSize >= totalRecords;
+
+    // Render Rows
     tbody.innerHTML = '';
 
     if (!movimientos || movimientos.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">No hay movimientos que coincidan</td></tr>';
-        actualizarPaginacionUI();
         return;
     }
 
     movimientos.forEach(m => {
         const tr = document.createElement('tr');
         const fecha = new Date(m.date).toLocaleDateString('es-AR');
+
         const isIncome = m.type === 'INCOME';
         const color = isIncome ? 'var(--accent-green)' : 'var(--accent-red)';
         const simbolo = isIncome ? '+' : '-';
 
-        // Formatear monto con separadores de miles
+        // Formatear monto
         const montoFormateado = m.amount.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
         tr.innerHTML = `
-            <td style="color: var(--gray-400); font-size: 0.85rem;">${fecha}</td>
-            <td><span style="color: ${color}; font-weight: 800; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">${isIncome ? 'Ingreso' : 'Gasto'}</span></td>
-            <td style="font-weight: 500;">
-                <div style="font-size: 0.9rem;">${m.transaction_categories?.name || 'Otro'}</div>
-                <div style="font-size: 0.7rem; color: var(--gray-400);">${m.branch || ''}</div>
-            </td>
-            <td style="color: ${color}; font-weight: 800; font-family: 'Inter', monospace;">
-                ${simbolo} $${montoFormateado} <span style="font-size: 0.7rem; opacity: 0.7;">${m.currency}</span>
-            </td>
-            <td style="color: var(--gray-100); font-size: 0.9rem;">${m.description || '-'}</td>
-             <td style="text-align: center;">
-                <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                    <button class="btn-action" onclick="abrirModalEdicion('${m.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 6px; border-radius: 8px; color: var(--gray-100);">
-                        ✏️
-                    </button>
-                    <button class="btn-action danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 6px; border-radius: 8px;">
-                        🗑️
-                    </button>
-                </div>
+            <td>${fecha}</td>
+            <td><span class="badge" style="background: ${isIncome ? 'rgba(0,255,136,0.1)' : 'rgba(255,99,99,0.1)'}; color: ${color};">${isIncome ? 'Ingreso' : 'Egreso'}</span></td>
+            <td>${m.transaction_categories?.name || 'Desconocido'}</td>
+            <td style="color: ${color}; font-weight: 600;">${simbolo}$${montoFormateado} <span style="font-size:0.8em; color:var(--gray-400)">${m.currency}</span></td>
+            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.description}">${m.description || '-'}</td>
+            <td style="text-align: center;">
+                <button class="btn-action icon-only" onclick="abrirModalEdicion('${m.id}')" title="Editar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="btn-action icon-only danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
             </td>
         `;
         tbody.appendChild(tr);
     });
-
-    actualizarPaginacionUI();
 }
 
 function actualizarPaginacionUI() {

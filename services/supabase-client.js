@@ -535,6 +535,9 @@ export async function obtenerUltimasTransacciones(filtros = {}, page = 1, pageSi
     if (filtros.fechaFin) {
         query = query.lte('date', filtros.fechaFin);
     }
+    if (filtros.tipo && filtros.tipo !== '') {
+        query = query.eq('type', filtros.tipo);
+    }
 
     const { data, compute, count, error } = await query.range(from, to);
 

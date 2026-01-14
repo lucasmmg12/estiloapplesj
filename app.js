@@ -2315,6 +2315,17 @@ function cambiarTab(tabName) {
             }, 200);
         }
 
+        // Toggle visibility of CRM Filters
+        const crmFilters = document.getElementById('crmFilters');
+        if (crmFilters) {
+            // Hide on Finance, Inventory (catalogo), Competencia
+            if (['erp', 'ventas-financieras', 'gastos-financieros', 'movimientos-financieros', 'catalogo', 'competencia'].includes(tabName)) {
+                crmFilters.style.display = 'none';
+            } else {
+                crmFilters.style.display = 'flex';
+            }
+        }
+
     } else {
         console.warn(`No se encontró el contenedor con ID: ${targetId} para el tab: ${tabName}`);
     }
