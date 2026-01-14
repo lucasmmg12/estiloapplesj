@@ -727,7 +727,7 @@ body::before {
 
 /* Fluid Apple Background for KPI Cards */
 .kpi-card-fluid {
-    background-image: url('../public/fluid-bg.png');
+    background-image: url('/public/fluid-bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
