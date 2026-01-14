@@ -483,17 +483,54 @@ function setupEventListeners() {
         }
     }
 
-    window.eliminarMovimiento = async function (id) {
-        if (!confirm('¿Estás seguro de que deseas eliminar este movimiento? Esta acción es irreversible.')) return;
+    // Custom Confirm Dialog
+    function mostrarConfirmacion(titulo, mensaje, onConfirm) {
+        const modal = document.getElementById('modalConfirmacion');
+        const header = document.getElementById('modalConfirmacionHeader');
+        const mensajeEl = document.getElementById('mensajeConfirmacion');
+        const btnConfirmar = document.getElementById('btnConfirmarAccion');
 
-        try {
-            await supabaseService.eliminarTransaccion(id);
-            mostrarModalExito('Movimiento eliminado correctamente');
-            await cargarDatosIniciales();
-        } catch (error) {
-            console.error(error);
-            alert('Error al eliminar: ' + error.message);
-        }
+        if (!modal || !mensajeEl || !btnConfirmar) return;
+
+        // Update content
+        header.querySelector('.modal-title').textContent = titulo;
+        mensajeEl.textContent = mensaje;
+
+        // Change colors for delete action
+        header.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
+        btnConfirmar.className = 'btn-primary';
+        btnConfirmar.style.background = '#dc2626';
+        btnConfirmar.textContent = 'Eliminar';
+
+        // Set up confirmation handler
+        btnConfirmar.onclick = () => {
+            onConfirm();
+            cerrarModalConfirmacion();
+        };
+
+        modal.classList.add('active');
+    }
+
+    window.cerrarModalConfirmacion = function () {
+        const modal = document.getElementById('modalConfirmacion');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.eliminarMovimiento = async function (id) {
+        mostrarConfirmacion(
+            '⚠️ Eliminar Movimiento',
+            '¿Estás seguro de que deseas eliminar este movimiento? Esta acción es irreversible.',
+            async () => {
+                try {
+                    await supabaseService.eliminarTransaccion(id);
+                    showToast('Movimiento eliminado correctamente', 'success');
+                    await cargarDatosIniciales();
+                } catch (error) {
+                    console.error(error);
+                    showToast('Error al eliminar: ' + error.message, 'error');
+                }
+            }
+        );
     };
     // PDF Export
     document.getElementById('btnExportarPDF')?.addEventListener('click', exportarReportePDF);
