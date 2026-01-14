@@ -669,10 +669,11 @@ async function actualizarKPIs() {
         document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incDay);
         document.getElementById('kpiIngresoSemana_Tab').textContent = fmt.format(incWeek);
 
-        // Calculate Ticket Promedio (Month)
-        const incomeTxCount = transacciones.filter(t => t.type === 'INCOME' && periodFilter(t, startOfMonth)).length;
-        const avgTicket = incomeTxCount > 0 ? (incMonth / incomeTxCount) : 0;
-        document.getElementById('kpiTicketPromedio').textContent = fmt.format(avgTicket);
+        // REMOVED: Ticket Promedio logic
+        // NEW: Total Vendido Mes (redundant with Hero but requested) or Cash Flow?
+        // User asked: "cambia ticket promedio por $ vendido en el mes en curso"
+        // Since Hero shows Month Income too, maybe they want strictly 'Current Month Sold' displayed here as well.
+        document.getElementById('kpiTicketPromedio').textContent = fmt.format(incMonth);
     }
 
     // TAB: GASTOS
