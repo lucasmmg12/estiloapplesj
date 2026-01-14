@@ -415,7 +415,8 @@
                                                     <option value="Transferencia">Transferencia</option>
                                                     <option value="USDT">USDT</option>
                                                     <option value="MercadoPago">MercadoPago</option>
-                                                    <option value="Tarjeta">Tarjeta</option>
+                                                    <option value="Tarjeta Débito">Tarjeta Débito</option>
+                                                    <option value="Tarjeta Crédito">Tarjeta Crédito</option>
                                                 </select>
                                                 <input type="number" name="montoPago[]" placeholder="Monto" step="0.01"
                                                     class="input-std monto-parcial" style="flex: 1;" required>
@@ -1843,6 +1844,17 @@
                                 <option value="ARS">ARS</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Método de Pago</label>
+                        <select id="editTransaccionMetodo" class="select-std">
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="USDT">USDT</option>
+                            <option value="MercadoPago">MercadoPago</option>
+                            <option value="Tarjeta Débito">Tarjeta Débito</option>
+                            <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Tipo de Movimiento</label>

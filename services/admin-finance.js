@@ -410,6 +410,7 @@ function setupEventListeners() {
             document.getElementById('editTransaccionMonto').value = m.amount;
             document.getElementById('editTransaccionMoneda').value = m.currency;
             document.getElementById('editTransaccionTipo').value = m.type;
+            document.getElementById('editTransaccionMetodo').value = m.payment_method || 'Efectivo';
 
             // Category Selector Population
             const slCat = document.getElementById('editTransaccionCategoria');
@@ -556,6 +557,15 @@ function mostrarModalExito(mensaje) {
     }
 }
 
+// Helper: Convert date input to ISO without timezone offset
+function dateToISOLocal(dateString) {
+    if (!dateString) return new Date().toISOString();
+    // Parse as YYYY-MM-DD and set to noon local time to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day, 12, 0, 0); // Noon local time
+    return date.toISOString();
+}
+
 async function handleIngresoSubmit(e) {
     e.preventDefault();
 
@@ -567,7 +577,7 @@ async function handleIngresoSubmit(e) {
         if (!categoriaObj) throw new Error(`Categoría no encontrada: ${categoriaNombre}`);
 
         const moneda = formData.get('ingresoMoneda');
-        const fecha = new Date(formData.get('ingresoFecha')).toISOString();
+        const fecha = dateToISOLocal(formData.get('ingresoFecha'));
         const productoId = formData.get('ingresoProductoId');
         const tipoServicio = formData.get('ingresoTipoServicio');
 
@@ -671,8 +681,8 @@ async function handleGastoSubmit(e) {
         if (!categoriaObj) throw new Error(`Categoría no encontrada (asegurate de haber cargado el SQL): ${categoriaNombre}`);
 
         const moneda = formData.get('gastoMoneda');
+        const fecha = dateToISOLocal(formData.get('gastoFecha'));
         const monto = parseFloat(formData.get('gastoMonto'));
-        const fecha = new Date(formData.get('gastoFecha')).toISOString();
         const comentario = document.getElementById('gastoComentario').value;
 
         const transaccion = {
@@ -707,7 +717,7 @@ async function handleEdicionSubmit(e) {
 
     try {
         const id = document.getElementById('editTransaccionId').value;
-        const fecha = new Date(document.getElementById('editTransaccionFecha').value).toISOString();
+        const fecha = dateToISOLocal(document.getElementById('editTransaccionFecha').value);
         const descripcion = document.getElementById('editTransaccionDescripcion').value;
         const monto = parseFloat(document.getElementById('editTransaccionMonto').value);
         const moneda = document.getElementById('editTransaccionMoneda').value;
@@ -729,7 +739,8 @@ async function handleEdicionSubmit(e) {
             amount: monto,
             currency: moneda,
             category_id: categoriaId,
-            related_product_id: productoId || null
+            related_product_id: productoId || null,
+            payment_method: document.getElementById('editTransaccionMetodo').value
         };
 
         await supabaseService.actualizarTransaccion(id, datosActualizados);
