@@ -15,6 +15,7 @@ const supabase = window.supabase.createClient(
 let activeChatPhone = null;
 let activeFilter = 'whatsapp';
 let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite, platform }
+let botStatusGlobal = { whatsapp: 'active', instagram: 'active' }; // Estado global del bot por plataforma
 
 // DOM Elements
 const contactsListEl = document.getElementById('contactsList');
@@ -38,11 +39,13 @@ const emojiPicker = document.querySelector('emoji-picker');
 
 async function init() {
     console.log('🚀 Iniciando Live Chat...');
-    // 1. Initial Load
+    // 1. Cargar estado del bot desde Supabase
+    await loadBotStatus();
+    // 2. Initial Load
     await loadContacts();
-    // 2. Realtime Subscription
+    // 3. Realtime Subscription
     subscribeToMessages();
-    // 3. Event Listeners
+    // 4. Event Listeners
     setupEventListeners();
 }
 
@@ -289,14 +292,34 @@ window.openChat = async (phone) => {
 const botStatusBtn = document.getElementById('botStatusBtn');
 const botStatusSpan = botStatusBtn.querySelector('span');
 
-function updateBotStatusUI(contact) {
-    if (!contact || !contact.bot_paused_at) {
-        // Bot Activo (No hay fecha de pausa)
-        setBotUI('active');
-    } else {
-        // Bot Pausado (Indefinidamente, hasta que se active manual)
-        setBotUI('paused');
+// Cargar estado del bot desde Supabase
+async function loadBotStatus() {
+    try {
+        const { data, error } = await supabase
+            .from('bot_config')
+            .select('platform, status');
+
+        if (error) {
+            console.error('Error cargando estado del bot:', error);
+            return;
+        }
+
+        if (data && data.length > 0) {
+            data.forEach(config => {
+                botStatusGlobal[config.platform] = config.status;
+            });
+            console.log('✅ Estado del bot cargado:', botStatusGlobal);
+        }
+    } catch (err) {
+        console.error('Error al cargar bot_config:', err);
     }
+}
+
+function updateBotStatusUI(contact) {
+    const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
+    const status = botStatusGlobal[platform] || 'active';
+
+    setBotUI(status);
 }
 
 function setBotUI(state) {
@@ -314,33 +337,47 @@ botStatusBtn.addEventListener('click', async () => {
     if (!activeChatPhone) return;
     const contact = contactsMap.get(activeChatPhone);
     const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
-    const isPaused = botStatusBtn.classList.contains('paused');
+    const currentStatus = botStatusGlobal[platform] || 'active';
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
 
     // Cambiar estado (Toggle)
-    if (isPaused) {
+    if (newStatus === 'active') {
         // REACTIVAR BOT
         setBotUI('active'); // Optimistic
         try {
             await manageBlacklist(activeChatPhone, 'remove', platform);
-            await supabase.from('contactos').update({ bot_paused_at: null }).eq('telefono', activeChatPhone);
-            if (contact) contact.bot_paused_at = null; // Update local state
-            console.log(`Bot reactivado manualmente para ${activeChatPhone} (${platform})`);
+
+            // Actualizar estado global en Supabase
+            await supabase
+                .from('bot_config')
+                .update({ status: 'active' })
+                .eq('platform', platform);
+
+            botStatusGlobal[platform] = 'active';
+            console.log(`✅ Bot reactivado para ${platform}`);
         } catch (e) {
-            console.error(e);
+            console.error('❌ Error reactivando bot:', e);
             alert('Error reactivando bot');
+            setBotUI('paused'); // Revertir UI
         }
     } else {
         // PAUSAR BOT
         setBotUI('paused'); // Optimistic
         try {
             await manageBlacklist(activeChatPhone, 'add', platform);
-            const now = new Date().toISOString();
-            await supabase.from('contactos').update({ bot_paused_at: now }).eq('telefono', activeChatPhone);
-            if (contact) contact.bot_paused_at = now; // Update local state
-            console.log(`Bot pausado manualmente para ${activeChatPhone} (${platform})`);
+
+            // Actualizar estado global en Supabase
+            await supabase
+                .from('bot_config')
+                .update({ status: 'paused' })
+                .eq('platform', platform);
+
+            botStatusGlobal[platform] = 'paused';
+            console.log(`⏸️ Bot pausado para ${platform}`);
         } catch (e) {
-            console.error(e);
+            console.error('❌ Error pausando bot:', e);
             alert('Error pausando bot');
+            setBotUI('active'); // Revertir UI
         }
     }
 });
