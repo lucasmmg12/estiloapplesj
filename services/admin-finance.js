@@ -548,13 +548,34 @@ function actualizarTotalDisplay() {
     document.getElementById('displayTotalIngreso').textContent = `$${total.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
+// Toast Notification System
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.5rem;">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'warning' ? '⚠️' : 'ℹ️'}
+            </span>
+            <span style="font-weight: 500;">${message}</span>
+        </div>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Legacy support (deprecated, use showToast instead)
 function mostrarModalExito(mensaje) {
-    const modal = document.getElementById('modalExito');
-    const mensajeElement = document.getElementById('modalExitoMensaje');
-    if (modal && mensajeElement) {
-        mensajeElement.textContent = mensaje;
-        modal.classList.add('active');
-    }
+    showToast(mensaje, 'success');
 }
 
 // Helper: Convert date input to ISO without timezone offset
