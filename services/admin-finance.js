@@ -141,6 +141,137 @@ function setupEventListeners() {
         });
     }
 
+    async function exportarMovimientosCSV() {
+        // ... (existing implementation kept as reference, but I will replace the whole block including new functions)
+        // Re-implementing correctly below:
+        await genericExport('csv');
+    }
+
+    async function exportarMovimientosXLSX() {
+        await genericExport('xlsx');
+    }
+
+    async function exportarMovimientosPDF() {
+        await genericExport('pdf');
+    }
+
+    async function genericExport(format) {
+        try {
+            const btnId = format === 'csv' ? 'btnExportarCSV' : (format === 'xlsx' ? 'btnExportarXLSX' : 'btnExportarPDFMovimientos');
+            const btn = document.getElementById(btnId);
+            if (btn) btn.classList.add('rotating');
+
+            // Reading Current Filters
+            const filtros = {
+                fechaInicio: document.getElementById('filtroFechaDesde').value,
+                fechaFin: document.getElementById('filtroFechaHasta').value,
+                tipo: document.getElementById('filtroTipoMovimiento')?.value || ''
+            };
+
+            if (filtros.fechaInicio) filtros.fechaInicio = new Date(filtros.fechaInicio).toISOString();
+            if (filtros.fechaFin) {
+                const h = new Date(filtros.fechaFin);
+                h.setDate(h.getDate() + 1);
+                filtros.fechaFin = h.toISOString();
+            }
+
+            // Fetch ALL data
+            const result = await supabaseService.obtenerUltimasTransacciones(filtros, 1, 10000);
+            const movimientos = result.data;
+
+            if (!movimientos || movimientos.length === 0) {
+                alert('No hay movimientos para exportar con los filtros actuales.');
+                if (btn) btn.classList.remove('rotating');
+                return;
+            }
+
+            const dataRows = movimientos.map(m => {
+                const fechaObj = new Date(m.date);
+                return {
+                    Fecha: fechaObj.toLocaleDateString('es-AR'),
+                    Hora: fechaObj.toLocaleTimeString('es-AR'),
+                    Tipo: m.type === 'INCOME' ? 'INGRESO' : 'EGRESO',
+                    Categoria: (m.transaction_categories?.name || 'Otro'),
+                    Sucursal: m.branch || 'Estilo Apple SJ',
+                    Monto: m.amount,
+                    Moneda: m.currency,
+                    Descripcion: (m.description || ''),
+                    Metodo: m.payment_methods?.name || (m.description && m.description.toLowerCase().includes('efectivo') ? 'Efectivo' : 'Otro')
+                };
+            });
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            const fileName = `movimientos_${dateStr}`;
+
+            if (format === 'csv') {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                csvContent += "Fecha,Hora,Tipo,Categoria,Sucursal,Monto,Moneda,Descripcion,MetodoPago\r\n";
+                dataRows.forEach(row => {
+                    const line = Object.values(row).map(v => `"${v}"`).join(",");
+                    csvContent += line + "\r\n";
+                });
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", `${fileName}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } else if (format === 'xlsx') {
+                // Requires SheetJS (xlsx)
+                if (typeof XLSX === 'undefined') {
+                    throw new Error('Librería XLSX no cargada. Recarga la página.');
+                }
+                const ws = XLSX.utils.json_to_sheet(dataRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+                XLSX.writeFile(wb, `${fileName}.xlsx`);
+
+            } else if (format === 'pdf') {
+                // Requires jsPDF & autoTable
+                if (typeof jspdf === 'undefined') {
+                    throw new Error('Librería jsPDF no cargada. Recarga la página.');
+                }
+                const { jsPDF } = jspdf;
+                const doc = new jsPDF();
+
+                doc.text(`Reporte de Movimientos - ${dateStr}`, 14, 15);
+
+                const tableColumn = ["Fecha", "Tipo", "Categoria", "Monto", "Moneda", "Descripcion", "Metodo"];
+                const tableRows = dataRows.map(row => [
+                    row.Fecha,
+                    row.Tipo,
+                    row.Categoria,
+                    row.Monto,
+                    row.Moneda,
+                    row.Descripcion,
+                    row.Metodo
+                ]);
+
+                doc.autoTable({
+                    head: [tableColumn],
+                    body: tableRows,
+                    startY: 20,
+                    theme: 'grid',
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [41, 128, 185] }
+                });
+
+                doc.save(`${fileName}.pdf`);
+            }
+
+            if (btn) btn.classList.remove('rotating');
+
+        } catch (error) {
+            console.error(`Error exportando ${format}`, error);
+            alert(`Error al exportar a ${format}: ` + error.message);
+            const btnId = format === 'csv' ? 'btnExportarCSV' : (format === 'xlsx' ? 'btnExportarXLSX' : 'btnExportarPDFMovimientos');
+            const btn = document.getElementById(btnId);
+            if (btn) btn.classList.remove('rotating');
+        }
+    }
+
     // Formulario de Gastos
     const formGasto = document.getElementById('formGasto');
     if (formGasto) {
@@ -237,6 +368,21 @@ function setupEventListeners() {
     window.cerrarModalEdicionTransaccion = function () {
         document.getElementById('modalEdicionTransaccion').classList.remove('active');
     };
+
+    // CSV Export
+    document.getElementById('btnExportarCSV')?.addEventListener('click', async () => {
+        await exportarMovimientosCSV();
+    });
+
+    // Excel Export
+    document.getElementById('btnExportarXLSX')?.addEventListener('click', async () => {
+        await exportarMovimientosXLSX();
+    });
+
+    // PDF Export
+    document.getElementById('btnExportarPDFMovimientos')?.addEventListener('click', async () => {
+        await exportarMovimientosPDF();
+    });
 
     window.abrirModalEdicion = async function (id) {
         try {
@@ -616,14 +762,20 @@ async function actualizarKPIs() {
     await cargarTablaGastosTab();
     const earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
 
-    const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endOfToday);
-    // Fetch Exchange Rate if needed dynamic? Using 1220 as base if fail but we should fetch from DB if possible or use last stored.
-    // For now simplistic.
+    // IMPORTANT: 'endOfToday' in ISO might cut off transactions if server time is ahead/behind. 
+    // Safer to fetch until tomorrow to catch everything from today in local time.
+    const tomorrow = new Date(hoyDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const endRange = tomorrow.toISOString();
+
+    const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endRange);
 
     // Helpers
     const getMontoARS = (t) => {
         let tasa = t.exchange_rate || 1485;
-        return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+        const rawAmount = parseFloat(t.amount);
+        if (isNaN(rawAmount)) return 0;
+        return t.currency === 'ARS' ? rawAmount : (rawAmount * tasa);
     };
 
     // Initializers
