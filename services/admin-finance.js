@@ -230,32 +230,46 @@ function setupEventListeners() {
 
             } else if (format === 'pdf') {
                 // Requires jsPDF & autoTable
-                if (typeof jspdf === 'undefined') {
+                if (typeof window.jspdf === 'undefined') {
                     throw new Error('Librería jsPDF no cargada. Recarga la página.');
                 }
-                const { jsPDF } = jspdf;
+                const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                doc.text(`Reporte de Movimientos - ${dateStr}`, 14, 15);
+                // Título
+                doc.setFontSize(16);
+                doc.text(`Reporte de Movimientos Financieros`, 14, 15);
+                doc.setFontSize(10);
+                doc.text(`Fecha de generación: ${dateStr}`, 14, 22);
 
-                const tableColumn = ["Fecha", "Tipo", "Categoria", "Monto", "Moneda", "Descripcion", "Metodo"];
+                const tableColumn = ["Fecha", "Tipo", "Categoría", "Monto", "Moneda", "Descripción"];
                 const tableRows = dataRows.map(row => [
                     row.Fecha,
                     row.Tipo,
                     row.Categoria,
-                    row.Monto,
+                    `${row.Moneda} ${parseFloat(row.Monto).toLocaleString('es-AR')}`,
                     row.Moneda,
-                    row.Descripcion,
-                    row.Metodo
+                    row.Descripcion.substring(0, 40) // Limit description length
                 ]);
 
+                // Using autoTable (globally attached to jsPDF)
                 doc.autoTable({
                     head: [tableColumn],
                     body: tableRows,
-                    startY: 20,
-                    theme: 'grid',
-                    styles: { fontSize: 8 },
-                    headStyles: { fillColor: [41, 128, 185] }
+                    startY: 28,
+                    theme: 'striped',
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 3
+                    },
+                    headStyles: {
+                        fillColor: [92, 46, 46], // Brand burgundy
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    }
                 });
 
                 doc.save(`${fileName}.pdf`);
@@ -1383,8 +1397,22 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const descEl = document.getElementById('analisisDescriptivo');
     if (descEl) descEl.textContent = descriptivo;
 
+    // Chart Descriptivo: Income vs Expenses (Bar)
+    renderChart('chartAnalisisDescriptivo', 'bar', ['Ingresos', 'Egresos', 'Balance'], [{
+        label: 'Métricas Clave (ARS)',
+        data: [totalInc, totalExp, Math.abs(balance)],
+        backgroundColor: ['#10b981', '#ef4444', balance >= 0 ? '#3b82f6' : '#f59e0b'],
+        borderWidth: 0
+    }], {
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+            y: { ticks: { color: '#fff' }, grid: { display: false } }
+        }
+    });
+
     // 2. Diagnóstico (Simulated Comparison logic)
-    // In a real scenario we would fetch prev month data here.
     const diagnostico = `
         El margen de beneficio bruto se sitúa en un ${(totalInc > 0 ? (balance / totalInc) * 100 : 0).toFixed(1)}%. 
         ${totalExp > totalInc * 0.5 ? "⚠️ Alerta: Los gastos superan el 50% de los ingresos. Revisar costos de proveedores." : "✅ Los costos se mantienen en niveles saludables."}
@@ -1393,8 +1421,20 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const diagEl = document.getElementById('analisisDiagnostico');
     if (diagEl) diagEl.textContent = diagnostico;
 
+    // Chart Diagnóstico: Margin Health (Doughnut)
+    const margen = totalInc > 0 ? (balance / totalInc) * 100 : 0;
+    renderChart('chartAnalisisDiagnostico', 'doughnut', ['Margen', 'Costos'], [{
+        data: [Math.max(margen, 0), Math.max(100 - margen, 0)],
+        backgroundColor: [margen >= 30 ? '#10b981' : '#fb923c', '#6b7280'],
+        borderWidth: 0
+    }], {
+        cutout: '65%',
+        plugins: {
+            legend: { position: 'bottom', labels: { color: '#fff', font: { size: 11 } } }
+        }
+    });
+
     // 3. Predictivo (Linear Regression Simple Approximation)
-    // Avg growth per day?
     const avgDaily = totalInc / (new Date().getDate());
     const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
     const projected = avgDaily * daysInMonth;
@@ -1406,6 +1446,23 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     `;
     const predEl = document.getElementById('analisisPredictivo');
     if (predEl) predEl.textContent = predictivo;
+
+    // Chart Predictivo: Current vs Projected (Line Trend)
+    renderChart('chartAnalisisPredictivo', 'line', ['Actual', 'Proyectado'], [{
+        label: 'Ingresos Mensuales',
+        data: [totalInc, projected],
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4
+    }], {
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { color: '#fff' }, grid: { display: false } },
+            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+        }
+    });
 
     // 4. Prescriptivo
     const recomendaciones = document.getElementById('analisisPrescriptivo');
