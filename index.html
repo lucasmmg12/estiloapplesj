@@ -13,6 +13,7 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 
     <!-- Leaflet Utils -->
@@ -227,32 +228,170 @@
 
             <!-- Tab: ERP & FINANZAS -->
             <div class="tab-content active" id="tabErp">
-                <!-- Dashboard de Resumen (KPIs) -->
-                <div class="kpi-grid"
-                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                    <div class="glass-card kpi-card">
-                        <h3 class="kpi-title" style="font-size: 0.9rem;">Caja Total (Hoy)</h3>
-                        <p class="kpi-value text-success" id="kpiCajaTotal"
-                            style="font-size: 1.8rem; font-weight: 800;">$0</p>
-                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Financiero Real</span>
+                <!-- NUEVO DASHBOARD FINANCIERO -->
+                <div class="dashboard-finance-layout"
+                    style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem;">
+
+                    <!-- SECCIÓN 1: BALANCE Y TENDENCIAS (Separado) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+                        <!-- Columna Ingresos -->
+                        <div class="glass-card" style="border-top: 4px solid var(--accent-green);">
+                            <div class="card-header">
+                                <h2 class="card-title" style="color: var(--accent-green);">Ingresos (Ventas)</h2>
+                            </div>
+                            <!-- KPIs Ingresos -->
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="mini-kpi">
+                                    <span class="label">Hoy</span>
+                                    <span class="value" id="kpiIngresoHoy">$0</span>
+                                </div>
+                                <div class="mini-kpi">
+                                    <span class="label">Esta Semana</span>
+                                    <span class="value" id="kpiIngresoSemana">$0</span>
+                                </div>
+                                <div class="mini-kpi">
+                                    <span class="label">Este Mes</span>
+                                    <span class="value" id="kpiIngresoMes">$0</span>
+                                </div>
+                            </div>
+                            <!-- Chart Ingresos -->
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartTrendIngresos"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Columna Egresos -->
+                        <div class="glass-card" style="border-top: 4px solid var(--accent-red);">
+                            <div class="card-header">
+                                <h2 class="card-title" style="color: var(--accent-red);">Egresos (Gastos)</h2>
+                            </div>
+                            <!-- KPIs Egresos -->
+                            <div
+                                style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="mini-kpi">
+                                    <span class="label">Hoy</span>
+                                    <span class="value" id="kpiGastoHoy">$0</span>
+                                </div>
+                                <div class="mini-kpi">
+                                    <span class="label">Esta Semana</span>
+                                    <span class="value" id="kpiGastoSemana">$0</span>
+                                </div>
+                                <div class="mini-kpi">
+                                    <span class="label">Este Mes</span>
+                                    <span class="value" id="kpiGastoMes">$0</span>
+                                </div>
+                            </div>
+                            <!-- Chart Egresos -->
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartTrendGastos"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-card kpi-card">
-                        <h3 class="kpi-title" style="font-size: 0.9rem;">Ventas Hoy</h3>
-                        <p class="kpi-value text-success" id="kpiVentasHoy"
-                            style="font-size: 1.8rem; font-weight: 800;">$0</p>
-                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Equipos + Acc.</span>
+
+                    <!-- SECCIÓN 2: ANÁLISIS DE VENTAS -->
+                    <h3 class="section-subtitle">Análisis de Ventas (Mensual)</h3>
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Top Servicios -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Servicios Más Vendidos</h3>
+                            </div>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartTopServices"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Productos -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Productos Top</h3>
+                            </div>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartTopProducts"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Generaciones iPhone -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Ventas por Generación iPhone</h3>
+                            </div>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="chartIphoneGenerations"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div class="glass-card kpi-card">
-                        <h3 class="kpi-title" style="font-size: 0.9rem;">Gastos Hoy</h3>
-                        <p class="kpi-value text-danger" id="kpiGastosHoy" style="font-size: 1.8rem; font-weight: 800;">
-                            $0</p>
-                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Salidas</span>
+
+                    <!-- Métodos de Pago -->
+                    <div class="glass-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Métodos de Pago Utilizados</h3>
+                        </div>
+                        <div style="height: 200px; position: relative;">
+                            <canvas id="chartPaymentMethods"></canvas>
+                        </div>
                     </div>
-                    <div class="glass-card kpi-card">
-                        <h3 class="kpi-title" style="font-size: 0.9rem;">Rentabilidad Est.</h3>
-                        <p class="kpi-value text-warning" id="kpiRentabilidad"
-                            style="font-size: 1.8rem; font-weight: 800;">$0</p>
-                        <span class="kpi-trend" style="font-size: 0.8rem; opacity: 0.8;">Económico (CMV)</span>
+
+                </div>
+
+                <!-- SECCIÓN 3: ANÁLISIS ESTRATÉGICO IA -->
+                <div id="analisisEstrategicoContainer" class="dashboard-finance-layout"
+                    style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem;">
+                    <div class="glass-card" style="border: 1px solid var(--primary);">
+                        <div class="card-header"
+                            style="justify-content: space-between; align-items: center; display: flex;">
+                            <h2 class="card-title" style="color: var(--primary);">🤖 Análisis Estratégico IA</h2>
+                            <button id="btnExportarPDF" class="btn-secondary" style="font-size: 0.8rem;">
+                                📄 Exportar PDF
+                            </button>
+                        </div>
+
+                        <div class="analysis-grid"
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem;">
+                            <!-- 1. Descriptivo -->
+                            <div class="analysis-box">
+                                <h3
+                                    style="color: #fff; border-bottom: 2px solid var(--accent-blue); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                    1. Análisis Descriptivo</h3>
+                                <p id="analisisDescriptivo"
+                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6;">Generando
+                                    análisis...</p>
+                            </div>
+
+                            <!-- 2. Diagnóstico -->
+                            <div class="analysis-box">
+                                <h3
+                                    style="color: #fff; border-bottom: 2px solid var(--warning); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                    2. Análisis Diagnóstico</h3>
+                                <p id="analisisDiagnostico"
+                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6;">Comparando con
+                                    periodo anterior...</p>
+                            </div>
+
+                            <!-- 3. Predictivo -->
+                            <div class="analysis-box">
+                                <h3
+                                    style="color: #fff; border-bottom: 2px solid var(--accent-purple); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                    3. Análisis Predictivo</h3>
+                                <p id="analisisPredictivo"
+                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6;">Proyectando
+                                    tendencias...</p>
+                            </div>
+
+                            <!-- 4. Prescriptivo -->
+                            <div class="analysis-box">
+                                <h3
+                                    style="color: #fff; border-bottom: 2px solid var(--success); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                    4. Análisis Prescriptivo</h3>
+                                <ul id="analisisPrescriptivo"
+                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem;">
+                                    <li>Generando recomendaciones...</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -287,7 +426,8 @@
                                             </label>
                                             <label class="radio-chip"
                                                 style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
-                                                <input type="radio" name="ingresoCategoria" value="Servicio Tecnico">
+                                                <input type="radio" name="ingresoCategoria" value="Servicio Tecnico"
+                                                    checked>
                                                 <span>🔧 Servicio</span>
                                             </label>
                                         </div>
@@ -298,10 +438,10 @@
                                     <label>Moneda</label>
                                     <div class="radio-group" style="display: flex; gap: 1rem;">
                                         <label class="radio-input">
-                                            <input type="radio" name="ingresoMoneda" value="USD" checked> USD
+                                            <input type="radio" name="ingresoMoneda" value="USD"> USD
                                         </label>
                                         <label class="radio-input">
-                                            <input type="radio" name="ingresoMoneda" value="ARS"> ARS
+                                            <input type="radio" name="ingresoMoneda" value="ARS" checked> ARS
                                         </label>
                                     </div>
                                 </div>
@@ -326,10 +466,10 @@
                         </div>
 
                         <div class="form-group" id="selectorServicioContainer"
-                            style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
+                            style="display: block; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
                             <label style="color: var(--primary);">Tipo de Servicio</label>
                             <select id="ingresoTipoServicio" name="ingresoTipoServicio" class="select-lg"
-                                style="width: 100%; padding: 0.5rem;">
+                                style="width: 100%; padding: 0.5rem;" required>
                                 <option value="">Seleccionar servicio...</option>
                                 <option value="Diagnóstico">Diagnóstico</option>
                                 <option value="Cambio de batería">Cambio de batería</option>
@@ -341,6 +481,8 @@
                                 <option value="Sistema">Sistema</option>
                                 <option value="Copia de información">Copia de información</option>
                                 <option value="Cambio de piezas en general">Cambio de piezas en general</option>
+                                <option value="Otros">Otros</option>
+                                <option value="Baño químico">Baño químico</option>
                             </select>
                         </div>
 
@@ -425,10 +567,10 @@
                                     <label>Moneda</label>
                                     <div class="radio-group" style="display: flex; gap: 1rem;">
                                         <label class="radio-input">
-                                            <input type="radio" name="gastoMoneda" value="USD" checked> USD
+                                            <input type="radio" name="gastoMoneda" value="USD"> USD
                                         </label>
                                         <label class="radio-input">
-                                            <input type="radio" name="gastoMoneda" value="ARS"> ARS
+                                            <input type="radio" name="gastoMoneda" value="ARS" checked> ARS
                                         </label>
                                     </div>
                                 </div>
@@ -1303,6 +1445,43 @@
                         <label>Descripción / Detalle</label>
                         <input type="text" id="editTransaccionDescripcion" class="input-std" required>
                     </div>
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Categoría</label>
+                        <select id="editTransaccionCategoria" class="select-std" required>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Fields based on Category -->
+                    <div class="form-group" id="editSelectorEquipoContainer"
+                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <label style="color: #00ff88; font-size: 0.9rem;">Producto / Stock</label>
+                        <select id="editTransaccionProductoId" class="select-std">
+                            <option value="">Seleccionar producto...</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="editSelectorServicioContainer"
+                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <label style="color: var(--primary); font-size: 0.9rem;">Tipo de Servicio</label>
+                        <select id="editTransaccionTipoServicio" class="select-std">
+                            <option value="">Seleccionar servicio...</option>
+                            <option value="Diagnóstico">Diagnóstico</option>
+                            <option value="Cambio de batería">Cambio de batería</option>
+                            <option value="Cambio de pantalla">Cambio de pantalla</option>
+                            <option value="Cambio de tapa">Cambio de tapa</option>
+                            <option value="Cambio de flex">Cambio de flex</option>
+                            <option value="Cambio de cámara">Cambio de cámara</option>
+                            <option value="Placa">Placa</option>
+                            <option value="Sistema">Sistema</option>
+                            <option value="Copia de información">Copia de información</option>
+                            <option value="Cambio de piezas en general">Cambio de piezas en general</option>
+                            <option value="Otros">Otros</option>
+                            <option value="Baño químico">Baño químico</option>
+                        </select>
+                    </div>
+
                     <div class="form-row" style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                         <div class="form-group" style="flex: 1;">
                             <label>Monto</label>

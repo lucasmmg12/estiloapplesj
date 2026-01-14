@@ -596,11 +596,21 @@ export async function eliminarTransaccion(id) {
 }
 
 export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
-    // Esta función idealmente usaría una RPC en Supabase, pero por ahora sumamos en cliente
-    // Traemos todas las transacciones del rango (cuidado con volumen alto)
+    // Traemos transacciones con todos los campos necesarios para los Charts y KPIs
+    // Incluyendo fecha, descripcion (para regex), categorias (nombre y tipo)
     const { data, error } = await supabase
         .from('transactions')
-        .select('amount, type, currency, exchange_rate, category_id, transaction_categories(type)')
+        .select(`
+            id,
+            date,
+            amount,
+            type,
+            currency,
+            description,
+            exchange_rate,
+            category_id,
+            transaction_categories (name, type)
+        `)
         .gte('date', fechaInicio)
         .lte('date', fechaFin);
 

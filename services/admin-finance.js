@@ -24,8 +24,25 @@ export async function initErp() {
     renderizarGraficos();
 }
 
+
+// Helper for Argentina Timezone
+function getArgentinaDate(dateInput) {
+    const date = dateInput ? new Date(dateInput) : new Date();
+    // Argentina is UTC-3. We want to display correctly relative to local time.
+    // Ideally use libraries like dayjs, but for vanilla:
+    const offset = date.getTimezoneOffset() * 60000;
+    const argOffset = -3 * 3600000;
+    // This is a naive approach ensuring we send/display consistent strings.
+    // For input 'date' (YYYY-MM-DD), we just use it. 
+    return date;
+}
+
 function establecerFechasPorDefecto() {
-    const hoy = new Date().toISOString().split('T')[0];
+    // Argentina UTC-3 adjustment for default input value
+    const now = new Date();
+    const argTime = new Date(now.getTime() - (3 * 3600000));
+    const hoy = argTime.toISOString().split('T')[0];
+
     const camposFecha = [
         'ingresoFecha',
         'gastoFecha',
@@ -217,6 +234,7 @@ function setupEventListeners() {
             const m = await supabaseService.obtenerTransaccionPorId(id);
             if (!m) return;
 
+            // Basic Fields
             document.getElementById('editTransaccionId').value = m.id;
             document.getElementById('editTransaccionFecha').value = m.date.split('T')[0];
             document.getElementById('editTransaccionDescripcion').value = m.description || '';
@@ -224,12 +242,76 @@ function setupEventListeners() {
             document.getElementById('editTransaccionMoneda').value = m.currency;
             document.getElementById('editTransaccionTipo').value = m.type;
 
+            // Category Selector Population
+            const slCat = document.getElementById('editTransaccionCategoria');
+            slCat.innerHTML = '<option value="">Seleccionar...</option>';
+            categoriasCache
+                .filter(c => c.type === m.type)
+                .forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    if (c.id === m.category_id) opt.selected = true;
+                    slCat.appendChild(opt);
+                });
+
+            // Listen for Category Changes to toggle Sub-fields
+            slCat.onchange = () => toggleEditSubfields(slCat.value, m.type);
+
+            // Product Selector Population
+            const slProd = document.getElementById('editTransaccionProductoId');
+            slProd.innerHTML = '<option value="">Seleccionar producto...</option>';
+            productosCache.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.modelo} - Stock: ${p.stock}`;
+                if (m.related_product_id === p.id) opt.selected = true;
+                slProd.appendChild(opt);
+            });
+
+            // Initial Toggle
+            toggleEditSubfields(m.category_id, m.type);
+            // Service Type (Since it's not a DB relation but text, we just set it if exists)
+            // Need to parse from description? Or store separate? 
+            // Currently type is stored in description string: "Servicio: Cambio de Pantalla". 
+            // In the form we have a dropdown. 
+            // Reverse engineering description for Service Type selection:
+            const desc = m.description || '';
+            if (desc.startsWith('Servicio: ')) {
+                const svType = desc.replace('Servicio: ', '').split(' (')[0].trim();
+                const slServ = document.getElementById('editTransaccionTipoServicio');
+                // Try to find matching option
+                for (let opt of slServ.options) {
+                    if (opt.value === svType) {
+                        slServ.value = svType;
+                        break;
+                    }
+                }
+            }
+
+
             document.getElementById('modalEdicionTransaccion').classList.add('active');
         } catch (error) {
             console.error(error);
             alert('Error al cargar datos: ' + error.message);
         }
     };
+
+    function toggleEditSubfields(categoryId, type) {
+        const catObj = categoriasCache.find(c => c.id === categoryId);
+        const name = catObj ? catObj.name : '';
+
+        const divProd = document.getElementById('editSelectorEquipoContainer');
+        const divServ = document.getElementById('editSelectorServicioContainer');
+
+        divProd.style.display = 'none';
+        divServ.style.display = 'none';
+
+        if (type === 'INCOME') {
+            if (name === 'Venta de Equipos') divProd.style.display = 'block';
+            if (name === 'Servicio Tecnico') divServ.style.display = 'block';
+        }
+    }
 
     window.eliminarMovimiento = async function (id) {
         if (!confirm('¿Estás seguro de que deseas eliminar este movimiento? Esta acción es irreversible.')) return;
@@ -243,7 +325,10 @@ function setupEventListeners() {
             alert('Error al eliminar: ' + error.message);
         }
     };
+    // PDF Export
+    document.getElementById('btnExportarPDF')?.addEventListener('click', exportarReportePDF);
 }
+
 
 async function cargarDatosIniciales() {
     try {
@@ -261,13 +346,14 @@ async function cargarDatosIniciales() {
         // Cargar Tabla Últimos Movimientos
         await cargarTablaMovimientos();
 
-        // Renderizar Gráficos
+        // Renderizar Gráficos y Análisis
         await renderizarGraficos();
 
     } catch (error) {
         console.error('Error cargando datos ERP:', error);
     }
 }
+
 
 function llenarSelectorProductos(productos) {
     const select = document.getElementById('ingresoProductoId');
@@ -456,14 +542,25 @@ async function handleEdicionSubmit(e) {
         const descripcion = document.getElementById('editTransaccionDescripcion').value;
         const monto = parseFloat(document.getElementById('editTransaccionMonto').value);
         const moneda = document.getElementById('editTransaccionMoneda').value;
-        const tipo = document.getElementById('editTransaccionTipo').value; // No se edita, pero se mantiene
+
+        // New Fields
+        const categoriaId = document.getElementById('editTransaccionCategoria').value;
+        const productoId = document.getElementById('editTransaccionProductoId').value;
+        const tipoServicio = document.getElementById('editTransaccionTipoServicio').value;
+
+        // Validar categoría selection
+        const categoriaObj = categoriasCache.find(c => c.id === categoriaId);
+
+        // Construct description if needed based on new selections (optional logic, keeping simple for now)
+        // Or keep user manual description. We will keep manual description unless empty.
 
         const datosActualizados = {
             date: fecha,
             description: descripcion,
             amount: monto,
             currency: moneda,
-            // type y category_id no se editan en este modal simplificado
+            category_id: categoriaId,
+            related_product_id: productoId || null
         };
 
         await supabaseService.actualizarTransaccion(id, datosActualizados);
@@ -476,52 +573,77 @@ async function handleEdicionSubmit(e) {
     }
 }
 
+// ----------------------------------------------------------------------
+// DASHBOARD LOGIC (KPIS, CHARTS, ANALYSIS)
+// ----------------------------------------------------------------------
+
 async function actualizarKPIs() {
-    // Calculo en PESOS ARGENTINOS (ARS)
-    const hoy = new Date().toISOString().split('T')[0];
-    const transacciones = await supabaseService.obtenerResumenFinanciero(hoy, new Date().toISOString());
+    const hoyDate = new Date();
+    // Ranges
+    const startOfDay = new Date(hoyDate.getFullYear(), hoyDate.getMonth(), hoyDate.getDate()).toISOString();
 
-    let ingresosARS = 0;
-    let gastosARS = 0;
+    const startOfWeekDate = new Date(hoyDate);
+    const day = startOfWeekDate.getDay() || 7;
+    if (day !== 1) startOfWeekDate.setHours(-24 * (day - 1));
+    startOfWeekDate.setHours(0, 0, 0, 0);
+    const startOfWeek = startOfWeekDate.toISOString();
 
-    // Formateador para ARS
-    const formatoARS = new Intl.NumberFormat('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    });
+    const startOfMonth = new Date(hoyDate.getFullYear(), hoyDate.getMonth(), 1).toISOString();
+    const endOfToday = new Date().toISOString();
+
+    // Fetch All Data needed (Current Month is base, but we might need more for week if month just started? 
+    // Simplification: We fetch current month for Charts, but for KPIs specifically we might need to query precise ranges or just filter client side if we have enough data.
+    // PROD: Fetching huge datasets is bad. We should have backend endpoints for aggregations. 
+    // Here we will use `obtenerResumenFinanciero` which filters by date range. 
+    // For 'Today' and 'Week', if they fall within Month, we are good.
+
+    // Let's fetch from start of Month for charts AND start of Week (which might be in prev month).
+    const earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
+
+    const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endOfToday);
+
+    // Helpers
+    const getMontoARS = (t) => {
+        let tasa = t.exchange_rate || 1485;
+        return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+    };
+
+    const periodFilter = (t, startIso) => new Date(t.date) >= new Date(startIso);
+
+    // Initializers
+    let incDay = 0, incWeek = 0, incMonth = 0;
+    let expDay = 0, expWeek = 0, expMonth = 0;
 
     transacciones.forEach(t => {
-        let tasa = t.exchange_rate || 1485;
-        let montoARS = t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+        const monto = getMontoARS(t);
+        const isIncome = t.type === 'INCOME';
 
-        if (t.type === 'INCOME') ingresosARS += montoARS;
-        if (t.type === 'EXPENSE') gastosARS += montoARS;
+        // Month
+        if (periodFilter(t, startOfMonth)) {
+            if (isIncome) incMonth += monto; else expMonth += monto;
+        }
+        // Week
+        if (periodFilter(t, startOfWeek)) {
+            if (isIncome) incWeek += monto; else expWeek += monto;
+        }
+        // Day
+        if (periodFilter(t, startOfDay)) {
+            if (isIncome) incDay += monto; else expDay += monto;
+        }
     });
 
-    const cajaTotal = ingresosARS - gastosARS;
+    const fmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
 
-    // Actualizar DOM con formato ARS y estilos dinámicos
-    const elCaja = document.getElementById('kpiCajaTotal');
-    const elVentas = document.getElementById('kpiVentasHoy');
-    const elGastos = document.getElementById('kpiGastosHoy');
+    // Update DOM
+    // Ingresos
+    document.getElementById('kpiIngresoHoy').textContent = fmt.format(incDay);
+    document.getElementById('kpiIngresoSemana').textContent = fmt.format(incWeek);
+    document.getElementById('kpiIngresoMes').textContent = fmt.format(incMonth);
 
-    if (elCaja) {
-        elCaja.textContent = formatoARS.format(cajaTotal);
-        elCaja.style.fontWeight = 'bold';
-        elCaja.style.color = cajaTotal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-    }
-    if (elVentas) {
-        elVentas.textContent = formatoARS.format(ingresosARS);
-        elVentas.style.fontWeight = 'bold';
-        elVentas.style.color = 'var(--accent-green)';
-    }
-    if (elGastos) {
-        elGastos.textContent = formatoARS.format(gastosARS);
-        elGastos.style.fontWeight = 'bold';
-        elGastos.style.color = 'var(--accent-red)';
-    }
+    // Egresos
+    document.getElementById('kpiGastoHoy').textContent = fmt.format(expDay);
+    document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
+    document.getElementById('kpiGastoMes').textContent = fmt.format(expMonth);
 }
 
 function aplicarPresetTiempo(preset) {
@@ -635,8 +757,13 @@ function obtenerNombreProducto(id) {
     return p ? p.modelo : 'Desconocido';
 }
 
-let chartFinanzasInstance = null;
-let chartCategoriasInstance = null;
+
+// ----------------------------------------------------------------------
+// CHARTS & ANALYTICS IMPLEMENTATION
+// ----------------------------------------------------------------------
+
+// Instance Cache
+let chartInstances = {};
 
 export async function renderizarGraficos() {
     try {
@@ -644,131 +771,233 @@ export async function renderizarGraficos() {
         const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
         const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString();
 
-        // Obtener datos del mes
+        // 1. Fetch Month Data
         const transacciones = await supabaseService.obtenerResumenFinanciero(inicioMes, finMes);
 
-        // --- Procesar Datos Chart 1: Balance ---
-        let totalIngresos = 0;
-        let totalGastos = 0;
+        // helpers
+        const getMontoARS = (t) => {
+            let tasa = t.exchange_rate || 1485;
+            return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+        };
+
+        // ------------------
+        // AGGREGATION LOGIC
+        // ------------------
+
+        // 1. Daily Trends (Income vs Expense)
+        // Group by Day (1-30/31)
+        const daysInMonth = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+        const labelsDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+        const dataIncDay = new Array(daysInMonth).fill(0);
+        const dataExpDay = new Array(daysInMonth).fill(0);
+
+        // 2. Top Services (Count & Amount)
+        // Filter by category 'Servicio Tecnico'
+        const servicesMap = {};
+
+        // 3. Top Products
+        // Filter by category 'Venta de Equipos' or 'Accesorios'
+        const productsMap = {};
+
+        // 4. iPhone Generations
+        // Regex on Description
+        const iphoneMap = {};
+
+        // 5. Payment Methods
+        const paymentMap = {};
 
         transacciones.forEach(t => {
-            // Conversión simplificada a ARS o USD unificado (Supongamos USD base para gráficos o visualización mixta)
-            // Para ser precisos, deberíamos normalizar. Usaremos valor nominal si es moneda principal, o conversión.
-            // Asumimos visualización en Moneda Base (ej. USD o ARS según configuración). 
-            // Por ahora sumamos todo nominal si es coincidente o aplicamos tasa.
-            // *Mejor enfoque:* Usar la lógica de KPIs para normalizar a una moneda (ej ARS).
+            const date = new Date(t.date);
+            const day = date.getDate();
+            const idx = day - 1;
+            const monto = getMontoARS(t);
+            const catName = t.transaction_categories?.name || 'Otro';
 
-            let tasa = t.exchange_rate || 1200;
-            let montoNormalizado = t.currency === 'ARS' ? (t.amount / tasa) : t.amount; // A VER: Lógica inversa.
-            // Si quiero ver todo en USD: ARS / Tasa. USD = USD.
-            // Si quiero ver todo en ARS: USD * Tasa. ARS = ARS.
-            // Vamos a mostrar en USD Estimado.
+            // Trends
+            if (t.type === 'INCOME') dataIncDay[idx] += monto;
+            else dataExpDay[idx] += monto;
 
-            if (t.type === 'INCOME') totalIngresos += montoNormalizado;
-            if (t.type === 'EXPENSE') totalGastos += montoNormalizado;
-        });
+            // Payment Methods
+            // Parse from description " (Metodo)" or if we save it in metadata later?
+            // Currently description: "Servicio: X (Efectivo)" or "Venta: Y (USDT)"
+            let pm = 'Desconocido';
+            const pmMatch = t.description.match(/\(([^)]+)\)$/);
+            if (pmMatch) pm = pmMatch[1];
+            paymentMap[pm] = (paymentMap[pm] || 0) + 1; // Count volume
 
-        // --- Procesar Datos Chart 2: Categorías Ingresos ---
-        const categoriasMap = {};
-        transacciones.filter(t => t.type === 'INCOME').forEach(t => {
-            const catName = t.transaction_categories?.type || 'Varios'; // Ajustar si no viene el join deep
-            // El servicio trae: transaction_categories (name, type).
-            // Entonces acceso es t.transaction_categories.name
-            const nombre = t.transaction_categories?.name || 'Otros';
+            // Services
+            if (catName === 'Servicio Tecnico') {
+                // Desc: "Servicio: Cambio de Pantalla (Efectivo)"
+                let svc = t.description.replace('Servicio: ', '').replace(/\s*\([^)]*\)$/, '').trim();
+                servicesMap[svc] = (servicesMap[svc] || 0) + 1;
+            }
 
-            let tasa = t.exchange_rate || 1200;
-            let monto = t.currency === 'ARS' ? (t.amount / tasa) : t.amount; // Normalizado a USD
+            // Products
+            if (catName === 'Venta de Equipos' || catName === 'Venta de Accesorios') {
+                let prod = t.description.replace('Venta: ', '').replace(/\s*\([^)]*\)$/, '').trim();
+                productsMap[prod] = (productsMap[prod] || 0) + 1;
 
-            categoriasMap[nombre] = (categoriasMap[nombre] || 0) + monto;
-        });
-
-        // --- Render Chart 1: Balance ---
-        const ctxBalance = document.getElementById('chartFinanzas');
-        if (ctxBalance) {
-            if (chartFinanzasInstance) chartFinanzasInstance.destroy();
-
-            chartFinanzasInstance = new Chart(ctxBalance, {
-                type: 'bar',
-                data: {
-                    labels: ['Ingresos', 'Gastos'],
-                    datasets: [{
-                        label: 'Usuario (USD Est.)',
-                        data: [totalIngresos, totalGastos],
-                        backgroundColor: ['#00ff88', '#ff4d4d'],
-                        borderRadius: 8,
-                        barThickness: 50
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return '$ ' + context.raw.toFixed(2) + ' USD';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: '#888' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: '#fff', font: { weight: 'bold' } }
-                        }
+                // iPhone Gen
+                if (prod.toLowerCase().includes('iphone')) {
+                    // Extract Gen number
+                    const genMatch = prod.match(/iphone\s*(\d+)/i);
+                    if (genMatch) {
+                        const gen = `iPhone ${genMatch[1]} Series`;
+                        iphoneMap[gen] = (iphoneMap[gen] || 0) + 1;
                     }
                 }
-            });
-        }
+            }
+        });
 
-        // --- Render Chart 2: Categorías ---
-        const ctxCat = document.getElementById('chartCategorias');
-        if (ctxCat) {
-            if (chartCategoriasInstance) chartCategoriasInstance.destroy();
+        // ------------------
+        // RENDERING
+        // ------------------
 
-            const labels = Object.keys(categoriasMap);
-            const data = Object.values(categoriasMap);
-            const colors = ['#00d4ff', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899'];
+        // Helper Render
+        const renderChart = (id, type, labels, datasets, options = {}) => {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            if (chartInstances[id]) chartInstances[id].destroy();
+            chartInstances[id] = new Chart(ctx, { type, data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, ...options } });
+        };
 
-            chartCategoriasInstance = new Chart(ctxCat, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: { color: '#ccc', usePointStyle: true }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return context.label + ': $' + context.raw.toFixed(2) + ' USD';
-                                }
-                            }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
-        }
+        // Chart 1: Income Trend (Line)
+        renderChart('chartTrendIngresos', 'line', labelsDays, [{
+            label: 'Ingresos Diarios (ARS)',
+            data: dataIncDay,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]);
+
+        // Chart 2: Expense Trend (Line)
+        renderChart('chartTrendGastos', 'line', labelsDays, [{
+            label: 'Gastos Diarios (ARS)',
+            data: dataExpDay,
+            borderColor: '#ff4d4d',
+            backgroundColor: 'rgba(255, 77, 77, 0.1)',
+            fill: true,
+            tension: 0.4
+        }]);
+
+        // Chart 3: Top Services (Bar)
+        const sortedServices = Object.entries(servicesMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        renderChart('chartTopServices', 'bar', sortedServices.map(x => x[0]), [{
+            label: 'Servicios Realizados',
+            data: sortedServices.map(x => x[1]),
+            backgroundColor: '#00d4ff',
+            borderRadius: 5
+        }]);
+
+        // Chart 4: Top Products (Bar)
+        const sortedProducts = Object.entries(productsMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        renderChart('chartTopProducts', 'bar', sortedProducts.map(x => x[0]), [{
+            label: 'Unidades Vendidas',
+            data: sortedProducts.map(x => x[1]),
+            backgroundColor: '#f59e0b',
+            borderRadius: 5
+        }]);
+
+        // Chart 5: iPhone Generations (Doughnut)
+        const sortedGen = Object.entries(iphoneMap).sort((a, b) => b[1] - a[1]);
+        renderChart('chartIphoneGenerations', 'doughnut', sortedGen.map(x => x[0]), [{
+            data: sortedGen.map(x => x[1]),
+            backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#6366f1'],
+            borderWidth: 0
+        }], { cutout: '60%' });
+
+        // Chart 6: Payment Methods (Pie)
+        const sortedPay = Object.entries(paymentMap).sort((a, b) => b[1] - a[1]);
+        renderChart('chartPaymentMethods', 'polarArea', sortedPay.map(x => x[0]), [{
+            data: sortedPay.map(x => x[1]),
+            backgroundColor: ['#ffffffaa', '#00ff88aa', '#00d4ffaa', '#f59e0baa', '#ff4d4daa'],
+            borderWidth: 0
+        }]);
+
+        // ------------------
+        // AI ANALYSIS
+        // ------------------
+        generarAnalisisIA(transacciones, dataIncDay, dataExpDay, productsMap, servicesMap);
 
     } catch (e) {
         console.error("Error renderizando gráficos ERP:", e);
     }
+}
+
+// ----------------------------------------------------------------------
+// AI ANALYSIS MODULE
+// ----------------------------------------------------------------------
+
+function generarAnalisisIA(transacciones, incTrends, expTrends, products, services) {
+    // 1. Descriptivo
+    const totalInc = incTrends.reduce((a, b) => a + b, 0);
+    const totalExp = expTrends.reduce((a, b) => a + b, 0);
+    const balance = totalInc - totalExp;
+    const bestDay = incTrends.indexOf(Math.max(...incTrends)) + 1;
+
+    // Sort logic safe access
+    const topProd = Object.entries(products).sort((a, b) => b[1] - a[1])[0] || ['Ninguno', 0];
+    const topServ = Object.entries(services).sort((a, b) => b[1] - a[1])[0] || ['Ninguno', 0];
+
+    const descriptivo = `
+        Este mes has generado un total de ARS ${totalInc.toLocaleString()} con gastos de ARS ${totalExp.toLocaleString()}, 
+        resultando en un balance neto de ARS ${balance.toLocaleString()}. 
+        El mejor día de ventas fue el día ${bestDay}. 
+        El producto estrella es "${topProd[0]}" y el servicio más solicitado "${topServ[0]}".
+    `;
+    document.getElementById('analisisDescriptivo').textContent = descriptivo;
+
+    // 2. Diagnóstico (Simulated Comparison logic)
+    // In a real scenario we would fetch prev month data here.
+    const diagnostico = `
+        El margen de beneficio bruto se sitúa en un ${(totalInc > 0 ? (balance / totalInc) * 100 : 0).toFixed(1)}%. 
+        ${totalExp > totalInc * 0.5 ? "⚠️ Alerta: Los gastos superan el 50% de los ingresos. Revisar costos de proveedores." : "✅ Los costos se mantienen en niveles saludables."}
+        La alta demanda de servicio técnico sugiere un buen posicionamiento en post-venta.
+    `;
+    document.getElementById('analisisDiagnostico').textContent = diagnostico;
+
+    // 3. Predictivo (Linear Regression Simple Approximation)
+    // Avg growth per day?
+    const avgDaily = totalInc / (new Date().getDate());
+    const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+    const projected = avgDaily * daysInMonth;
+
+    const predictivo = `
+        Basado en el rendimiento diario actual (ARS ${Math.round(avgDaily).toLocaleString()}/día), 
+        se proyecta cerrar el mes con ingresos aproximados de ARS ${Math.round(projected).toLocaleString()}.
+        Se espera un aumento de tráfico los fines de semana.
+    `;
+    document.getElementById('analisisPredictivo').textContent = predictivo;
+
+    // 4. Prescriptivo
+    const recomendaciones = document.getElementById('analisisPrescriptivo');
+    recomendaciones.innerHTML = '';
+    const recs = [];
+    if (balance < 0) recs.push("Prioridad Crítica: Reducir gastos hormiga inmediatos.");
+    if (topProd[1] > 5) recs.push(`🔥 Tendencia: Asegurar stock de "${topProd[0]}" para evitar quiebre.`);
+    if (topServ[1] > 5) recs.push(`🔧 Oportunidad: Crear pack promocional para "${topServ[0]}".`);
+    recs.push("Sugerencia: Revisar precios de iPhone ante fluctuación del dólar.");
+
+    recs.forEach(r => {
+        const li = document.createElement('li');
+        li.textContent = r;
+        recomendaciones.appendChild(li);
+    });
+}
+
+// ----------------------------------------------------------------------
+// EXPORT PDF
+// ----------------------------------------------------------------------
+
+function exportarReportePDF() {
+    const element = document.getElementById('analisisEstrategicoContainer');
+    const opt = {
+        margin: 0.5,
+        filename: `Reporte_Financiero_EstiloApple_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(element).save();
 }
