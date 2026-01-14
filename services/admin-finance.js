@@ -640,22 +640,35 @@ async function actualizarKPIs() {
 
     transacciones.forEach(t => {
         const monto = getMontoARS(t);
-        const isIncome = t.type === 'INCOME';
-        const tDate = new Date(t.date); // Parse ISO DB string to Local Object
+        const tDate = new Date(t.date);
 
-        // 1. Month Check (Same Year & Month)
+        // --- MONTH CALCULATION ---
+        // Condition: Same Year AND Same Month
         if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
-            if (isIncome) incMonth += monto; else expMonth += monto;
+            if (t.type === 'INCOME') {
+                incMonth += monto;
+            } else if (t.type === 'EXPENSE') {
+                expMonth += monto;
+            }
 
-            // 2. Day Check (Same Date inside this month)
+            // --- DAY CALCULATION (Nested in Month because Day must be in Month) ---
             if (tDate.getDate() === currentDay) {
-                if (isIncome) incDay += monto; else expDay += monto;
+                if (t.type === 'INCOME') {
+                    incDay += monto;
+                } else if (t.type === 'EXPENSE') {
+                    expDay += monto;
+                }
             }
         }
 
-        // 3. Week Check (Timestamp comparison is safer for sliding windows like "Start of Week")
+        // --- WEEK CALCULATION ---
+        // Independent check because week can straddle months
         if (tDate.getTime() >= startOfWeekTs) {
-            if (isIncome) incWeek += monto; else expWeek += monto;
+            if (t.type === 'INCOME') {
+                incWeek += monto;
+            } else if (t.type === 'EXPENSE') {
+                expWeek += monto;
+            }
         }
     });
 
