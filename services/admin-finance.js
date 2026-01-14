@@ -772,10 +772,21 @@ async function actualizarKPIs() {
 
     // Helpers
     const getMontoARS = (t) => {
-        let tasa = t.exchange_rate || 1485;
         const rawAmount = parseFloat(t.amount);
         if (isNaN(rawAmount)) return 0;
-        return t.currency === 'ARS' ? rawAmount : (rawAmount * tasa);
+
+        // Normalizar moneda
+        const currency = (t.currency || 'ARS').toUpperCase().trim();
+
+        // Solo multiplicamos si es explícitamente moneda extranjera conocida (USD, USDT)
+        // Y aseguramos que la tasa sea válida.
+        if (currency === 'USD' || currency === 'USDT') {
+            let tasa = t.exchange_rate || 1485;
+            return rawAmount * tasa;
+        }
+
+        // Para ARS, nulos, vacíos, o cualquier otra cosa, asumimos valor nominal en pesos.
+        return rawAmount;
     };
 
     // Initializers
