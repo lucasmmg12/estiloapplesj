@@ -1290,47 +1290,7 @@ async function enviarMensajeManual() {
 // FILTROS Y TABS
 // ============================================
 
-function cambiarTab(tabName) {
-    // Actualizar tabs
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
 
-    // Actualizar contenido
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-
-    if (tabName === 'conversaciones') {
-        document.getElementById('tabConversaciones').classList.add('active');
-    } else if (tabName === 'clientes') {
-        document.getElementById('tabClientes').classList.add('active');
-    } else if (tabName === 'vendedores') {
-        document.getElementById('tabVendedores').classList.add('active');
-    } else if (tabName === 'embudo') {
-        document.getElementById('tabEmbudo').classList.add('active');
-        renderizarEmbudo();
-    } else if (tabName === 'estadisticas') {
-        document.getElementById('tabEstadisticas').classList.add('active');
-        setTimeout(renderizarEstadisticas, 100);
-    } else if (tabName === 'mensajes') {
-        document.getElementById('tabMensajes').classList.add('active');
-    } else if (tabName === 'catalogo') {
-        document.getElementById('tabCatalogo').classList.add('active');
-    } else if (tabName === 'programados') {
-        document.getElementById('tabProgramados').classList.add('active');
-        renderizarProgramados();
-    } else if (tabName === 'erp') {
-        document.getElementById('tabErp').classList.add('active');
-    } else if (tabName === 'competencia') {
-        document.getElementById('tabCompetencia').classList.add('active');
-        // Trigger map resize to fix Leaflet rendering issue
-        if (window.competitorMapInstance) {
-            setTimeout(() => window.competitorMapInstance.invalidateSize(), 200);
-        }
-    }
-}
 
 async function aplicarFiltros() {
     const plataforma = document.getElementById('filtroPlataforma').value;
@@ -2339,6 +2299,11 @@ function cambiarTab(tabName) {
         // Lógica específica por pestaña
         if (tabName === 'estadisticas' && typeof renderizarEstadisticas === 'function') {
             setTimeout(renderizarEstadisticas, 100);
+        }
+
+        // Fix Leaflet Map Resize
+        if (tabName === 'competencia' && window.competitorMapInstance) {
+            setTimeout(() => window.competitorMapInstance.invalidateSize(), 200);
         }
 
         // Recargar gráficos financieros
