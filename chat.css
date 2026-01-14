@@ -1,23 +1,31 @@
 /* ============================================
-   CHAT EN VIVO - GROW LABS AESTHETIC (PREMIUM)
-   Layout Espaciado, Neón y Glassmorphism
+   CHAT EN VIVO - ESTILO BRAND AESTHETIC (PREMIUM)
+   Layout Espaciado, Elegancia y Glassmorphism
    ============================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Questrial&display=swap');
+
 :root {
-    --primary-green: #00ff88;
-    --primary-green-glow: rgba(0, 255, 136, 0.4);
-    --bg-deep: #000000;
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Colores Marca ESTILO */
+    --primary: #5C2E2E;
+    --primary-light: #7A4545;
+    --primary-glow: rgba(92, 46, 46, 0.6);
+    --secondary: #E8D5C4;
+    --secondary-dark: #C9A882;
+    --accent-gold: #D4AF37;
 
-    --text-main: #ffffff;
-    --text-dim: rgba(255, 255, 255, 0.7);
-    --text-muted: rgba(255, 255, 255, 0.4);
+    --bg-deep: #1A1A1A;
+    --glass-bg: rgba(92, 46, 46, 0.08);
+    --glass-border: rgba(232, 213, 196, 0.15);
 
-    --msg-sent-bg: #00ff88;
-    --msg-sent-text: #000000;
+    --text-main: #F5F1ED;
+    --text-dim: rgba(232, 213, 196, 0.7);
+    --text-muted: rgba(232, 213, 196, 0.4);
+
+    --msg-sent-bg: #5C2E2E;
+    --msg-sent-text: #F5F1ED;
     --msg-received-bg: rgba(45, 45, 45, 0.8);
-    --msg-received-text: #ffffff;
+    --msg-received-text: #F5F1ED;
 
     --sidebar-width: 380px;
 }
@@ -29,8 +37,8 @@
 }
 
 body {
-    font-family: 'Montserrat', sans-serif;
-    background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('public/fondogrow.png');
+    font-family: 'Questrial', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top left, var(--primary) 0%, #0a0606 100%);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -72,8 +80,8 @@ body {
     width: 45px;
     height: 45px;
     border-radius: 50%;
-    border: 2px solid var(--primary-green);
-    box-shadow: 0 0 15px var(--primary-green-glow);
+    border: 2px solid var(--secondary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .icon-btn {
@@ -87,8 +95,8 @@ body {
 }
 
 .icon-btn:hover {
-    color: var(--primary-green);
-    background: rgba(0, 255, 136, 0.1);
+    color: var(--secondary);
+    background: rgba(92, 46, 46, 0.15);
 }
 
 .search-bar {
@@ -131,10 +139,10 @@ body {
 }
 
 .filter-tab.active {
-    background: var(--primary-green);
-    color: #000;
+    background: var(--primary);
+    color: var(--secondary);
     font-weight: 700;
-    border-color: var(--primary-green);
+    border-color: var(--secondary);
 }
 
 .contacts-list {
@@ -155,8 +163,8 @@ body {
 }
 
 .contact-item.active {
-    background: rgba(0, 255, 136, 0.1);
-    border-left: 4px solid var(--primary-green);
+    background: rgba(92, 46, 46, 0.15);
+    border-left: 4px solid var(--secondary);
 }
 
 .contact-avatar {
@@ -314,16 +322,16 @@ body {
 
 /* ACTIVE STATE */
 .bot-status-btn.active {
-    background: rgba(0, 255, 136, 0.08);
-    /* Subtle green tint */
-    border-color: rgba(0, 255, 136, 0.3);
-    color: #fff;
+    background: rgba(92, 46, 46, 0.15);
+    /* Subtle burgundy tint */
+    border-color: rgba(232, 213, 196, 0.4);
+    color: var(--secondary);
 }
 
 .bot-status-btn.active::before {
-    background-color: #00ff88;
-    box-shadow: 0 0 8px #00ff88, 0 0 15px #00ff88;
-    animation: pulse-green 2s infinite;
+    background-color: var(--secondary);
+    box-shadow: 0 0 8px var(--secondary), 0 0 15px var(--secondary-dark);
+    animation: pulse-gold 2s infinite;
 }
 
 /* PAUSED STATE */
@@ -351,17 +359,17 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-@keyframes pulse-green {
+@keyframes pulse-gold {
     0% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7);
+        box-shadow: 0 0 0 0 rgba(232, 213, 196, 0.7);
     }
 
     70% {
-        box-shadow: 0 0 0 6px rgba(0, 255, 136, 0);
+        box-shadow: 0 0 0 6px rgba(232, 213, 196, 0);
     }
 
     100% {
-        box-shadow: 0 0 0 0 rgba(0, 255, 136, 0);
+        box-shadow: 0 0 0 0 rgba(232, 213, 196, 0);
     }
 }
 
@@ -441,10 +449,10 @@ body {
 }
 
 .header-seller-btn.active {
-    background: var(--primary-green);
-    color: #000;
-    border-color: var(--primary-green);
-    box-shadow: 0 0 15px var(--primary-green-glow);
+    background: var(--primary);
+    color: var(--secondary);
+    border-color: var(--secondary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .chat-info {
@@ -470,7 +478,7 @@ body {
 
 .chat-details span {
     font-size: 12px;
-    color: var(--primary-green);
+    color: var(--secondary);
     font-weight: 700;
 }
 
@@ -506,10 +514,10 @@ body {
 
 .message.sent {
     align-self: flex-end;
-    background: var(--primary-green);
-    color: #000000;
+    background: var(--primary);
+    color: var(--secondary);
     border-bottom-right-radius: 4px;
-    box-shadow: 0 0 20px var(--primary-green-glow);
+    box-shadow: 0 0 20px var(--primary-glow);
     font-weight: 600;
 }
 
@@ -570,14 +578,14 @@ body {
 .btn-send {
     width: 50px;
     height: 50px;
-    background: var(--primary-green);
+    background: var(--primary);
     border-radius: 50%;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 0 15px var(--primary-green-glow);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 /* EMOJI PICKER */
@@ -595,8 +603,8 @@ body {
 .dark-emoji-picker {
     --background: #111b21;
     --border-color: var(--glass-border);
-    --indicator-color: var(--primary-green);
-    --button-hover-background: rgba(0, 255, 136, 0.1);
+    --indicator-color: var(--secondary);
+    --button-hover-background: rgba(92, 46, 46, 0.15);
     --input-border-color: var(--glass-border);
     --input-placeholder-color: var(--text-dim);
 }
@@ -623,7 +631,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
+    background: var(--secondary);
     border-radius: 10px;
 }
 
@@ -640,11 +648,11 @@ body {
 
 .empty-welcome-card {
     background: rgba(17, 27, 33, 0.95);
-    border: 1px solid var(--primary-green);
+    border: 1px solid var(--secondary);
     padding: 50px;
     border-radius: 24px;
     max-width: 500px;
-    box-shadow: 0 20px 50px rgba(0, 255, 136, 0.2);
+    box-shadow: 0 20px 50px var(--primary-glow);
     backdrop-filter: blur(10px);
     animation: welcomePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -690,8 +698,8 @@ body {
     background: rgba(10, 10, 10, 0.95);
     width: 480px;
     border-radius: 28px;
-    border: 1px solid var(--primary-green);
-    box-shadow: 0 25px 50px rgba(0, 255, 136, 0.15);
+    border: 1px solid var(--secondary);
+    box-shadow: 0 25px 50px var(--primary-glow);
     padding: 35px;
     position: relative;
     color: white;
@@ -708,7 +716,7 @@ body {
     font-size: 24px;
     font-weight: 700;
     margin: 0;
-    color: var(--primary-green);
+    color: var(--secondary);
 }
 
 .close-modal {
@@ -747,7 +755,7 @@ body {
     border-radius: 12px;
     padding: 12px 15px;
     color: white;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Questrial', sans-serif;
     font-size: 14px;
     outline: none;
     transition: all 0.2s ease;
@@ -756,9 +764,9 @@ body {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: var(--primary-green);
-    background: rgba(0, 255, 136, 0.05);
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.2);
+    border-color: var(--secondary);
+    background: rgba(92, 46, 46, 0.1);
+    box-shadow: 0 0 10px var(--primary-glow);
 }
 
 .form-group select option {
@@ -793,10 +801,10 @@ body {
 }
 
 .seller-btn.active {
-    background: var(--primary-green);
-    color: black;
-    border-color: var(--primary-green);
-    box-shadow: 0 0 15px var(--primary-green-glow);
+    background: var(--primary);
+    color: var(--secondary);
+    border-color: var(--secondary);
+    box-shadow: 0 0 15px var(--primary-glow);
 }
 
 .modal-actions {
@@ -814,7 +822,7 @@ body {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Questrial', sans-serif;
     border: none;
 }
 
@@ -825,9 +833,9 @@ body {
 }
 
 .btn-save {
-    background: var(--primary-green);
-    color: black;
-    box-shadow: 0 0 20px var(--primary-green-glow);
+    background: var(--primary);
+    color: var(--secondary);
+    box-shadow: 0 0 20px var(--primary-glow);
 }
 
 .btn-save:hover {
