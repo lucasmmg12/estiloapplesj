@@ -922,7 +922,11 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
         document.getElementById('kpiGastoSemana_Tab').textContent = fmt.format(expWeek);
 
         // Calculate Top Expense Category (Month)
-        const expenseTxs = transacciones.filter(t => t.type === 'EXPENSE' && periodFilter(t, startOfMonth));
+        const expenseTxs = transacciones.filter(t => {
+            if (t.type !== 'EXPENSE') return false;
+            const tDate = new Date(t.date);
+            return tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth;
+        });
         const catMap = {};
         expenseTxs.forEach(t => {
             const catName = t.transaction_categories?.name || 'Otro';
@@ -1156,6 +1160,22 @@ function obtenerNombreProducto(id) {
 // Instance Cache
 let chartInstances = {};
 
+// Global Chart Rendering Helper
+const renderChart = (id, type, labels, datasets, options = {}) => {
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    if (chartInstances[id]) chartInstances[id].destroy();
+    chartInstances[id] = new Chart(ctx, {
+        type,
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            ...options
+        }
+    });
+};
+
 export async function renderizarGraficos() {
     try {
         const hoy = new Date();
@@ -1241,19 +1261,11 @@ export async function renderizarGraficos() {
             }
         });
 
-        // ------------------
         // RENDERING
         // ------------------
 
-        // Helper Render
-        const renderChart = (id, type, labels, datasets, options = {}) => {
-            const ctx = document.getElementById(id);
-            if (!ctx) return;
-            if (chartInstances[id]) chartInstances[id].destroy();
-            chartInstances[id] = new Chart(ctx, { type, data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, ...options } });
-        };
-
         // --- DASHBOARD GENERAL (LEGACY COMPAT) ---
+
 
         renderChart('chartTrendIngresos', 'line', labelsDays, [{
             label: 'Ingresos Diarios (ARS)',
