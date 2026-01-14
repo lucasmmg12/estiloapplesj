@@ -2314,6 +2314,51 @@ document.addEventListener('DOMContentLoaded', () => {
     if (overlay) overlay.addEventListener('click', window.cerrarModalChat);
 });
 // ============================================
+// GESTIÓN DE PESTAÑAS (TABS)
+// ============================================
+
+function cambiarTab(tabName) {
+    if (!tabName) return;
+
+    // 1. Ocultar todos los contenidos
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // 2. Generar ID del contenedor destino
+    // Convierte "ventas-financieras" -> "VentasFinancieras" para armar "tabVentasFinancieras"
+    const camelName = tabName.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    const pascalName = camelName.charAt(0).toUpperCase() + camelName.slice(1);
+    const targetId = `tab${pascalName}`;
+
+    // 3. Activar el contenedor destino
+    const targetTab = document.getElementById(targetId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+
+        // Lógica específica por pestaña
+        if (tabName === 'estadisticas' && typeof renderizarEstadisticas === 'function') {
+            setTimeout(renderizarEstadisticas, 100);
+        }
+
+        // Recargar gráficos financieros
+        if (['erp', 'ventas-financieras', 'gastos-financieros'].includes(tabName)) {
+            setTimeout(() => {
+                if (erpService && erpService.renderizarGraficos) {
+                    erpService.renderizarGraficos();
+                }
+            }, 200);
+        }
+
+    } else {
+        console.warn(`No se encontró el contenedor con ID: ${targetId} para el tab: ${tabName}`);
+    }
+}
+
+// Exponer globalmente
+window.cambiarTab = cambiarTab;
+
+// ============================================
 // FUNCIONES DE UTILIDAD UI
 // ============================================
 
