@@ -617,27 +617,36 @@ async function actualizarKPIs() {
         return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
     };
 
-    const periodFilter = (t, startIso) => new Date(t.date) >= new Date(startIso);
-
     // Initializers
     let incDay = 0, incWeek = 0, incMonth = 0;
     let expDay = 0, expWeek = 0, expMonth = 0;
 
+    // Robust Date Checks (Client Local Time)
+    const currentYear = hoyDate.getFullYear();
+    const currentMonth = hoyDate.getMonth();
+    const currentDay = hoyDate.getDate();
+
+    // Calculate week start timestamp for comparison standard
+    const startOfWeekTs = startOfWeekDate.getTime();
+
     transacciones.forEach(t => {
         const monto = getMontoARS(t);
         const isIncome = t.type === 'INCOME';
+        const tDate = new Date(t.date); // Parse ISO DB string to Local Object
 
-        // Month
-        if (periodFilter(t, startOfMonth)) {
+        // 1. Month Check (Same Year & Month)
+        if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
             if (isIncome) incMonth += monto; else expMonth += monto;
+
+            // 2. Day Check (Same Date inside this month)
+            if (tDate.getDate() === currentDay) {
+                if (isIncome) incDay += monto; else expDay += monto;
+            }
         }
-        // Week
-        if (periodFilter(t, startOfWeek)) {
+
+        // 3. Week Check (Timestamp comparison is safer for sliding windows like "Start of Week")
+        if (tDate.getTime() >= startOfWeekTs) {
             if (isIncome) incWeek += monto; else expWeek += monto;
-        }
-        // Day
-        if (periodFilter(t, startOfDay)) {
-            if (isIncome) incDay += monto; else expDay += monto;
         }
     });
 
