@@ -598,6 +598,13 @@ async function actualizarKPIs() {
     // For 'Today' and 'Week', if they fall within Month, we are good.
 
     // Let's fetch from start of Month for charts AND start of Week (which might be in prev month).
+
+    // ------------------------------------------
+    // LOAD TABLES FOR SPECIFIC TABS
+    // ------------------------------------------
+    // We add this here to ensure tables in new tabs are populated on load/refresh
+    await cargarTablaVentasTab();
+    await cargarTablaGastosTab();
     const earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
 
     const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endOfToday);
@@ -802,6 +809,94 @@ function actualizarPaginacionUI() {
     if (btnNext) btnNext.disabled = to >= totalRecords;
 }
 
+// ----------------------------------------------------------------------
+// NEW: TAB-SPECIFIC TABLES (SALES & EXPENSES)
+// ----------------------------------------------------------------------
+
+async function cargarTablaVentasTab() {
+    const tbody = document.getElementById('tablaUltimasVentas_Tab');
+    if (!tbody) return;
+
+    try {
+        // Fetch recent INCOMES (limit 20, no pagination for simplicity in this view, or use filtering)
+        // We reuse obtenerUltimasTransacciones but we might need a type filter in it?
+        // Currently it accepts dates. Let's fetch broader range and filter client side or add type support to service.
+        // Quick fix: Fetch last 50 and filter by INCOME.
+        const result = await supabaseService.obtenerUltimasTransacciones({ fechaInicio: null, fechaFin: null }, 1, 50);
+        const ventas = result.data.filter(t => t.type === 'INCOME').slice(0, 15);
+
+        tbody.innerHTML = '';
+        if (ventas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay ventas recientes</td></tr>`;
+            return;
+        }
+
+        ventas.forEach(v => {
+            const tr = document.createElement('tr');
+            const fecha = new Date(v.date).toLocaleDateString('es-AR');
+            const monto = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v.amount);
+
+            tr.innerHTML = `
+                <td style="color: var(--gray-400); font-size: 0.9rem;">${fecha}</td>
+                <td style="font-weight: 500;">${v.transaction_categories?.name || 'Venta'}</td>
+                <td style="color: var(--gray-300); font-size: 0.9rem;">${v.description || '-'}</td>
+                <td style="color: var(--accent-green); font-weight: 700;">${monto} <small>${v.currency}</small></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button class="btn-action" onclick="abrirModalEdicion('${v.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✏️</button>
+                        <button class="btn-action danger" onclick="eliminarMovimiento('${v.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        console.error("Error loading Sales Tab table:", e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--accent-red);">Error al cargar datos</td></tr>`;
+    }
+}
+
+async function cargarTablaGastosTab() {
+    const tbody = document.getElementById('tablaUltimosGastos_Tab');
+    if (!tbody) return;
+
+    try {
+        const result = await supabaseService.obtenerUltimasTransacciones({ fechaInicio: null, fechaFin: null }, 1, 50);
+        const gastos = result.data.filter(t => t.type === 'EXPENSE').slice(0, 15);
+
+        tbody.innerHTML = '';
+        if (gastos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay gastos recientes</td></tr>`;
+            return;
+        }
+
+        gastos.forEach(g => {
+            const tr = document.createElement('tr');
+            const fecha = new Date(g.date).toLocaleDateString('es-AR');
+            const monto = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(g.amount);
+
+            tr.innerHTML = `
+                <td style="color: var(--gray-400); font-size: 0.9rem;">${fecha}</td>
+                <td style="font-weight: 500;">${g.transaction_categories?.name || 'Gasto'}</td>
+                <td style="color: var(--gray-300); font-size: 0.9rem;">${g.description || '-'}</td>
+                <td style="color: var(--accent-red); font-weight: 700;">${monto} <small>${g.currency}</small></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button class="btn-action" onclick="abrirModalEdicion('${g.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✏️</button>
+                        <button class="btn-action danger" onclick="eliminarMovimiento('${g.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">🗑️</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    } catch (e) {
+        console.error("Error loading Expenses Tab table:", e);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--accent-red);">Error al cargar datos</td></tr>`;
+    }
+}
+
 function obtenerNombreProducto(id) {
     const p = productosCache.find(p => p.id == id);
     return p ? p.modelo : 'Desconocido';
@@ -842,19 +937,19 @@ export async function renderizarGraficos() {
         const dataExpDay = new Array(daysInMonth).fill(0);
 
         // 2. Top Services (Count & Amount)
-        // Filter by category 'Servicio Tecnico'
         const servicesMap = {};
 
         // 3. Top Products
-        // Filter by category 'Venta de Equipos' or 'Accesorios'
         const productsMap = {};
 
         // 4. iPhone Generations
-        // Regex on Description
         const iphoneMap = {};
 
         // 5. Payment Methods
         const paymentMap = {};
+
+        // 6. Expense Categories (New)
+        const expenseCatMap = {};
 
         transacciones.forEach(t => {
             const date = new Date(t.date);
@@ -864,12 +959,15 @@ export async function renderizarGraficos() {
             const catName = t.transaction_categories?.name || 'Otro';
 
             // Trends
-            if (t.type === 'INCOME') dataIncDay[idx] += monto;
-            else dataExpDay[idx] += monto;
+            if (t.type === 'INCOME') {
+                dataIncDay[idx] += monto;
+            } else {
+                dataExpDay[idx] += monto;
+                // Expense Categories Aggregation
+                expenseCatMap[catName] = (expenseCatMap[catName] || 0) + monto;
+            }
 
             // Payment Methods
-            // Parse from description " (Metodo)" or if we save it in metadata later?
-            // Currently description: "Servicio: X (Efectivo)" or "Venta: Y (USDT)"
             let pm = 'Desconocido';
             const pmMatch = t.description.match(/\(([^)]+)\)$/);
             if (pmMatch) pm = pmMatch[1];
@@ -877,7 +975,6 @@ export async function renderizarGraficos() {
 
             // Services
             if (catName === 'Servicio Tecnico') {
-                // Desc: "Servicio: Cambio de Pantalla (Efectivo)"
                 let svc = t.description.replace('Servicio: ', '').replace(/\s*\([^)]*\)$/, '').trim();
                 servicesMap[svc] = (servicesMap[svc] || 0) + 1;
             }
@@ -889,7 +986,6 @@ export async function renderizarGraficos() {
 
                 // iPhone Gen
                 if (prod.toLowerCase().includes('iphone')) {
-                    // Extract Gen number
                     const genMatch = prod.match(/iphone\s*(\d+)/i);
                     if (genMatch) {
                         const gen = `iPhone ${genMatch[1]} Series`;
@@ -911,7 +1007,8 @@ export async function renderizarGraficos() {
             chartInstances[id] = new Chart(ctx, { type, data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false, ...options } });
         };
 
-        // Chart 1: Income Trend (Line)
+        // --- DASHBOARD GENERAL (LEGACY COMPAT) ---
+
         renderChart('chartTrendIngresos', 'line', labelsDays, [{
             label: 'Ingresos Diarios (ARS)',
             data: dataIncDay,
@@ -921,7 +1018,6 @@ export async function renderizarGraficos() {
             tension: 0.4
         }]);
 
-        // Chart 2: Expense Trend (Line)
         renderChart('chartTrendGastos', 'line', labelsDays, [{
             label: 'Gastos Diarios (ARS)',
             data: dataExpDay,
@@ -931,7 +1027,7 @@ export async function renderizarGraficos() {
             tension: 0.4
         }]);
 
-        // Chart 3: Top Services (Bar)
+        // Top Services
         const sortedServices = Object.entries(servicesMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
         renderChart('chartTopServices', 'bar', sortedServices.map(x => x[0]), [{
             label: 'Servicios Realizados',
@@ -940,7 +1036,7 @@ export async function renderizarGraficos() {
             borderRadius: 5
         }]);
 
-        // Chart 4: Top Products (Bar)
+        // Top Products
         const sortedProducts = Object.entries(productsMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
         renderChart('chartTopProducts', 'bar', sortedProducts.map(x => x[0]), [{
             label: 'Unidades Vendidas',
@@ -949,7 +1045,7 @@ export async function renderizarGraficos() {
             borderRadius: 5
         }]);
 
-        // Chart 5: iPhone Generations (Doughnut)
+        // iPhone Generations
         const sortedGen = Object.entries(iphoneMap).sort((a, b) => b[1] - a[1]);
         renderChart('chartIphoneGenerations', 'doughnut', sortedGen.map(x => x[0]), [{
             data: sortedGen.map(x => x[1]),
@@ -957,13 +1053,48 @@ export async function renderizarGraficos() {
             borderWidth: 0
         }], { cutout: '60%' });
 
-        // Chart 6: Payment Methods (Pie)
+        // Payment Methods (General)
         const sortedPay = Object.entries(paymentMap).sort((a, b) => b[1] - a[1]);
         renderChart('chartPaymentMethods', 'polarArea', sortedPay.map(x => x[0]), [{
             data: sortedPay.map(x => x[1]),
             backgroundColor: ['#ffffffaa', '#00ff88aa', '#00d4ffaa', '#f59e0baa', '#ff4d4daa'],
             borderWidth: 0
         }]);
+
+
+        // --- NEW TABS: INGRESOS / VENTAS ---
+
+        // 1. Trend Ingresos Tab
+        renderChart('chartTrendIngresos_Tab', 'line', labelsDays, [{
+            label: 'Evolución Diaria (ARS)',
+            data: dataIncDay,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0, 255, 136, 0.15)',
+            fill: true,
+            tension: 0.3
+        }]);
+
+        // 2. Payment Methods Tab
+        renderChart('chartPaymentMethods_Tab', 'doughnut', sortedPay.map(x => x[0]), [{
+            data: sortedPay.map(x => x[1]),
+            backgroundColor: ['#ffffffaa', '#00ff88aa', '#00d4ffaa', '#f59e0baa', '#ff4d4daa'],
+            borderWidth: 0
+        }], { cutout: '50%' }); // Doughnut looks cleaner in tab
+
+
+        // --- NEW TABS: EGRESOS / GASTOS ---
+
+        // 1. Expense Categories Composition
+        const sortedExpCat = Object.entries(expenseCatMap).sort((a, b) => b[1] - a[1]);
+        renderChart('chartGastosCat_Tab', 'doughnut', sortedExpCat.map(x => x[0]), [{
+            data: sortedExpCat.map(x => x[1]),
+            backgroundColor: [
+                '#ff4d4d', '#ff8c00', '#f59e0b', '#8b5cf6', '#ec4899',
+                '#3b82f6', '#10b981', '#6366f1', '#a8a29e', '#64748b'
+            ],
+            borderWidth: 0
+        }], { cutout: '60%' });
+
 
         // ------------------
         // AI ANALYSIS
