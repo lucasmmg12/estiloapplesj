@@ -15,7 +15,6 @@ const supabase = window.supabase.createClient(
 let activeChatPhone = null;
 let activeFilter = 'whatsapp';
 let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite, platform }
-let botStatusGlobal = { whatsapp: 'active', instagram: 'active' }; // Estado global del bot por plataforma
 
 // DOM Elements
 const contactsListEl = document.getElementById('contactsList');
@@ -39,9 +38,7 @@ const emojiPicker = document.querySelector('emoji-picker');
 
 async function init() {
     console.log('🚀 Iniciando Live Chat...');
-    // 1. Cargar estado del bot desde Supabase
-    await loadBotStatus();
-    // 2. Initial Load
+    // 1. Initial Load
     await loadContacts();
     // 3. Realtime Subscription
     subscribeToMessages();
@@ -96,10 +93,11 @@ async function loadContacts() {
                     isFavorite: saved ? saved.es_favorito : false,
                     email: saved ? saved.email : null,
                     device: saved ? saved.modelo_dispositivo : null,
-                    interest: saved ? saved.interest : null,
+                    interest: saved ? saved.interes : null,
                     notes: saved ? saved.notes : null,
                     seller: saved ? saved.vendedor_asignado : null,
-                    platform: saved ? (saved.plataforma || 'whatsapp') : 'whatsapp'
+                    platform: saved ? (saved.plataforma || 'whatsapp') : 'whatsapp',
+                    bot_paused_at: saved ? saved.bot_paused_at : null
                 });
             }
         });
@@ -292,34 +290,13 @@ window.openChat = async (phone) => {
 const botStatusBtn = document.getElementById('botStatusBtn');
 const botStatusSpan = botStatusBtn.querySelector('span');
 
-// Cargar estado del bot desde Supabase
-async function loadBotStatus() {
-    try {
-        const { data, error } = await supabase
-            .from('bot_config')
-            .select('platform, status');
-
-        if (error) {
-            console.error('Error cargando estado del bot:', error);
-            return;
-        }
-
-        if (data && data.length > 0) {
-            data.forEach(config => {
-                botStatusGlobal[config.platform] = config.status;
-            });
-            console.log('✅ Estado del bot cargado:', botStatusGlobal);
-        }
-    } catch (err) {
-        console.error('Error al cargar bot_config:', err);
-    }
-}
-
 function updateBotStatusUI(contact) {
-    const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
-    const status = botStatusGlobal[platform] || 'active';
-
-    setBotUI(status);
+    if (!contact) {
+        setBotUI('active');
+        return;
+    }
+    const isPaused = contact.bot_paused_at !== null;
+    setBotUI(isPaused ? 'paused' : 'active');
 }
 
 function setBotUI(state) {
@@ -336,44 +313,46 @@ function setBotUI(state) {
 botStatusBtn.addEventListener('click', async () => {
     if (!activeChatPhone) return;
     const contact = contactsMap.get(activeChatPhone);
-    const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
-    const currentStatus = botStatusGlobal[platform] || 'active';
-    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    if (!contact) return;
 
-    // Cambiar estado (Toggle)
+    const platform = contact.platform || 'whatsapp';
+    const isCurrentlyPaused = contact.bot_paused_at !== null;
+    const newStatus = isCurrentlyPaused ? 'active' : 'paused';
+
     if (newStatus === 'active') {
-        // REACTIVAR BOT
+        // REACTIVAR BOT (Individual)
         setBotUI('active'); // Optimistic
         try {
             await manageBlacklist(activeChatPhone, 'remove', platform);
 
-            // Actualizar estado global en Supabase
+            // Guardar en Supabase para este contacto específico
             await supabase
-                .from('bot_config')
-                .update({ status: 'active' })
-                .eq('platform', platform);
+                .from('contactos')
+                .update({ bot_paused_at: null })
+                .eq('telefono', activeChatPhone);
 
-            botStatusGlobal[platform] = 'active';
-            console.log(`✅ Bot reactivado para ${platform}`);
+            contact.bot_paused_at = null;
+            console.log(`✅ Bot reactivado INDIVIDUALMENTE para ${activeChatPhone}`);
         } catch (e) {
             console.error('❌ Error reactivando bot:', e);
             alert('Error reactivando bot');
             setBotUI('paused'); // Revertir UI
         }
     } else {
-        // PAUSAR BOT
+        // PAUSAR BOT (Individual)
         setBotUI('paused'); // Optimistic
         try {
             await manageBlacklist(activeChatPhone, 'add', platform);
 
-            // Actualizar estado global en Supabase
+            const now = new Date().toISOString();
+            // Guardar en Supabase para este contacto específico
             await supabase
-                .from('bot_config')
-                .update({ status: 'paused' })
-                .eq('platform', platform);
+                .from('contactos')
+                .update({ bot_paused_at: now })
+                .eq('telefono', activeChatPhone);
 
-            botStatusGlobal[platform] = 'paused';
-            console.log(`⏸️ Bot pausado para ${platform}`);
+            contact.bot_paused_at = now;
+            console.log(`⏸️ Bot pausado INDIVIDUALMENTE para ${activeChatPhone}`);
         } catch (e) {
             console.error('❌ Error pausando bot:', e);
             alert('Error pausando bot');
