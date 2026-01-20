@@ -46,10 +46,10 @@
     /* Fondos Premium ESTILO */
     --bg-dark: #1A1A1A;
     --bg-surface: #2A2A2A;
-    --bg-card: rgba(92, 46, 46, 0.05);
-    --glass-bg: rgba(92, 46, 46, 0.08);
-    --glass-border: rgba(232, 213, 196, 0.15);
-    --glass-hover: rgba(92, 46, 46, 0.12);
+    --bg-card: rgba(0, 0, 0, 0.8);
+    --glass-bg: rgba(0, 0, 0, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-hover: rgba(0, 0, 0, 0.9);
 
     /* Textos ESTILO */
     --text-primary: #F5F1ED;
@@ -1343,9 +1343,9 @@ body::before {
 
 .mensaje-card {
 
-    background: rgba(31, 41, 55, 0.5);
+    background: rgba(0, 0, 0, 0.85);
 
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 
     border-radius: 16px;
 
@@ -1665,9 +1665,9 @@ body::before {
 
     padding: 0.75rem 1rem;
 
-    background: rgba(31, 41, 55, 0.5);
+    background: rgba(0, 0, 0, 0.85);
 
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 
     border-radius: 12px;
 

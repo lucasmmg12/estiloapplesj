@@ -8,6 +8,28 @@ let currentPage = 1;
 let pageSize = 50;
 let totalRecords = 0;
 
+// Helper para sincronizar visibilidad del formulario de ingreso
+function actualizarVisibilidadCategoriaIngreso() {
+    const radios = document.getElementsByName('ingresoCategoria');
+    let seleccionada = '';
+    radios.forEach(r => { if (r.checked) seleccionada = r.value; });
+
+    const containerEquipo = document.getElementById('selectorEquipoContainer');
+    const containerServicio = document.getElementById('selectorServicioContainer');
+    const selectProducto = document.getElementById('ingresoProductoId');
+    const selectServicio = document.getElementById('ingresoTipoServicio');
+
+    if (containerEquipo) {
+        containerEquipo.style.display = (seleccionada === 'Venta de Equipos' ? 'block' : 'none');
+        if (selectProducto) selectProducto.required = (seleccionada === 'Venta de Equipos');
+    }
+
+    if (containerServicio) {
+        containerServicio.style.display = (seleccionada === 'Servicio Tecnico' ? 'block' : 'none');
+        if (selectServicio) selectServicio.required = (seleccionada === 'Servicio Tecnico');
+    }
+}
+
 export async function initErp() {
     console.log('Iniciando Módulo ERP...');
 
@@ -67,31 +89,10 @@ function setupEventListeners() {
         // Listener para selector de Categoria -> Mostrar/Ocultar Selector de Equipos o Servicios
         const radiosCategoria = document.getElementsByName('ingresoCategoria');
         radiosCategoria.forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const containerEquipo = document.getElementById('selectorEquipoContainer');
-                const selectProducto = document.getElementById('ingresoProductoId');
-
-                const containerServicio = document.getElementById('selectorServicioContainer');
-                const selectServicio = document.getElementById('ingresoTipoServicio');
-
-                // Resetear visibilidad
-                containerEquipo.style.display = 'none';
-                selectProducto.required = false;
-                selectProducto.value = '';
-
-                containerServicio.style.display = 'none';
-                selectServicio.required = false;
-                selectServicio.value = '';
-
-                if (e.target.value === 'Venta de Equipos') {
-                    containerEquipo.style.display = 'block';
-                    selectProducto.required = true;
-                } else if (e.target.value === 'Servicio Tecnico') {
-                    containerServicio.style.display = 'block';
-                    selectServicio.required = true;
-                }
-            });
+            radio.addEventListener('change', actualizarVisibilidadCategoriaIngreso);
         });
+        // Sincronización inicial
+        actualizarVisibilidadCategoriaIngreso();
 
         // ---------------------------------------------------------
         // LOGICA MULTI-PAGO
@@ -708,10 +709,10 @@ async function handleIngresoSubmit(e) {
         mostrarModalExito('Venta registrada correctamente ✅');
         e.target.reset();
 
-        // Reset manual UI
-        document.getElementById('selectorEquipoContainer').style.display = 'none';
-        document.getElementById('selectorServicioContainer').style.display = 'none';
-        // Reset rows to 1
+        // Sincronizar UI tras reset
+        setTimeout(() => actualizarVisibilidadCategoriaIngreso(), 50);
+
+        // Reset manual de otros elementos UI
         const contenedor = document.getElementById('contenedorPagosIngreso');
         if (contenedor) {
             while (contenedor.children.length > 1) {
@@ -1002,15 +1003,9 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
             catMap[catName] = (catMap[catName] || 0) + getMontoARS(t);
         });
 
-        let topCat = '-';
-        let topVal = 0;
-        Object.entries(catMap).forEach(([name, val]) => {
-            if (val > topVal) {
-                topVal = val;
-                topCat = name;
-            }
-        });
-        document.getElementById('kpiMayorGastoCat').textContent = `${topCat} (${fmt.format(topVal)})`;
+        // Calcular total de egresos del mes actual
+        const totalEgresosMes = expenseTxs.reduce((sum, t) => sum + getMontoARS(t), 0);
+        document.getElementById('kpiMayorGastoCat').textContent = `${fmt.format(totalEgresosMes)}`;
     }
 }
 
