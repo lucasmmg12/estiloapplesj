@@ -818,6 +818,9 @@ async function handleEdicionSubmit(e) {
 
 async function actualizarKPIs() {
     const hoyDate = new Date();
+    const yesterdayDate = new Date(hoyDate);
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+
     // Ranges
     const startOfDay = new Date(hoyDate.getFullYear(), hoyDate.getMonth(), hoyDate.getDate()).toISOString();
 
@@ -844,7 +847,12 @@ async function actualizarKPIs() {
     // We add this here to ensure tables in new tabs are populated on load/refresh
     await cargarTablaVentasTab();
     await cargarTablaGastosTab();
-    const earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
+    let earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
+
+    // Ensure we cover yesterday if it falls in previous month/week gap
+    const startOfYesterday = new Date(yesterdayDate);
+    startOfYesterday.setHours(0, 0, 0, 0);
+    if (startOfYesterday.toISOString() < earliestDate) earliestDate = startOfYesterday.toISOString();
 
     // IMPORTANT: 'endOfToday' in ISO might cut off transactions if server time is ahead/behind. 
     // Safer to fetch until tomorrow to catch everything from today in local time.
@@ -876,6 +884,7 @@ async function actualizarKPIs() {
     // Initializers
     let incDay = 0, incWeek = 0, incMonth = 0;
     let expDay = 0, expWeek = 0, expMonth = 0;
+    let incYesterday = 0, expYesterday = 0;
 
     // Robust Date Checks (Client Local Time)
     const currentYear = hoyDate.getFullYear();
@@ -906,6 +915,14 @@ async function actualizarKPIs() {
                     expDay += monto;
                 }
             }
+        }
+
+        // --- YESTERDAY CALCULATION ---
+        if (tDate.getDate() === yesterdayDate.getDate() &&
+            tDate.getMonth() === yesterdayDate.getMonth() &&
+            tDate.getFullYear() === yesterdayDate.getFullYear()) {
+            if (t.type === 'INCOME') incYesterday += monto;
+            else if (t.type === 'EXPENSE') expYesterday += monto;
         }
 
         // --- WEEK CALCULATION ---
@@ -952,13 +969,13 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
 
     // Update DOM
     // Ingresos
-    document.getElementById('kpiIngresoHoy').textContent = fmt.format(incDay);
+    document.getElementById('kpiIngresoHoy').textContent = fmt.format(incYesterday);
     document.getElementById('kpiIngresoSemana').textContent = fmt.format(incWeek);
     document.getElementById('kpiIngresoMes').textContent = fmt.format(incMonth);
 
     // Egresos
     const kpiGastoHoy = document.getElementById('kpiGastoHoy');
-    if (kpiGastoHoy) kpiGastoHoy.textContent = fmt.format(expDay);
+    if (kpiGastoHoy) kpiGastoHoy.textContent = fmt.format(expYesterday);
 
     document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
     document.getElementById('kpiGastoMes').textContent = fmt.format(expMonth);
@@ -973,7 +990,7 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     if (heroIngresos) {
         heroIngresos.textContent = fmt.format(incMonth);
         // Also update sub-kpis
-        document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incDay);
+        document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incYesterday);
         document.getElementById('kpiIngresoSemana_Tab').textContent = fmt.format(incWeek);
 
         // REMOVED: Ticket Promedio logic
@@ -988,7 +1005,7 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     if (heroGastos) {
         heroGastos.textContent = fmt.format(expMonth);
         // Sub-kpis
-        document.getElementById('kpiGastoHoy_Tab').textContent = fmt.format(expDay);
+        document.getElementById('kpiGastoHoy_Tab').textContent = fmt.format(expYesterday);
         document.getElementById('kpiGastoSemana_Tab').textContent = fmt.format(expWeek);
 
         // Calculate Top Expense Category (Month)
