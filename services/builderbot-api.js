@@ -75,7 +75,7 @@ export async function enviarMensaje(plataforma, numero, contenido, mediaUrl = nu
 }
 
 // ============================================
-// Blacklist Management
+// Blacklist Management (Corrected)
 // ============================================
 
 export async function manageBlacklist(numero, intent, plataforma = 'whatsapp') {
@@ -89,6 +89,8 @@ export async function manageBlacklist(numero, intent, plataforma = 'whatsapp') {
     }
 
     const url = `${config.baseUrl}/${config.botId}/blacklist`;
+
+    console.log(`[API] Gestionando Blacklist (${plataforma}): ${intent} para ${numero}`);
 
     try {
         const response = await fetch(url, {
@@ -105,10 +107,14 @@ export async function manageBlacklist(numero, intent, plataforma = 'whatsapp') {
 
         if (!response.ok) {
             console.error(`Error blacklist ${intent} (${plataforma}):`, response.statusText);
+            const errBody = await response.text();
+            console.error('Detalle error:', errBody);
             return false;
         }
 
-        return await response.json();
+        const data = await response.json();
+        console.log(`[API] Respuesta Blacklist:`, data);
+        return data;
     } catch (e) {
         console.error(`Excepción gestionando blacklist (${plataforma}):`, e);
         return false;

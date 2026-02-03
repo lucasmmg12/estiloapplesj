@@ -1242,17 +1242,31 @@ export async function renderizarGraficos() {
         let dataIncTrends = [];
         let dataExpTrends = [];
 
-        // AGRUPAR POR DÍAS (Todo el año de la última transacción)
+        // AGRUPAR POR DÍAS (Rango Dinámico: Ene 1 -> Hoy)
         const baseYear = maxDate.getFullYear();
-        const isLeap = (y) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
-        const totalDays = isLeap(baseYear) ? 366 : 365;
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        // Determinar fecha de corte: Hoy (si es año actual) o 31 Dic (si es pasado)
+        let cutoffDate;
+        if (baseYear < currentYear) {
+            cutoffDate = new Date(baseYear, 11, 31);
+        } else {
+            cutoffDate = now;
+        }
+
+        // Calcular días totales a mostrar
+        const startOfYear = new Date(baseYear, 0, 1);
+        const msPerDay = 1000 * 60 * 60 * 24;
+        // +1 para incluir el día de hoy inclusive
+        const daysToShow = Math.floor((cutoffDate - startOfYear) / msPerDay) + 1;
 
         labelsTrends = [];
-        dataIncTrends = new Array(totalDays).fill(0);
-        dataExpTrends = new Array(totalDays).fill(0);
+        dataIncTrends = new Array(daysToShow).fill(0);
+        dataExpTrends = new Array(daysToShow).fill(0);
 
         let iterDate = new Date(baseYear, 0, 1);
-        for (let i = 0; i < totalDays; i++) {
+        for (let i = 0; i < daysToShow; i++) {
             if (iterDate.getDate() === 1) {
                 labelsTrends.push(iterDate.toLocaleDateString('es-AR', { month: 'short' }).toUpperCase());
             } else {
@@ -1266,7 +1280,7 @@ export async function renderizarGraficos() {
             if (date.getFullYear() === baseYear) {
                 const start = new Date(baseYear, 0, 1);
                 const dayIndex = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-                if (dayIndex >= 0 && dayIndex < totalDays) {
+                if (dayIndex >= 0 && dayIndex < daysToShow) {
                     const monto = getMontoARS(t);
                     if (t.type === 'INCOME') dataIncTrends[dayIndex] += monto;
                     else dataExpTrends[dayIndex] += monto;
