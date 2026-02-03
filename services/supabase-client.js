@@ -599,9 +599,7 @@ export async function eliminarTransaccion(id) {
 }
 
 export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
-    // Traemos transacciones con todos los campos necesarios para los Charts y KPIs
-    // Incluyendo fecha, descripcion (para regex), categorias (nombre y tipo)
-    const { data, error } = await supabase
+    let query = supabase
         .from('transactions')
         .select(`
             id,
@@ -613,9 +611,16 @@ export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
             exchange_rate,
             category_id,
             transaction_categories (name, type)
-        `)
-        .gte('date', fechaInicio)
-        .lte('date', fechaFin);
+        `);
+
+    if (fechaInicio) {
+        query = query.gte('date', fechaInicio);
+    }
+    if (fechaFin) {
+        query = query.lte('date', fechaFin);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data;

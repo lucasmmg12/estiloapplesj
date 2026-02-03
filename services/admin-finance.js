@@ -1225,6 +1225,11 @@ export async function renderizarGraficos() {
         // AGGREGATION LOGIC
         // ------------------
 
+        if (!transacciones || transacciones.length === 0) {
+            console.warn("No hay transacciones para graficar.");
+            return;
+        }
+
         // Determinar rango de fechas para decidir agrupamiento
         let fechas = transacciones.map(t => new Date(t.date).getTime());
         let minDate = new Date(Math.min(...fechas));
