@@ -272,7 +272,7 @@
                             style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%;"></span>
-                            Ingresos Totales (Mes Actual)
+                            Ingresos Totales (Histórico)
                         </div>
                     </div>
 
@@ -305,10 +305,9 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Mes
-                                en
-                                curso</span>
-                            <div class="value" id="kpiTicketPromedio"
+                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Total
+                                Histórico</span>
+                            <div class="value" id="kpiIngresosHistoricos"
                                 style="font-size: 1.8rem; font-weight: 700; color: var(--accent-light); position: relative; z-index: 1;">
                                 $0</div>
                         </div>
@@ -514,7 +513,7 @@
                             style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%;"></span>
-                            Gastos Totales (Mes Actual)
+                            Gastos Totales (Histórico)
                         </div>
                     </div>
 
@@ -548,9 +547,9 @@
                                 📉</div>
                             <span class="label"
                                 style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Egresos
-                                del Mes</span>
-                            <div class="value" id="kpiMayorGastoCat"
-                                style="font-size: 1.2rem; font-weight: 500; color: #fff; line-height: 1.4; margin-top: 0.5rem; position: relative; z-index: 1;">
+                                del Histórico</span>
+                            <div class="value" id="kpiGastoTotalHistorico"
+                                style="font-size: 1.8rem; font-weight: 700; color: #fff; line-height: 1.4; margin-top: 0.5rem; position: relative; z-index: 1;">
                                 -</div>
                         </div>
                     </div>
@@ -698,8 +697,8 @@
                                     <span class="value" id="kpiIngresoSemana">$0</span>
                                 </div>
                                 <div class="mini-kpi">
-                                    <span class="label">Este Mes</span>
-                                    <span class="value" id="kpiIngresoMes">$0</span>
+                                    <span class="label">Total Histórico</span>
+                                    <span class="value" id="kpiIngresoTotal">$0</span>
                                 </div>
                             </div>
                             <!-- Chart Ingresos -->
@@ -725,8 +724,8 @@
                                     <span class="value" id="kpiGastoSemana">$0</span>
                                 </div>
                                 <div class="mini-kpi">
-                                    <span class="label">Este Mes</span>
-                                    <span class="value" id="kpiGastoMes">$0</span>
+                                    <span class="label">Total Histórico</span>
+                                    <span class="value" id="kpiGastoTotal">$0</span>
                                 </div>
                             </div>
                             <!-- Chart Egresos -->
@@ -737,7 +736,7 @@
                     </div>
 
                     <!-- SECCIÓN 2: ANÁLISIS DE VENTAS -->
-                    <h3 class="section-subtitle">Análisis de Ventas (Mensual)</h3>
+                    <h3 class="section-subtitle">Análisis de Ventas (Histórico)</h3>
                     <div
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
                         <!-- Top Servicios -->

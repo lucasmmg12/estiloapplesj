@@ -833,34 +833,8 @@ async function actualizarKPIs() {
     const startOfMonth = new Date(hoyDate.getFullYear(), hoyDate.getMonth(), 1).toISOString();
     const endOfToday = new Date().toISOString();
 
-    // Fetch All Data needed (Current Month is base, but we might need more for week if month just started? 
-    // Simplification: We fetch current month for Charts, but for KPIs specifically we might need to query precise ranges or just filter client side if we have enough data.
-    // PROD: Fetching huge datasets is bad. We should have backend endpoints for aggregations. 
-    // Here we will use `obtenerResumenFinanciero` which filters by date range. 
-    // For 'Today' and 'Week', if they fall within Month, we are good.
-
-    // Let's fetch from start of Month for charts AND start of Week (which might be in prev month).
-
-    // ------------------------------------------
-    // LOAD TABLES FOR SPECIFIC TABS
-    // ------------------------------------------
-    // We add this here to ensure tables in new tabs are populated on load/refresh
-    await cargarTablaVentasTab();
-    await cargarTablaGastosTab();
-    let earliestDate = startOfWeek < startOfMonth ? startOfWeek : startOfMonth;
-
-    // Ensure we cover yesterday if it falls in previous month/week gap
-    const startOfYesterday = new Date(yesterdayDate);
-    startOfYesterday.setHours(0, 0, 0, 0);
-    if (startOfYesterday.toISOString() < earliestDate) earliestDate = startOfYesterday.toISOString();
-
-    // IMPORTANT: 'endOfToday' in ISO might cut off transactions if server time is ahead/behind. 
-    // Safer to fetch until tomorrow to catch everything from today in local time.
-    const tomorrow = new Date(hoyDate);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const endRange = tomorrow.toISOString();
-
-    const transacciones = await supabaseService.obtenerResumenFinanciero(earliestDate, endRange);
+    // Fetch All Data (No date filter to get history)
+    const transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
 
     // Helpers
     const getMontoARS = (t) => {
@@ -882,9 +856,10 @@ async function actualizarKPIs() {
     };
 
     // Initializers
-    let incDay = 0, incWeek = 0, incMonth = 0;
-    let expDay = 0, expWeek = 0, expMonth = 0;
+    let incDay = 0, incWeek = 0, incTotal = 0;
+    let expDay = 0, expWeek = 0, expTotal = 0;
     let incYesterday = 0, expYesterday = 0;
+    let incMonth = 0, expMonth = 0; // Keeping month for hero display if needed
 
     // Robust Date Checks (Client Local Time)
     const currentYear = hoyDate.getFullYear();
@@ -898,8 +873,11 @@ async function actualizarKPIs() {
         const monto = getMontoARS(t);
         const tDate = new Date(t.date);
 
-        // --- MONTH CALCULATION ---
-        // Condition: Same Year AND Same Month
+        // --- TOTAL HISTORICO ---
+        if (t.type === 'INCOME') incTotal += monto;
+        else if (t.type === 'EXPENSE') expTotal += monto;
+
+        // --- MONTH CALCULATION (current month) ---
         if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
             if (t.type === 'INCOME') {
                 incMonth += monto;
@@ -907,13 +885,10 @@ async function actualizarKPIs() {
                 expMonth += monto;
             }
 
-            // --- DAY CALCULATION (Nested in Month because Day must be in Month) ---
+            // --- DAY CALCULATION ---
             if (tDate.getDate() === currentDay) {
-                if (t.type === 'INCOME') {
-                    incDay += monto;
-                } else if (t.type === 'EXPENSE') {
-                    expDay += monto;
-                }
+                if (t.type === 'INCOME') incDay += monto;
+                else if (t.type === 'EXPENSE') expDay += monto;
             }
         }
 
@@ -926,13 +901,9 @@ async function actualizarKPIs() {
         }
 
         // --- WEEK CALCULATION ---
-        // Independent check because week can straddle months
         if (tDate.getTime() >= startOfWeekTs) {
-            if (t.type === 'INCOME') {
-                incWeek += monto;
-            } else if (t.type === 'EXPENSE') {
-                expWeek += monto;
-            }
+            if (t.type === 'INCOME') incWeek += monto;
+            else if (t.type === 'EXPENSE') expWeek += monto;
         }
     });
 
@@ -969,16 +940,14 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
 
     // Update DOM
     // Ingresos
-    document.getElementById('kpiIngresoHoy').textContent = fmt.format(incYesterday);
-    document.getElementById('kpiIngresoSemana').textContent = fmt.format(incWeek);
-    document.getElementById('kpiIngresoMes').textContent = fmt.format(incMonth);
+    if (document.getElementById('kpiIngresoHoy')) document.getElementById('kpiIngresoHoy').textContent = fmt.format(incYesterday);
+    if (document.getElementById('kpiIngresoSemana')) document.getElementById('kpiIngresoSemana').textContent = fmt.format(incWeek);
+    if (document.getElementById('kpiIngresoTotal')) document.getElementById('kpiIngresoTotal').textContent = fmt.format(incTotal);
 
     // Egresos
-    const kpiGastoHoy = document.getElementById('kpiGastoHoy');
-    if (kpiGastoHoy) kpiGastoHoy.textContent = fmt.format(expYesterday);
-
-    document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
-    document.getElementById('kpiGastoMes').textContent = fmt.format(expMonth);
+    if (document.getElementById('kpiGastoHoy')) document.getElementById('kpiGastoHoy').textContent = fmt.format(expYesterday);
+    if (document.getElementById('kpiGastoSemana')) document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
+    if (document.getElementById('kpiGastoTotal')) document.getElementById('kpiGastoTotal').textContent = fmt.format(expTotal);
 
 
     // ------------------------------------------
@@ -988,42 +957,26 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     // TAB: VENTAS
     const heroIngresos = document.getElementById('heroIngresosMes');
     if (heroIngresos) {
-        heroIngresos.textContent = fmt.format(incMonth);
+        heroIngresos.textContent = fmt.format(incTotal);
         // Also update sub-kpis
         document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incYesterday);
         document.getElementById('kpiIngresoSemana_Tab').textContent = fmt.format(incWeek);
-
-        // REMOVED: Ticket Promedio logic
-        // NEW: Total Vendido Mes (redundant with Hero but requested) or Cash Flow?
-        // User asked: "cambia ticket promedio por $ vendido en el mes en curso"
-        // Since Hero shows Month Income too, maybe they want strictly 'Current Month Sold' displayed here as well.
-        document.getElementById('kpiTicketPromedio').textContent = fmt.format(incMonth);
+        document.getElementById('kpiIngresosHistoricos').textContent = fmt.format(incTotal);
     }
 
     // TAB: GASTOS
     const heroGastos = document.getElementById('heroGastosMes');
     if (heroGastos) {
-        heroGastos.textContent = fmt.format(expMonth);
+        heroGastos.textContent = fmt.format(expTotal);
         // Sub-kpis
         document.getElementById('kpiGastoHoy_Tab').textContent = fmt.format(expYesterday);
         document.getElementById('kpiGastoSemana_Tab').textContent = fmt.format(expWeek);
-
-        // Calculate Top Expense Category (Month)
-        const expenseTxs = transacciones.filter(t => {
-            if (t.type !== 'EXPENSE') return false;
-            const tDate = new Date(t.date);
-            return tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth;
-        });
-        const catMap = {};
-        expenseTxs.forEach(t => {
-            const catName = t.transaction_categories?.name || 'Otro';
-            catMap[catName] = (catMap[catName] || 0) + getMontoARS(t);
-        });
-
-        // Calcular total de egresos del mes actual
-        const totalEgresosMes = expenseTxs.reduce((sum, t) => sum + getMontoARS(t), 0);
-        document.getElementById('kpiMayorGastoCat').textContent = `${fmt.format(totalEgresosMes)}`;
+        document.getElementById('kpiGastoTotalHistorico').textContent = fmt.format(expTotal);
     }
+
+    // Recargar tablas de pestañas
+    await cargarTablaVentasTab();
+    await cargarTablaGastosTab();
 }
 
 function aplicarPresetTiempo(preset) {
@@ -1259,12 +1212,8 @@ const renderChart = (id, type, labels, datasets, options = {}) => {
 
 export async function renderizarGraficos() {
     try {
-        const hoy = new Date();
-        const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString();
-        const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).toISOString();
-
-        // 1. Fetch Month Data
-        const transacciones = await supabaseService.obtenerResumenFinanciero(inicioMes, finMes);
+        // 1. Fetch ALL Data
+        const transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
 
         // helpers
         const getMontoARS = (t) => {
@@ -1276,67 +1225,109 @@ export async function renderizarGraficos() {
         // AGGREGATION LOGIC
         // ------------------
 
-        // 1. Daily Trends (Income vs Expense)
-        // Group by Day (1-30/31)
-        const daysInMonth = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
-        const labelsDays = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-        const dataIncDay = new Array(daysInMonth).fill(0);
-        const dataExpDay = new Array(daysInMonth).fill(0);
+        // Determinar rango de fechas para decidir agrupamiento
+        let fechas = transacciones.map(t => new Date(t.date).getTime());
+        let minDate = new Date(Math.min(...fechas));
+        let maxDate = new Date(Math.max(...fechas));
+        let diffMeses = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + (maxDate.getMonth() - minDate.getMonth());
+
+        let labelsTrends = [];
+        let dataIncTrends = [];
+        let dataExpTrends = [];
+
+        if (diffMeses <= 1) {
+            // AGRUPAR POR DÍAS (como estaba)
+            const hoy = new Date();
+            const daysInMonth = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
+            labelsTrends = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            dataIncTrends = new Array(labelsTrends.length).fill(0);
+            dataExpTrends = new Array(labelsTrends.length).fill(0);
+
+            transacciones.forEach(t => {
+                const date = new Date(t.date);
+                if (date.getMonth() === hoy.getMonth() && date.getFullYear() === hoy.getFullYear()) {
+                    const day = date.getDate();
+                    const idx = day - 1;
+                    const monto = getMontoARS(t);
+                    if (t.type === 'INCOME') dataIncTrends[idx] += monto;
+                    else dataExpTrends[idx] += monto;
+                }
+            });
+        } else {
+            // AGRUPAR POR MESES
+            let monthsMap = {};
+            // Crear rango de meses
+            let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+            while (current <= maxDate) {
+                let key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+                monthsMap[key] = { inc: 0, exp: 0 };
+                current.setMonth(current.getMonth() + 1);
+            }
+
+            transacciones.forEach(t => {
+                const date = new Date(t.date);
+                let key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                if (monthsMap[key]) {
+                    const monto = getMontoARS(t);
+                    if (t.type === 'INCOME') monthsMap[key].inc += monto;
+                    else monthsMap[key].exp += monto;
+                }
+            });
+
+            labelsTrends = Object.keys(monthsMap).map(k => {
+                const [y, m] = k.split('-');
+                const date = new Date(y, m - 1);
+                return date.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
+            });
+            dataIncTrends = Object.values(monthsMap).map(v => v.inc);
+            dataExpTrends = Object.values(monthsMap).map(v => v.exp);
+        }
 
         // 2. Top Services (Count & Amount)
         const servicesMap = {};
-
         // 3. Top Products
         const productsMap = {};
-
         // 4. iPhone Generations
         const iphoneMap = {};
-
         // 5. Payment Methods
         const paymentMap = {};
-
         // 6. Expense Categories (New)
         const expenseCatMap = {};
 
         transacciones.forEach(t => {
-            const date = new Date(t.date);
-            const day = date.getDate();
-            const idx = day - 1;
             const monto = getMontoARS(t);
             const catName = t.transaction_categories?.name || 'Otro';
+            const desc = t.description || '';
 
-            // Trends
-            if (t.type === 'INCOME') {
-                dataIncDay[idx] += monto;
-            } else {
-                dataExpDay[idx] += monto;
-                // Expense Categories Aggregation
+            if (t.type === 'EXPENSE') {
                 expenseCatMap[catName] = (expenseCatMap[catName] || 0) + monto;
             }
 
             // Payment Methods
             let pm = 'Desconocido';
-            const pmMatch = t.description.match(/\(([^)]+)\)$/);
+            const pmMatch = desc.match(/\(([^)]+)\)$/);
             if (pmMatch) pm = pmMatch[1];
-            paymentMap[pm] = (paymentMap[pm] || 0) + 1; // Count volume
+            paymentMap[pm] = (paymentMap[pm] || 0) + 1;
 
             // Services
             if (catName === 'Servicio Tecnico') {
-                let svc = t.description.replace('Servicio: ', '').replace(/\s*\([^)]*\)$/, '').trim();
-                servicesMap[svc] = (servicesMap[svc] || 0) + 1;
+                let svc = desc.replace('Servicio: ', '').replace(/\s*\([^)]*\)$/, '').trim();
+                if (svc) servicesMap[svc] = (servicesMap[svc] || 0) + 1;
             }
 
             // Products
             if (catName === 'Venta de Equipos' || catName === 'Venta de Accesorios') {
-                let prod = t.description.replace('Venta: ', '').replace(/\s*\([^)]*\)$/, '').trim();
-                productsMap[prod] = (productsMap[prod] || 0) + 1;
+                let prod = desc.replace('Venta: ', '').replace(/\s*\([^)]*\)$/, '').trim();
+                if (prod) {
+                    productsMap[prod] = (productsMap[prod] || 0) + 1;
 
-                // iPhone Gen
-                if (prod.toLowerCase().includes('iphone')) {
-                    const genMatch = prod.match(/iphone\s*(\d+)/i);
-                    if (genMatch) {
-                        const gen = `iPhone ${genMatch[1]} Series`;
-                        iphoneMap[gen] = (iphoneMap[gen] || 0) + 1;
+                    // iPhone Gen
+                    if (prod.toLowerCase().includes('iphone')) {
+                        const genMatch = prod.match(/iphone\s*(\d+)/i);
+                        if (genMatch) {
+                            const gen = `iPhone ${genMatch[1]} Series`;
+                            iphoneMap[gen] = (iphoneMap[gen] || 0) + 1;
+                        }
                     }
                 }
             }
@@ -1348,18 +1339,18 @@ export async function renderizarGraficos() {
         // --- DASHBOARD GENERAL (LEGACY COMPAT) ---
 
 
-        renderChart('chartTrendIngresos', 'line', labelsDays, [{
-            label: 'Ingresos Diarios (ARS)',
-            data: dataIncDay,
+        renderChart('chartTrendIngresos', 'line', labelsTrends, [{
+            label: 'Ingresos Históricos (ARS)',
+            data: dataIncTrends,
             borderColor: '#00ff88',
             backgroundColor: 'rgba(0, 255, 136, 0.1)',
             fill: true,
             tension: 0.4
         }]);
 
-        renderChart('chartTrendGastos', 'line', labelsDays, [{
-            label: 'Gastos Diarios (ARS)',
-            data: dataExpDay,
+        renderChart('chartTrendGastos', 'line', labelsTrends, [{
+            label: 'Gastos Históricos (ARS)',
+            data: dataExpTrends,
             borderColor: '#ff4d4d',
             backgroundColor: 'rgba(255, 77, 77, 0.1)',
             fill: true,
@@ -1419,9 +1410,9 @@ export async function renderizarGraficos() {
         // --- NEW TABS: INGRESOS / VENTAS ---
 
         // 1. Trend Ingresos Tab
-        renderChart('chartTrendIngresos_Tab', 'line', labelsDays, [{
-            label: 'Evolución Diaria (ARS)',
-            data: dataIncDay,
+        renderChart('chartTrendIngresos_Tab', 'line', labelsTrends, [{
+            label: 'Evolución Histórica (ARS)',
+            data: dataIncTrends,
             borderColor: '#00ff88',
             backgroundColor: 'rgba(0, 255, 136, 0.15)',
             fill: true,
@@ -1453,7 +1444,7 @@ export async function renderizarGraficos() {
         // ------------------
         // AI ANALYSIS
         // ------------------
-        generarAnalisisIA(transacciones, dataIncDay, dataExpDay, productsMap, servicesMap);
+        generarAnalisisIA(transacciones, dataIncTrends, dataExpTrends, productsMap, servicesMap);
 
     } catch (e) {
         console.error("Error renderizando gráficos ERP:", e);
@@ -1482,10 +1473,10 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const topServ = Object.entries(services).sort((a, b) => b[1] - a[1])[0] || ['Ninguno', 0];
 
     const descriptivo = `
-        Este mes has generado un total de ARS ${totalInc.toLocaleString()} con gastos de ARS ${totalExp.toLocaleString()}, 
+        Históricamente has generado un total de ARS ${totalInc.toLocaleString()} con gastos de ARS ${totalExp.toLocaleString()}, 
         resultando en un balance neto de ARS ${balance.toLocaleString()}. 
-        El mejor día de ventas fue el día ${bestDay}. 
-        El producto estrella es "${topProd[0]}" y el servicio más solicitado "${topServ[0]}".
+        El mejor período de ventas superó los ARS ${Math.max(...incTrends).toLocaleString()}. 
+        Tu producto estrella es "${topProd[0]}" y el servicio más solicitado "${topServ[0]}".
     `;
     const descEl = document.getElementById('analisisDescriptivo');
     if (descEl) descEl.textContent = descriptivo;
