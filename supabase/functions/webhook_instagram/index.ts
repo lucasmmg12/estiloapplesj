@@ -29,17 +29,19 @@ serve(async (req) => {
         console.log('Payload recibido:', JSON.stringify(payload, null, 2));
 
         // Extraer datos - soportar múltiples formatos de Builderbot
-        // Formato 1: { historial, telefono, nombre }
-        // Formato 2: { history, from, name }
-        // Formato 3: Payload completo de Builderbot con metadata
-
         let historial = payload.historial || payload.history || [];
         let telefono = payload.telefono || payload.from || payload.phone || payload.username || '';
         let nombre = payload.nombre || payload.name || '';
 
-        // Si viene en formato de Builderbot con metadata
+        // Si viene en formato de Builderbot con metadata (Nueva Estructura)
         if (!historial.length && payload.messages) {
             historial = payload.messages;
+        }
+
+        // Caso específico: Payload de Instagram via Builderbot Provider
+        if (payload.data && payload.data.from) {
+            telefono = payload.data.from.replace('@s.whatsapp.net', '').replace('@c.us', '');
+            nombre = payload.data.pushName || payload.data.name || nombre;
         }
 
         // Si el teléfono viene vacío, intentar extraerlo de otros campos
@@ -52,26 +54,32 @@ serve(async (req) => {
             nombre = payload.user?.name || telefono || 'Cliente Instagram';
         }
 
-        // Validar que tengamos al menos el historial
-        if (!historial || !Array.isArray(historial) || historial.length === 0) {
-            throw new Error('Faltan datos requeridos: historial de conversación');
-        }
-
-        // Asegurar que tengamos identificador del usuario
+        // Validar que tengamos identificador del usuario
         if (!telefono) {
-            throw new Error('Falta el identificador del usuario de Instagram');
+            console.error('Payload sin identificador:', JSON.stringify(payload));
+            throw new Error('Falta el identificador del usuario de Instagram (username o ID)');
         }
-
-        console.log('Datos extraídos:', {
-            historial: historial.length + ' mensajes',
-            telefono,
-            nombre
-        });
 
         // Inicializar Supabase
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // --- VERIFICACIÓN DE BLACKLIST ---
+        const { data: clienteBlacklist } = await supabase
+            .from('clientes')
+            .select('bot_paused_at')
+            .eq('telefono', telefono)
+            .maybeSingle();
+
+        if (clienteBlacklist?.bot_paused_at) {
+            console.log(`🚫 BOT FRENADO para ${telefono} (Blacklist activa)`);
+            return new Response(
+                JSON.stringify({ success: true, message: 'Bot is paused for this user' }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+            );
+        }
+        // ---------------------------------
 
         // Analizar conversación con OpenAI
         const openaiKey = Deno.env.get('OPENAI_API_KEY')!;

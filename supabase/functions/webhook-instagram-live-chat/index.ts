@@ -127,6 +127,13 @@ Deno.serve(async (req) => {
         .eq('telefono', cleanPhone)
         .single();
 
+      // --- VERIFICACIÓN DE BLACKLIST ---
+      if (contact?.bot_paused_at) {
+        console.log(`🚫 LIVE CHAT: Bot pausado para ${cleanPhone}. Omitiendo actualización automática.`);
+        // Nota: Seguimos guardando el mensaje para que el humano lo vea, 
+        // pero evitamos cualquier otra lógica automática que pudiera haber en el futuro.
+      }
+
       const updates: any = {};
       let shouldUpdate = false;
 

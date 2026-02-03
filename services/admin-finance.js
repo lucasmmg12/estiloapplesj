@@ -942,11 +942,13 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     // Ingresos
     if (document.getElementById('kpiIngresoHoy')) document.getElementById('kpiIngresoHoy').textContent = fmt.format(incYesterday);
     if (document.getElementById('kpiIngresoSemana')) document.getElementById('kpiIngresoSemana').textContent = fmt.format(incWeek);
+    if (document.getElementById('kpiIngresoMes')) document.getElementById('kpiIngresoMes').textContent = fmt.format(incMonth);
     if (document.getElementById('kpiIngresoTotal')) document.getElementById('kpiIngresoTotal').textContent = fmt.format(incTotal);
 
     // Egresos
     if (document.getElementById('kpiGastoHoy')) document.getElementById('kpiGastoHoy').textContent = fmt.format(expYesterday);
     if (document.getElementById('kpiGastoSemana')) document.getElementById('kpiGastoSemana').textContent = fmt.format(expWeek);
+    if (document.getElementById('kpiGastoMes')) document.getElementById('kpiGastoMes').textContent = fmt.format(expMonth);
     if (document.getElementById('kpiGastoTotal')) document.getElementById('kpiGastoTotal').textContent = fmt.format(expTotal);
 
 
@@ -1240,53 +1242,37 @@ export async function renderizarGraficos() {
         let dataIncTrends = [];
         let dataExpTrends = [];
 
-        if (diffMeses <= 1) {
-            // AGRUPAR POR DÍAS (como estaba)
-            const hoy = new Date();
-            const daysInMonth = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0).getDate();
-            labelsTrends = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-            dataIncTrends = new Array(labelsTrends.length).fill(0);
-            dataExpTrends = new Array(labelsTrends.length).fill(0);
+        // AGRUPAR POR DÍAS (Todo el año de la última transacción)
+        const baseYear = maxDate.getFullYear();
+        const isLeap = (y) => (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+        const totalDays = isLeap(baseYear) ? 366 : 365;
 
-            transacciones.forEach(t => {
-                const date = new Date(t.date);
-                if (date.getMonth() === hoy.getMonth() && date.getFullYear() === hoy.getFullYear()) {
-                    const day = date.getDate();
-                    const idx = day - 1;
-                    const monto = getMontoARS(t);
-                    if (t.type === 'INCOME') dataIncTrends[idx] += monto;
-                    else dataExpTrends[idx] += monto;
-                }
-            });
-        } else {
-            // AGRUPAR POR MESES
-            let monthsMap = {};
-            // Crear rango de meses
-            let current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
-            while (current <= maxDate) {
-                let key = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
-                monthsMap[key] = { inc: 0, exp: 0 };
-                current.setMonth(current.getMonth() + 1);
+        labelsTrends = [];
+        dataIncTrends = new Array(totalDays).fill(0);
+        dataExpTrends = new Array(totalDays).fill(0);
+
+        let iterDate = new Date(baseYear, 0, 1);
+        for (let i = 0; i < totalDays; i++) {
+            if (iterDate.getDate() === 1) {
+                labelsTrends.push(iterDate.toLocaleDateString('es-AR', { month: 'short' }).toUpperCase());
+            } else {
+                labelsTrends.push('');
             }
-
-            transacciones.forEach(t => {
-                const date = new Date(t.date);
-                let key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                if (monthsMap[key]) {
-                    const monto = getMontoARS(t);
-                    if (t.type === 'INCOME') monthsMap[key].inc += monto;
-                    else monthsMap[key].exp += monto;
-                }
-            });
-
-            labelsTrends = Object.keys(monthsMap).map(k => {
-                const [y, m] = k.split('-');
-                const date = new Date(y, m - 1);
-                return date.toLocaleDateString('es-AR', { month: 'short', year: '2-digit' });
-            });
-            dataIncTrends = Object.values(monthsMap).map(v => v.inc);
-            dataExpTrends = Object.values(monthsMap).map(v => v.exp);
+            iterDate.setDate(iterDate.getDate() + 1);
         }
+
+        transacciones.forEach(t => {
+            const date = new Date(t.date);
+            if (date.getFullYear() === baseYear) {
+                const start = new Date(baseYear, 0, 1);
+                const dayIndex = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+                if (dayIndex >= 0 && dayIndex < totalDays) {
+                    const monto = getMontoARS(t);
+                    if (t.type === 'INCOME') dataIncTrends[dayIndex] += monto;
+                    else dataExpTrends[dayIndex] += monto;
+                }
+            }
+        });
 
         // 2. Top Services (Count & Amount)
         const servicesMap = {};
@@ -1468,9 +1454,19 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     if (!incTrends || !expTrends) return; // Guard clause if trends undefined
 
     // 1. Descriptivo
-    const totalInc = incTrends.reduce((a, b) => a + b, 0);
+    // 1. Descriptivo
+    const histInc = transacciones.filter(t => t.type === 'INCOME').reduce((acc, t) => {
+        let tasa = t.exchange_rate || 1485;
+        return acc + (t.currency === 'ARS' ? t.amount : (t.amount * tasa));
+    }, 0);
+    const histExp = transacciones.filter(t => t.type === 'EXPENSE').reduce((acc, t) => {
+        let tasa = t.exchange_rate || 1485;
+        return acc + (t.currency === 'ARS' ? t.amount : (t.amount * tasa));
+    }, 0);
+
+    const totalInc = incTrends.reduce((a, b) => a + b, 0); // Total del Año Graficado
     const totalExp = expTrends.reduce((a, b) => a + b, 0);
-    const balance = totalInc - totalExp;
+    const balance = histInc - histExp;
     const bestDay = incTrends.indexOf(Math.max(...incTrends)) + 1;
 
     // Sort logic safe access
@@ -1478,9 +1474,9 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const topServ = Object.entries(services).sort((a, b) => b[1] - a[1])[0] || ['Ninguno', 0];
 
     const descriptivo = `
-        Históricamente has generado un total de ARS ${totalInc.toLocaleString()} con gastos de ARS ${totalExp.toLocaleString()}, 
+        Históricamente has generado un total de ARS ${histInc.toLocaleString()} con gastos de ARS ${histExp.toLocaleString()}, 
         resultando en un balance neto de ARS ${balance.toLocaleString()}. 
-        El mejor período de ventas superó los ARS ${Math.max(...incTrends).toLocaleString()}. 
+        En el año actual, el mejor período de ventas superó los ARS ${Math.max(...incTrends).toLocaleString()}. 
         Tu producto estrella es "${topProd[0]}" y el servicio más solicitado "${topServ[0]}".
     `;
     const descEl = document.getElementById('analisisDescriptivo');
