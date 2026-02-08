@@ -54,25 +54,60 @@ async function loadContacts() {
     contactsListEl.innerHTML = `
         <div class="loading-contacts">
             <div class="spinner"></div>
-            <p style="color:var(--text-dim); margin-top:10px;">Iniciando sistema...</p>
+            <p style="color:var(--text-dim); margin-top:10px;">Cargando chats recientes...</p>
         </div>
     `;
 
     try {
-        // 1. Obtener mensajes recientes (agrupación simulada por orden)
+        // INTENTO 1: Usar RPC optimizado (Backend)
+        const { data: rpcData, error: rpcError } = await supabase
+            .rpc('get_last_conversations', { limit_count: 10000 });
+
+        if (!rpcError && rpcData) {
+            console.log('✅ Contactos cargados vía RPC:', rpcData.length);
+
+            contactsMap.clear();
+            rpcData.forEach(c => {
+                contactsMap.set(c.phone, {
+                    phone: c.phone,
+                    lastMessage: (c.last_message_is_mine ? 'Tú: ' : '') + (c.last_message || 'Archivo multimedia'),
+                    timestamp: new Date(c.last_message_time),
+                    unreadCount: c.unread_count || 0,
+                    avatar: c.contact_avatar || 'public/logogrow.png',
+                    name: c.contact_name,
+                    isFavorite: c.is_favorite,
+                    seller: c.contact_seller,
+                    platform: c.platform || 'whatsapp',
+                    bot_paused_at: c.bot_paused_at,
+                    // Estos campos podrían no venir en el RPC simple, pero son secundarios para la lista
+                    email: null,
+                    device: null,
+                    interest: null,
+                    notes: null
+                });
+            });
+
+            renderContacts();
+            return;
+        }
+
+        console.warn('⚠️ RPC falló o no existe, usando método legacy:', rpcError);
+
+        // FALLBACK: Método antiguo (Lento pero seguro si no corrieron el SQL)
+        // 1. Obtener mensajes recientes
         const { data: messages, error: msgError } = await supabase
             .from('mensajes')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(10000); // Límite aumentado para intentar ver más
 
         if (msgError) throw msgError;
 
-        // 2. Obtener metadatos de contactos (nombres, favoritos)
+        // 2. Obtener metadatos de contactos
         const { data: contactsData, error: contactsError } = await supabase
             .from('contactos')
             .select('*');
 
-        // Si la tabla no existe aún, ignoramos el error silenciosamente o usamos array vacío
         const savedContacts = contactsData || [];
 
         contactsMap.clear();
@@ -80,7 +115,6 @@ async function loadContacts() {
         // Agrupar por teléfono
         messages.forEach(msg => {
             if (!contactsMap.has(msg.cliente_telefono)) {
-                // Buscar si existe info guardada
                 const saved = savedContacts.find(c => c.telefono === msg.cliente_telefono);
 
                 contactsMap.set(msg.cliente_telefono, {
@@ -106,8 +140,7 @@ async function loadContacts() {
 
     } catch (err) {
         console.error('Error cargando contactos:', err);
-        // Fallback si falla la carga de contactos (ej. tabla no creada)
-        renderContacts();
+        contactsListEl.innerHTML = `<p style="padding:20px; color:red; text-align:center;">Error al cargar. Revisa la consola.</p>`;
     }
 }
 
@@ -266,7 +299,8 @@ window.openChat = async (phone) => {
             .from('mensajes')
             .select('*')
             .eq('cliente_telefono', phone)
-            .order('created_at', { ascending: true });
+            .order('created_at', { ascending: true })
+            .limit(5000); // Límite aumentado para ver historial completo
 
         if (error) throw error;
 

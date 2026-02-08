@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Inteligente - Estilo Apple</title>
+    <!-- Tailwind CSS (v3.4.1) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'estilo-bg': '#0a0606',
+                        'estilo-burgundy': '#5C2E2E',
+                        'estilo-burgundy-light': '#7A4545',
+                        'estilo-gold': '#D4AF37',
+                        'neon-green': '#00FF88', // AI Accent
+                        'apple-gray': '#F5F5F7',
+                        'apple-dark-gray': '#1D1D1F',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'scan': 'scan 2.5s linear infinite',
+                        'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        scan: {
+                            '0%': { top: '0%' },
+                            '100%': { top: '100%' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            background: url('public/fondoestilodark.jpg') center/cover no-repeat fixed;
+            color: #F5F1ED;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Overlay oscuro para legibilidad sobre la imagen de fondo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 6, 6, 0.85);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism Cards Premium */
+        .glass-card {
+            background: rgba(20, 10, 10, 0.6);
+            /* Tinte rojizo muy sutil */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .input-dark {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #F5F1ED;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            /* Evita zoom en iOS */
+        }
+
+        @media (min-width: 768px) {
+            .input-dark {
+                font-size: 0.875rem;
+                /* text-sm en desktop */
+            }
+        }
+
+        .input-dark:focus {
+            border-color: #D4AF37;
+            /* Gold focus */
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        }
+
+        /* Scan Effect */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+            /* Gold */
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            animation: scan 1.5s linear infinite;
+            z-index: 20;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative">
+
+    <!-- Background Ambience -->
+    <!-- Background Ambience Effects (Subtler) -->
+    <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
+        <div
+            class="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-estilo-burgundy rounded-full mix-blend-screen filter blur-[120px] opacity-20 animate-pulse-slow">
+        </div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-estilo-gold rounded-full mix-blend-screen filter blur-[120px] opacity-10 animate-pulse-slow"
+            style="animation-delay: 2s;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="w-full max-w-4xl flex justify-between items-center mb-10 z-10">
+        <div class="flex items-center gap-3">
+            <img src="public/logogrow.png" alt="Estilo Apple SJ"
+                class="h-10 w-auto drop-shadow-[0_0_8px_rgba(212,175,55,0.3)]">
+            <div class="flex flex-col">
+                <span class="text-lg md:text-xl font-bold tracking-tight text-[#E8D5C4]">ESTILO APPLE</span>
+                <span class="text-[10px] tracking-[0.2em] text-estilo-gold uppercase">Diagnostics AI</span>
+            </div>
+        </div>
+        <a href="index.html" class="text-sm text-gray-400 hover:text-white transition-colors">Volver al inicio</a>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 z-10">
+
+        <!-- Left Column: AI Diagnostics -->
+        <section class="flex flex-col gap-6">
+            <div class="glass-card rounded-2xl p-6 relative overflow-hidden group">
+                <div
+                    class="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-estilo-gold to-transparent opacity-50">
+                </div>
+
+                <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-neon-green" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                    Smart Diagnosis
+                </h2>
+                <p class="text-gray-400 text-sm mb-6">Sube una foto de tu dispositivo. Nuestra IA detectará el modelo y
+                    analizará el daño visible.</p>
+
+                <!-- Drop Zone -->
+                <div id="dropZone"
+                    class="border-2 border-dashed border-gray-700/50 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-estilo-gold/50 hover:bg-white/5 transition-all duration-300 relative overflow-hidden group-hover:shadow-[0_0_20px_rgba(212,175,55,0.1)] min-h-[200px]">
+                    <input type="file" id="fileInput" class="hidden" accept="image/*" multiple>
+
+                    <!-- Placeholder Content -->
+                    <div id="dropContent" class="flex flex-col items-center">
+                        <div
+                            class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 text-neon-green">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <span class="font-medium text-white mb-1">Toca para subir fotos</span>
+                        <span class="text-xs text-gray-500">JPG, PNG, HEIC (Max 3)</span>
+                    </div>
+
+                    <!-- Image Gallery Area (Hidden initially) -->
+                    <div id="imageGallery"
+                        class="absolute inset-0 w-full h-full hidden grid grid-cols-2 gap-1 p-1 bg-black/50 backdrop-blur-sm z-10 overflow-auto">
+                        <!-- Thumbnails injected here -->
+                    </div>
+
+                    <!-- Scanning Animation (Hidden initially) -->
+                    <div id="scanLine" class="scan-line hidden"></div>
+                </div>
+
+                <!-- AI Analysis Result (Hidden initially) -->
+                <div id="aiResult" class="mt-6 hidden animate-fade-in-up">
+                    <div class="bg-black/40 rounded-lg p-4 border border-gray-800">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-mono text-neon-green uppercase tracking-widest">Analysis
+                                Complete</span>
+                            <span class="text-xs text-gray-500">Confidence: 98%</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-xs text-gray-400 block">Modelo Detectado</span>
+                                <span id="detectedModel" class="text-lg font-bold text-white">iPhone 13 Pro</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 block">Daño Visible</span>
+                                <span id="detectedDamage" class="text-sm text-gray-200">Fractura severa en display
+                                    frontal. Housing intacto.</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-400 block">Recomendación IA</span>
+                                <span id="aiRecommendation" class="text-sm text-neon-green font-medium">Reemplazo de
+                                    Módulo (Calidad Original recomendado)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Interactive Budget Tool -->
+        <section class="flex flex-col">
+            <div class="glass-card rounded-2xl p-6 h-full flex flex-col relative">
+                <div
+                    class="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-estilo-burgundy-light to-transparent opacity-50">
+                </div>
+
+                <h2 class="text-2xl font-bold mb-2 text-white">Tu Presupuesto</h2>
+                <p class="text-gray-400 text-sm mb-6">Personaliza las opciones y obtén tu estimado al instante.</p>
+
+                <form id="budgetForm" class="flex-grow space-y-5">
+                    <!-- Model Selector -->
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Dispositivo</label>
+                        <select id="modelSelect"
+                            class="w-full input-dark rounded-lg p-3 focus:ring-2 focus:ring-estilo-gold">
+                            <option value="">Seleccionar Modelo...</option>
+                            <option value="iPhone 11">iPhone 11</option>
+                            <option value="iPhone 11 Pro">iPhone 11 Pro</option>
+                            <option value="iPhone 12">iPhone 12</option>
+                            <option value="iPhone 13">iPhone 13</option>
+                            <option value="iPhone 13 Pro">iPhone 13 Pro</option>
+                            <option value="iPhone 13 Pro Max">iPhone 13 Pro Max</option>
+                            <option value="iPhone 14">iPhone 14</option>
+                            <option value="iPhone 14 Pro">iPhone 14 Pro</option>
+                            <option value="iPhone 15 Pro Max">iPhone 15 Pro Max</option>
+                        </select>
+                    </div>
+
+                    <!-- Repair Type Selector -->
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Servicio</label>
+                        <select id="repairSelect"
+                            class="w-full input-dark rounded-lg p-3 focus:ring-2 focus:ring-estilo-gold" disabled>
+                            <option value="">Esperando selección de modelo...</option>
+                        </select>
+                    </div>
+
+                    <!-- Quality/Variant Selector (Dynamic) -->
+                    <div id="qualitySection" class="hidden">
+                        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Calidad
+                            del Repuesto</label>
+                        <div class="grid grid-cols-2 gap-3" id="qualityOptions">
+                            <!-- Options injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="mt-8 pt-6 border-t border-gray-800 space-y-2">
+                        <div class="flex justify-between text-sm text-gray-400">
+                            <span>Repuesto</span>
+                            <span id="partPrice" class="font-mono">$0</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-400">
+                            <span>Mano de Obra Especializada</span>
+                            <span id="laborPrice" class="font-mono">$0</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-estilo-gold">
+                            <span>Descuento Web</span>
+                            <span id="webDiscount" class="font-mono">-$0</span>
+                        </div>
+                        <div class="flex justify-between items-end mt-4 pt-4 border-t border-gray-800">
+                            <span class="text-white font-bold">Total Estimado</span>
+                            <div class="text-right">
+                                <span id="totalPrice" class="text-3xl font-bold text-[#E8D5C4] tracking-tight">$0</span>
+                                <span class="block text-xs text-gray-500">Pesos Argentinos (ARS)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-auto pt-6 space-y-3">
+                        <button type="button" id="btnWhatsapp"
+                            class="w-full bg-gradient-to-r from-estilo-burgundy to-[#4a2525] hover:brightness-110 text-[#E8D5C4] font-bold py-3.5 px-4 rounded-xl transition-all transform hover:scale-[1.01] shadow-[0_4px_15px_rgba(92,46,46,0.4)] flex items-center justify-center gap-2 border border-estilo-burgundy-light/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                class="bi bi-whatsapp" viewBox="0 0 16 16">
+                                <path
+                                    d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.324-.905l-.238-.146-2.362.619.632-2.333-.153-.244a6.571 6.571 0 0 1 11.23-3.486 6.575 6.575 0 0 1-5.786 6.5l-.014-.004z" />
+                            </svg>
+                            Reservar Turno
+                        </button>
+                        <p class="text-[10px] text-gray-500 text-center leading-tight mt-2">
+                            * Presupuesto estimado válido por 24hs. El precio final puede variar sujeto a revisión
+                            técnica presencial en sucursal.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Spinner Overlay -->
+    <!-- Loading Overlay Removed per User Request -->
+
+    <!-- Scripts -->
+    <script src="config.js"></script> <!-- Config for Supabase -->
+    <script src="diagnostico.js"></script>
+
+</body>
+
+</html>

@@ -115,6 +115,10 @@ function setupEventListeners() {
                     <option value="MercadoPago">MercadoPago</option>
                      <option value="Tarjeta">Tarjeta</option>
                 </select>
+                <select name="monedaPago[]" class="select-std" style="width: 80px;">
+                    <option value="ARS">ARS</option>
+                    <option value="USD">USD</option>
+                </select>
                 <input type="number" name="montoPago[]" placeholder="Monto" step="0.01" class="input-std monto-parcial" style="flex: 1;" required>
                 <button type="button" class="btn-action danger btn-eliminar-pago" style="padding: 0.5rem;">✕</button>
             `;
@@ -635,7 +639,6 @@ async function handleIngresoSubmit(e) {
 
         if (!categoriaObj) throw new Error(`Categoría no encontrada: ${categoriaNombre}`);
 
-        const moneda = formData.get('ingresoMoneda');
         const fecha = dateToISOLocal(formData.get('ingresoFecha'));
         const productoId = formData.get('ingresoProductoId');
         const tipoServicio = formData.get('ingresoTipoServicio');
@@ -646,13 +649,21 @@ async function handleIngresoSubmit(e) {
         let totalMonto = 0;
 
         filasPago.forEach(row => {
-            const select = row.querySelector('select');
+            const selects = row.querySelectorAll('select');
             const input = row.querySelector('input');
-            const metodo = select.value;
+
+            // First select is method, second is currency (if present, otherwise default to global or ARS)
+            // But since we updated HTML, we expect specific order or name attributes.
+            // Using names is safer but querySelectorAll returns NodeList.
+            // Let's rely on class or order:
+            // Template: select(method) - select(currency) - input(amount)
+
+            const metodo = selects[0].value;
+            const monedaRow = selects[1] ? selects[1].value : 'ARS';
             const monto = parseFloat(input.value);
 
             if (monto > 0) {
-                pagos.push({ metodo, monto });
+                pagos.push({ metodo, monto, moneda: monedaRow });
                 totalMonto += monto;
             }
         });
@@ -673,7 +684,8 @@ async function handleIngresoSubmit(e) {
                 date: fecha,
                 type: 'INCOME',
                 amount: pago.monto,
-                currency: pago.metodo === 'USDT' ? 'USDT' : moneda,
+                amount: pago.monto,
+                currency: pago.moneda, // Use row specific currency
                 category_id: categoriaObj.id,
                 description: `${descripcionBase} (${pago.metodo})`,
                 created_at: new Date().toISOString()
@@ -959,7 +971,7 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     // TAB: VENTAS
     const heroIngresos = document.getElementById('heroIngresosMes');
     if (heroIngresos) {
-        heroIngresos.textContent = fmt.format(incTotal);
+        heroIngresos.textContent = fmt.format(incMonth);
         // Also update sub-kpis
         document.getElementById('kpiIngresoHoy_Tab').textContent = fmt.format(incYesterday);
         document.getElementById('kpiIngresoSemana_Tab').textContent = fmt.format(incWeek);
@@ -969,7 +981,7 @@ Por favor, edite o elimine esta transacción en la pestaña "Movimientos".`);
     // TAB: GASTOS
     const heroGastos = document.getElementById('heroGastosMes');
     if (heroGastos) {
-        heroGastos.textContent = fmt.format(expTotal);
+        heroGastos.textContent = fmt.format(expMonth);
         // Sub-kpis
         document.getElementById('kpiGastoHoy_Tab').textContent = fmt.format(expYesterday);
         document.getElementById('kpiGastoSemana_Tab').textContent = fmt.format(expWeek);

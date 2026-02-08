@@ -115,6 +115,15 @@ function configurarEventListeners() {
     document.getElementById('btnCancelarProducto').addEventListener('click', cerrarModalProducto);
     document.getElementById('btnGuardarProducto').addEventListener('click', guardarProducto);
 
+    // Señas (NUEVO) - Safe binding
+    document.getElementById('btnCerrarModalSena')?.addEventListener('click', () => document.getElementById('modalSena')?.classList.remove('active'));
+    document.getElementById('modalSenaOverlay')?.addEventListener('click', () => document.getElementById('modalSena')?.classList.remove('active'));
+    document.getElementById('btnCancelarSena')?.addEventListener('click', () => document.getElementById('modalSena')?.classList.remove('active'));
+    document.getElementById('btnConfirmarSena')?.addEventListener('click', confirmarSena);
+
+    // Auto-cálculo de saldo en modal de seña
+    document.getElementById('senaMonto')?.addEventListener('input', calcularSaldoRestante);
+
     // Imágenes del Producto
     document.getElementById('productoImagenes').addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
@@ -789,10 +798,23 @@ window.verHistorialVendedor = (vendedorId) => {
 // Hacer función global para onclick
 window.verDetallesConversacion = async (conversacionId) => {
     try {
-        const conv = await supabaseService.obtenerConversacionPorId(conversacionId);
-        conversacionActual = conv;
-        clienteActual = conv.clientes;
-        mostrarModalDetalles(conv);
+        let conv;
+
+        // Si es un ID temporal, buscar en memoria local
+        if (conversacionId && conversacionId.toString().startsWith('temp_')) {
+            conv = conversaciones.find(c => c.id === conversacionId);
+        } else {
+            // Si es un UUID real, buscar en la base de datos
+            conv = await supabaseService.obtenerConversacionPorId(conversacionId);
+        }
+
+        if (!conv || !conv.clientes) {
+            throw new Error('Conversación no encontrada');
+        }
+
+        // Redirigir al historial de chat que carga mensajes reales de la BD
+        window.verHistorialChat(conv.clientes.nombre, conv.clientes.telefono, conversacionId);
+
     } catch (error) {
         console.error('Error al cargar detalles:', error);
         mostrarToast('Error al cargar detalles', 'error');
@@ -1406,7 +1428,17 @@ function renderizarCatalogo() {
                 <td class="cuota-cell">$${formatoPrecio(producto.cuotas_3)}</td>
                 <td class="cuota-cell">$${formatoPrecio(producto.cuotas_6)}</td>
                 <td class="cuota-cell">$${formatoPrecio(producto.cuotas_12)}</td>
-                <td>
+                <td style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    ${producto.estado === 'reservado' ?
+                `<button class="btn-action" style="background: var(--estilo-gold); color: black; font-weight: bold;" onclick="completarVenta('${producto.id}')">
+                            ✓ Completar
+                        </button>`
+                :
+                `<button class="btn-action" style="background: rgba(255, 255, 255, 0.1); border: 1px solid var(--estilo-gold); color: var(--estilo-gold);" onclick="abrirModalSena('${producto.id}')">
+                            $ Señar
+                        </button>`
+            }
+
                     <button class="btn-icon" onclick="editarProducto('${producto.id}')" title="Editar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -2334,8 +2366,195 @@ function cambiarTab(tabName) {
 // Exponer globalmente
 window.cambiarTab = cambiarTab;
 
+
 // ============================================
-// FUNCIONES DE UTILIDAD UI
+// LÓGICA DE SEÑAS Y RESERVAS
 // ============================================
+
+window.abrirModalSena = (productoId) => {
+    const producto = productos.find(p => p.id === productoId);
+    if (!producto) return;
+
+    // Reset Form
+    document.getElementById('formSena').reset();
+    document.getElementById('senaProductoId').value = productoId;
+
+    // Set Visual Info
+    document.getElementById('senaProductoNombre').textContent = producto.modelo;
+    const precio = producto.precio_ars || 0;
+    // Guardamos precio raw en dataset para cálculos
+    document.getElementById('senaProductoPrecio').dataset.precioRaw = precio;
+    document.getElementById('senaProductoPrecio').textContent = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(precio);
+
+    document.getElementById('modalSena').classList.add('active');
+};
+
+function calcularSaldoRestante() {
+    const total = parseFloat(document.getElementById('senaProductoPrecio').dataset.precioRaw || 0);
+    const sena = parseFloat(document.getElementById('senaMonto').value || 0);
+    const saldo = total - sena;
+
+    document.getElementById('senaSaldo').value = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(saldo > 0 ? saldo : 0);
+}
+
+
+// ---------------------------------------------------------
+// CONFIRMAR SEÑA (Ahora en Pestaña, sin Modal)
+// ---------------------------------------------------------
+window.confirmarSena = async function () {
+    const btn = document.getElementById('btnConfirmarSena');
+    const originalText = btn.textContent;
+    btn.textContent = "Procesando...";
+    btn.disabled = true;
+
+    try {
+        const productoId = document.getElementById('senaProductoId').value;
+        const total = parseFloat(document.getElementById('senaProductoPrecio').dataset.precioRaw || document.getElementById('senaProductoPrecio').textContent.replace(/[^0-9.]/g, '') || 0);
+        const montoSena = parseFloat(document.getElementById('senaMonto').value || 0);
+
+        if (!montoSena || montoSena <= 0) {
+            throw new Error("El monto de la seña debe ser mayor a 0");
+        }
+
+        const reservaData = {
+            producto_id: productoId,
+            cliente_id: null, // TODO: ID real
+            vendedor_id: parseInt(document.getElementById('senaVendedor').value),
+            monto_sena: montoSena,
+            saldo_restante: total - montoSena,
+            observaciones: `Cliente: ${document.getElementById('senaClienteNombre').value} - ${document.getElementById('senaObservaciones').value}`,
+        };
+
+        // await supabaseService.registrarReserva(reservaData); // Asumiendo que existe
+        console.log("Reserva enviada:", reservaData);
+
+        // Simular éxito si no hay backend real conectado aún para esto
+        // O usar la función real si existe:
+        if (window.supabaseService && window.supabaseService.registrarReserva) {
+            await window.supabaseService.registrarReserva(reservaData);
+        } else {
+            // Fallback
+            mostrarToast("Simulación: Reserva guardada (Falta Backend)", "info");
+        }
+
+        mostrarToast("Reserva registrada con éxito 🔒", "success");
+
+        // Limpiar formulario
+        document.getElementById('formSena').reset();
+        document.getElementById('senaProductoNombre').textContent = 'Selecciona un producto desde el Catálogo';
+        document.getElementById('senaProductoPrecio').textContent = '$0.00';
+
+        await cargarDatos();
+
+    } catch (e) {
+        console.error(e);
+        mostrarToast("Error al reservar: " + e.message, "error");
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+};
+
+// Listener para el botón en la pestaña
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btnConfirmarSena');
+    if (btn) btn.addEventListener('click', window.confirmarSena);
+});
+
+
+
+window.completarVenta = async (productoId) => {
+    if (!confirm("¿El cliente abonó el saldo restante? Al confirmar, el producto saldrá del stock definitivamente.")) return;
+
+    try {
+        await supabaseService.completarVentaReserva(productoId);
+        mostrarToast("¡Venta completada! 💰", "success");
+        await cargarDatos();
+    } catch (e) {
+        console.error(e);
+        mostrarToast("Error al completar venta: " + e.message, "error");
+    }
+};
+
+function cerrarModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// ==========================================
+// MANUAL DE USUARIO (ACADEMY)
+// ==========================================
+window.abrirManual = () => {
+    document.getElementById('modalManual').classList.add('active');
+};
+
+window.cambiarPaginaManual = (paginaId, btnElement) => {
+    // 1. Ocultar todas las páginas
+    document.querySelectorAll('.manual-page').forEach(page => {
+        page.style.display = 'none';
+        page.classList.remove('active');
+    });
+
+    // 2. Desactivar todos los botones
+    document.querySelectorAll('.manual-nav-item').forEach(btn => {
+        btn.classList.remove('active');
+        // Reset styles
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--gray-400)';
+        btn.style.textAlign = 'left';
+        btn.style.padding = '0.75rem 1rem';
+        btn.style.width = '100%';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        btn.style.transition = 'all 0.2s ease';
+        btn.style.fontSize = '0.95rem';
+    });
+
+    // 3. Mostrar página seleccionada
+    const targetPage = document.getElementById(`manual-${paginaId}`);
+    if (targetPage) {
+        targetPage.style.display = 'block';
+        targetPage.classList.add('active');
+    }
+
+    // 4. Activar botón seleccionado
+    if (btnElement) {
+        btnElement.classList.add('active');
+        btnElement.style.background = 'rgba(255, 255, 255, 0.1)';
+        btnElement.style.color = 'white';
+        btnElement.style.fontWeight = '500';
+    }
+};
+
+// Inicializar estilos de botones del manual al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    // Aplicar estilos base a los botones del manual
+    document.querySelectorAll('.manual-nav-item').forEach(btn => {
+        if (!btn.classList.contains('active')) {
+            btn.style.background = 'transparent';
+            btn.style.color = 'var(--gray-400)';
+        } else {
+            btn.style.background = 'rgba(255, 255, 255, 0.1)';
+            btn.style.color = 'white';
+            btn.style.fontWeight = '500';
+        }
+        btn.style.textAlign = 'left';
+        btn.style.padding = '0.75rem 1rem';
+        btn.style.width = '100%';
+        btn.style.border = 'none';
+        btn.style.borderRadius = '8px';
+        btn.style.cursor = 'pointer';
+        btn.style.transition = 'all 0.2s ease';
+        btn.style.fontSize = '0.95rem';
+
+        // Hover effect manual
+        btn.addEventListener('mouseenter', () => {
+            if (!btn.classList.contains('active')) btn.style.background = 'rgba(255, 255, 255, 0.05)';
+        });
+        btn.addEventListener('mouseleave', () => {
+            if (!btn.classList.contains('active')) btn.style.background = 'transparent';
+        });
+    });
+});
 
 

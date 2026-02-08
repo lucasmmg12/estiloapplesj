@@ -437,6 +437,67 @@ export async function eliminarProducto(productoId) {
 }
 
 // ============================================
+// Funciones de Reservas / Señas (NUEVO)
+// ============================================
+
+export async function registrarReserva(reservaData) {
+    // 1. Crear la reserva
+    const { data: reserva, error: errorReserva } = await supabase
+        .from('reservas')
+        .insert([{
+            producto_id: reservaData.producto_id,
+            cliente_id: reservaData.cliente_id, // Puede ser null si es cliente paso
+            vendedor_id: reservaData.vendedor_id,
+            monto_sena: reservaData.monto_sena,
+            saldo_restante: reservaData.saldo_restante,
+            observaciones: reservaData.observaciones,
+            estado: 'activa'
+        }])
+        .select()
+        .single();
+
+    if (errorReserva) throw errorReserva;
+
+    // 2. Actualizar estado del producto a RESERVADO
+    const { error: errorProd } = await supabase
+        .from('productos')
+        .update({ estado: 'reservado' })
+        .eq('id', reservaData.producto_id);
+
+    if (errorProd) {
+        // Rollback simple (borrar reserva si falla producto)
+        await supabase.from('reservas').delete().eq('id', reserva.id);
+        throw errorProd;
+    }
+
+    return reserva;
+}
+
+export async function completarVentaReserva(productoId) {
+    // 1. Marcar producto como VENDIDO (fuera de stock logicamente)
+    // O si prefieres borrarlo lógico: activo = false
+    const { error } = await supabase
+        .from('productos')
+        .update({
+            estado: 'vendido',
+            activo: false // Sale del catálogo público
+        })
+        .eq('id', productoId);
+
+    if (error) throw error;
+
+    // 2. Marcar reserva como completada
+    // Buscar reserva activa para este producto
+    await supabase
+        .from('reservas')
+        .update({ estado: 'completada' })
+        .eq('producto_id', productoId)
+        .eq('estado', 'activa');
+
+    return true;
+}
+
+// ============================================
 // Funciones de Cotización del Dólar
 // ============================================
 

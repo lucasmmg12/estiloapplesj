@@ -101,6 +101,27 @@
                         </svg>
                         <span>Chat</span>
                     </button>
+
+                    <button class="nav-tab" data-category="tools">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z">
+                            </path>
+                        </svg>
+                        <span>Apps</span>
+                    </button>
+
+                    <button class="nav-tab" style="margin-left: auto; border: 1px solid rgba(255,255,255,0.1);"
+                        onclick="abrirManual()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        <span>Ayuda</span>
+                    </button>
                 </nav>
 
                 <!-- PANEL DESLIZANTE PARA SUB-NAVEGACIÓN -->
@@ -177,11 +198,18 @@
                         <button class="sub-nav-item" data-tab="ventas-financieras">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2">
-                                <path d="M12 20V10"></path>
-                                <path d="M18 20V4"></path>
-                                <path d="M6 20v-4"></path>
+                                <circle cx="9" cy="21" r="1"></circle>
+                                <circle cx="20" cy="21" r="1"></circle>
+                                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                             </svg>
-                            Ingresos / Ventas
+                            Planilla Ventas
+                        </button>
+                        <button class="sub-nav-item" data-tab="senas">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M20 6L9 17l-5-5"></path>
+                            </svg>
+                            Señas
                         </button>
                         <button class="sub-nav-item" data-tab="gastos-financieros">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -233,6 +261,18 @@
                     <div class="sub-nav-content" data-category="chat">
                         <!-- No sub-items, el click en Chat abre directamente chat.html -->
                     </div>
+
+                    <!-- Tools Sub-Menu -->
+                    <div class="sub-nav-content" data-category="tools">
+                        <button class="sub-nav-item" data-tab="diagnostico-hub">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                <polyline points="13 2 13 9 20 9"></polyline>
+                            </svg>
+                            Apps Públicas
+                        </button>
+                    </div>
                 </div>
 
                 <div class="filters" id="crmFilters">
@@ -272,7 +312,7 @@
                             style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%;"></span>
-                            Ingresos Totales (Histórico)
+                            Ingresos Este Mes
                         </div>
                     </div>
 
@@ -417,6 +457,10 @@
                                                     <option value="Tarjeta Débito">Tarjeta Débito</option>
                                                     <option value="Tarjeta Crédito">Tarjeta Crédito</option>
                                                 </select>
+                                                <select name="monedaPago[]" class="select-std" style="width: 80px;">
+                                                    <option value="ARS">ARS</option>
+                                                    <option value="USD">USD</option>
+                                                </select>
                                                 <input type="number" name="montoPago[]" placeholder="Monto" step="0.01"
                                                     class="input-std monto-parcial" style="flex: 1;" required>
                                                 <button type="button" class="btn-action danger btn-eliminar-pago"
@@ -513,7 +557,7 @@
                             style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%;"></span>
-                            Gastos Totales (Histórico)
+                            Gastos Este Mes
                         </div>
                     </div>
 
@@ -1166,6 +1210,65 @@
 
         </div>
 
+        <!-- TAB DIAGNOSTICO HUB (Apps Públicas) -->
+        <div class="tab-content" id="tabDiagnosticoHub">
+            <div class="glass-card" style="max-width: 900px;">
+                <div class="card-header">
+                    <h2 class="card-title" style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.5rem;">🛠️</span>
+                        Centro de Aplicaciones & Herramientas
+                    </h2>
+                </div>
+
+                <div style="padding: 1rem 0;">
+                    <!-- Diagnostic Tool Card -->
+                    <div class="glass-card"
+                        style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, rgba(139, 90, 43, 0.1) 100%); border: 1px solid rgba(255, 215, 0, 0.2); padding: 1.5rem;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div>
+                                <h3 style="color: #fff; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                    📱 Diagnóstico AI
+                                </h3>
+                                <span
+                                    style="display: inline-block; background: rgba(0, 255, 136, 0.2); color: #00ff88; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; font-weight: 600;">
+                                    v2.0 ONLINE
+                                </span>
+                            </div>
+                            <div style="font-size: 2.5rem; opacity: 0.5;">🔍</div>
+                        </div>
+
+                        <p style="color: var(--gray-400); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                            Herramienta pública para clientes. Suben fotos del dispositivo dañado y la IA identifica el
+                            modelo, daño y presupuesto estimado automáticamente.
+                        </p>
+
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="diagnostico.html" target="_blank"
+                                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--estilo-gold); color: #000; font-weight: 700; border-radius: 8px; text-decoration: none; transition: all 0.3s ease;"
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(255, 215, 0, 0.3)';"
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                                Abrir
+                            </a>
+                            <button
+                                onclick="navigator.clipboard.writeText(window.location.origin + '/diagnostico.html').then(() => { this.innerHTML = '✓ Copiado!'; setTimeout(() => this.innerHTML = '📋 Copiar Link', 2000); })"
+                                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease;"
+                                onmouseover="this.style.background='rgba(255, 255, 255, 0.15)';"
+                                onmouseout="this.style.background='rgba(255, 255, 255, 0.1)';">
+                                📋 Copiar Link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="tab-content" id="tabClientes">
             <div class="glass-card">
                 <div class="card-header">
@@ -1497,7 +1600,66 @@
             </div>
         </div>
 
-        </div>
+        <!-- SECCIÓN: APPS PÚBLICAS / HERRAMIENTAS -->
+        <section id="tab-diagnostico-hub" class="tab-content container pt-6 hidden">
+            <h2 class="text-2xl font-bold mb-6 text-white tracking-tight">Centro de Aplicaciones & Herramientas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Tarjeta de Diagnóstico AI -->
+                <article
+                    class="glass-card flex flex-col items-start p-6 relative overflow-hidden group rounded-2xl border border-gray-800 hover:border-estilo-gold/30 transition-all">
+                    <div
+                        class="absolute top-0 right-0 w-32 h-32 bg-estilo-gold/10 rounded-full blur-2xl group-hover:bg-estilo-gold/20 transition-all">
+                    </div>
+
+                    <div class="flex items-center gap-4 mb-4 z-10">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-estilo-burgundy to-black flex items-center justify-center border border-estilo-burgundy-light shadow-lg">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D4AF37"
+                                stroke-width="2">
+                                <path
+                                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                                </path>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Diagnóstico AI</h3>
+                            <span class="text-xs text-estilo-gold font-mono tracking-wider">v2.0 ONLINE</span>
+                        </div>
+                    </div>
+
+                    <p class="text-gray-400 text-sm mb-6 leading-relaxed z-10 h-16">
+                        Herramienta pública para clientes. Permite subir fotos, analiza daños con IA y genera
+                        presupuesto estimado.
+                    </p>
+
+                    <div class="flex gap-3 w-full mt-auto z-10">
+                        <a href="diagnostico.html" target="_blank"
+                            class="flex-1 bg-black/40 border border-gray-700 hover:border-estilo-gold text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm font-medium hover:bg-white/5">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                            Abrir
+                        </a>
+                        <button
+                            onclick="navigator.clipboard.writeText(window.location.origin + '/diagnostico.html').then(() => alert('Link copiado al portapapeles: ' + window.location.origin + '/diagnostico.html'))"
+                            class="flex-1 bg-gradient-to-r from-estilo-burgundy to-black hover:brightness-110 text-[#E8D5C4] border border-estilo-burgundy-light/30 py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-all text-sm font-bold shadow-lg">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                                viewBox="0 0 24 24">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copiar Link
+                        </button>
+                    </div>
+                </article>
+            </div>
+        </section>
+
     </main>
 
     <!-- Modal: Detalles de Conversación -->
@@ -1589,6 +1751,467 @@
             </div>
         </div>
     </div>
+
+
+
+    <!-- PESTAÑA: SEÑAS Y RESERVAS (Integrada en Ventas) -->
+    <div id="tabSenas" class="tab-content page-section" style="display: none; padding: 2rem;">
+        <div class="glass-card" style="max-width: 900px; margin: 0 auto;">
+            <div class="card-header"
+                style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="background: rgba(255, 215, 0, 0.1); padding: 0.75rem; border-radius: 12px; color: var(--estilo-gold);">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 6L9 17l-5-5"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="card-title" style="font-size: 1.5rem; color: white;">Nueva Reserva / Seña</h2>
+                        <p style="color: var(--gray-400);">Registra un adelanto para bloquear stock.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="formSena" class="space-y-4">
+                <input type="hidden" id="senaProductoId">
+
+                <!-- Producto Seleccionado -->
+                <div class="form-group"
+                    style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <label style="color: var(--estilo-gold); margin-bottom: 0.5rem; display: block;">Producto a
+                        Reservar</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 id="senaProductoNombre" style="font-size: 1.25rem; font-weight: 700; color: white;">
+                            Selecciona un producto desde el Catálogo</h3>
+                        <p id="senaProductoPrecio"
+                            style="font-size: 1.5rem; font-family: monospace; color: var(--estilo-gold); font-weight: bold;">
+                            $0.00</p>
+                    </div>
+                    <small style="color: var(--gray-500); display: block; margin-top: 0.5rem;">Ve a la pestaña
+                        <strong>Catálogo</strong> y haz clic en "Señar" para cargar los datos aquí.</small>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+                    <!-- Cliente Info -->
+                    <div>
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label>Nombre del Cliente *</label>
+                            <input type="text" id="senaClienteNombre" class="input-lg w-full"
+                                placeholder="Ej: Juan Pérez" required
+                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label>Vendedor</label>
+                            <select id="senaVendedor" class="select-lg w-full"
+                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                                <option value="1">Nahuel</option>
+                                <option value="2">Cristofer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Montos -->
+                    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
+                        <div class="form-group" style="margin-bottom: 1.5rem;">
+                            <label style="color: var(--accent-green);">Monto de Seña (Adelanto) *</label>
+                            <div class="relative">
+                                <input type="number" id="senaMonto" class="input-lg w-full" placeholder="0.00" required
+                                    style="width: 100%; padding: 1rem; font-size: 1.5rem; font-weight: bold; color: var(--accent-green); background: rgba(0,0,0,0.5); border: 1px solid var(--accent-green); border-radius: 8px;">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Saldo Restante (A Pagar)</label>
+                            <input type="text" id="senaSaldo" readonly
+                                style="width: 100%; padding: 1rem; font-size: 1.2rem; background: transparent; border: none; color: var(--gray-400); font-family: monospace;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 2rem;">
+                    <label>Observaciones / Notas</label>
+                    <textarea id="senaObservaciones" class="input-dark w-full" rows="3"
+                        placeholder="Detalles adicionales..."
+                        style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;"></textarea>
+                </div>
+
+                <div class="form-actions"
+                    style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" class="btn-secondary" style="padding: 1rem 2rem;">Cancelar</button>
+                    <button type="button" id="btnConfirmarSena" class="btn-primary"
+                        style="padding: 1rem 3rem; font-size: 1.1rem; background: var(--estilo-gold); color: black; font-weight: bold; box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);">
+                        Confirmar Reserva 🔒
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RESTORED MODALS -->
+
+
+
+    <!-- Modal: Editar/Nuevo Producto -->
+    <div class="modal" id="modalProducto" style="display: none;">
+        <div class="modal-overlay" id="modalProductoOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalProductoTitulo">Nuevo Producto</h3>
+                <button class="modal-close" id="btnCerrarModalProducto">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formProducto">
+                    <input type="hidden" id="productoId">
+                    <div class="form-group">
+                        <label for="productoModelo">Modelo</label>
+                        <input type="text" id="productoModelo" required placeholder="iPhone 13 Pro">
+                    </div>
+                    <div class="form-group">
+                        <label for="productoColores">Colores</label>
+                        <input type="text" id="productoColores" placeholder="Graphite, Silver, Gold">
+                    </div>
+                    <div class="form-group">
+                        <label for="productoAlmacenamiento">Almacenamiento</label>
+                        <input type="text" id="productoAlmacenamiento" placeholder="128GB">
+                    </div>
+                    <div class="form-group">
+                        <label for="productoBateria">Batería (%)</label>
+                        <input type="number" id="productoBateria" placeholder="95">
+                    </div>
+                    <div class="form-group">
+                        <label for="productoPrecio">Precio (USD)</label>
+                        <input type="number" id="productoPrecio" required placeholder="900">
+                    </div>
+                    <!-- Estado -->
+                    <div class="form-group">
+                        <label for="productoEstado">Estado</label>
+                        <select id="productoEstado" class="input-dark w-full">
+                            <option value="disponible">🟢 Disponible</option>
+                            <option value="reservado">🟡 Reservado</option>
+                            <option value="vendido">🔴 Vendido</option>
+                        </select>
+                    </div>
+                    <!-- Activo -->
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="productoActivo" checked>
+                            <span>Visible en catálogo</span>
+                        </label>
+                    </div>
+                    <!-- Imagenes -->
+                    <div class="form-group">
+                        <label>Imágenes</label>
+                        <input type="file" id="productoImagenes" multiple accept="image/*" class="input-dark w-full">
+                        <div id="previewImagenes"
+                            style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnCancelarProducto">Cancelar</button>
+                <button class="btn-primary" id="btnGuardarProducto">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Enviar Mensaje -->
+    <div class="modal" id="modalEnviar" style="display: none;">
+        <div class="modal-overlay" id="modalEnviarOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Enviar Mensaje</h3>
+                <button class="modal-close" id="btnCerrarModalEnviar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formEnviarMensaje">
+                    <div class="form-group">
+                        <label>Destinatario</label>
+                        <input type="text" id="mensajeDestinatario" class="input-dark w-full" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Mensaje</label>
+                        <textarea id="mensajeTextoModal" class="input-dark w-full h-32"
+                            placeholder="Escribe tu mensaje..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Adjuntar (URL Imagen/Video)</label>
+                        <input type="url" id="mensajeMediaUrl" class="input-dark w-full" placeholder="https://...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btnCancelarEnviar">Cancelar</button>
+                <button class="btn-primary" id="btnConfirmarEnviar">Enviar 🚀</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Detalles Conversación -->
+    <div class="modal" id="modalDetalles" style="display: none;">
+        <div class="modal-overlay" onclick="cerrarModal('modalDetalles')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detalles de Conversación</h3>
+                <button class="modal-close" onclick="cerrarModal('modalDetalles')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="cerrarModal('modalDetalles')">Cerrar</button>
+                <button class="btn-primary" onclick="abrirChatDesdeDetalles()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        style="margin-right: 0.5rem;">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    Enviar Mensaje
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Manual de Usuario (Academy) -->
+    <div class="modal" id="modalManual" style="padding: 2rem;">
+        <div class="modal-overlay" onclick="cerrarModal('modalManual')"></div>
+        <div class="modal-content"
+            style="max-width: 1000px; height: 85vh; display: flex; flex-direction: column; padding: 0; overflow: hidden;">
+
+            <!-- Header Manual -->
+            <div class="modal-header"
+                style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4);">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="background: var(--estilo-gold); color: black; padding: 0.5rem; border-radius: 8px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="modal-title" style="font-size: 1.5rem;">Estilo Apple Academy</h3>
+                        <p style="color: var(--gray-400); font-size: 0.9rem; margin: 0;">Guía oficial de uso - v2.0</p>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="cerrarModal('modalManual')">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body Manual (Grid Sidebar + Content) -->
+            <div style="display: grid; grid-template-columns: 250px 1fr; height: 100%;">
+
+                <!-- Sidebar -->
+                <div
+                    style="background: rgba(255,255,255,0.02); border-right: 1px solid rgba(255,255,255,0.05); padding: 1.5rem;">
+                    <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="manual-nav-item active" onclick="cambiarPaginaManual('inicio', this)">
+                            🏠 Inicio
+                        </button>
+                        <button class="manual-nav-item" onclick="cambiarPaginaManual('clientes', this)">
+                            👥 Clientes & IA
+                        </button>
+                        <button class="manual-nav-item" onclick="cambiarPaginaManual('finanzas', this)">
+                            💰 Finanzas & Caja
+                        </button>
+                        <button class="manual-nav-item" onclick="cambiarPaginaManual('inventario', this)">
+                            📦 Inventario & Señas
+                        </button>
+                        <button class="manual-nav-item" onclick="cambiarPaginaManual('tools', this)">
+                            🛠️ Herramientas
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Content Area -->
+                <div id="manualContent" style="padding: 2rem; overflow-y: auto; background: #000;">
+
+                    <!-- PÁGINA: INICIO -->
+                    <div class="manual-page active" id="manual-inicio">
+                        <h2 style="color: var(--estilo-gold); margin-bottom: 1rem;">Bienvenido al Sistema Operativo</h2>
+                        <p style="color: var(--gray-300); margin-bottom: 2rem; font-size: 1.1rem;">
+                            Esta plataforma está diseñada para centralizar toda la operación de <strong>Estilo Apple
+                                SJ</strong>.
+                            A continuación, selecciona un módulo a la izquierda para aprender a dominarlo.
+                        </p>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                            <div class="glass-card" style="text-align: center; padding: 2rem;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">🤖</div>
+                                <h3 style="color: white; margin-bottom: 0.5rem;">IA Integrada</h3>
+                                <p style="color: var(--gray-400); font-size: 0.9rem;">El sistema lee los chats y te
+                                    resume qué quiere el cliente automáticamente.</p>
+                            </div>
+                            <div class="glass-card" style="text-align: center; padding: 2rem;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
+                                <h3 style="color: white; margin-bottom: 0.5rem;">Caja Real-Time</h3>
+                                <p style="color: var(--gray-400); font-size: 0.9rem;">Tus ventas impactan los gráficos
+                                    al instante. Sin planillas extra.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PÁGINA: CLIENTES -->
+                    <div class="manual-page" id="manual-clientes" style="display: none;">
+                        <h2 style="color: var(--accent-light); margin-bottom: 1.5rem;">Gestión de Clientes & Chat</h2>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3
+                                style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                1. El Tablero de Conversaciones</h3>
+                            <p style="color: var(--gray-300); margin-bottom: 1rem;">
+                                En la pestaña "Clientes" verás todas las personas que han escrito.
+                                El sistema usa un <strong>Semáforo de Intenciones</strong>:
+                            </p>
+                            <ul
+                                style="color: var(--gray-400); list-style: none; padding-left: 0; display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <li
+                                    style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 4px;">
+                                    🟢 Compra (Alta prioridad)</li>
+                                <li
+                                    style="background: rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 4px;">
+                                    🔵 Consulta (Info)</li>
+                                <li
+                                    style="background: rgba(239, 68, 68, 0.2); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 4px;">
+                                    🔴 Reclamo (Atención)</li>
+                            </ul>
+                        </div>
+
+                        <div
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                            <h3 style="color: white; margin-bottom: 0.5rem;">🧠 Resumen Inteligente</h3>
+                            <p style="color: var(--gray-400);">
+                                No necesitas leer 50 mensajes. Al hacer clic en <strong>"Ver"</strong>, la IA leerá el
+                                chat y te dirá:
+                                <br><em>"El cliente busca un iPhone 13 Pro de 256GB y pregunta si aceptamos USDT."</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- PÁGINA: FINANZAS -->
+                    <div class="manual-page" id="manual-finanzas" style="display: none;">
+                        <h2 style="color: var(--accent-green); margin-bottom: 1.5rem;">Finanzas y Caja (ERP)</h2>
+
+                        <div style="display: grid; gap: 2rem;">
+                            <!-- Paso 1 -->
+                            <div style="display: flex; gap: 1rem;">
+                                <div
+                                    style="background: var(--accent-green); color: black; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    1</div>
+                                <div>
+                                    <h4 style="color: white; margin-bottom: 0.5rem;">Registrar una Venta</h4>
+                                    <p style="color: var(--gray-400);">Ve a la pestaña <strong>ERP > Ingresos</strong>.
+                                        Carga el monto y selecciona la categoría. Esto actualiza tu "Caja del Día".</p>
+                                </div>
+                            </div>
+
+                            <!-- Paso 2 -->
+                            <div style="display: flex; gap: 1rem;">
+                                <div
+                                    style="background: var(--accent-red); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    2</div>
+                                <div>
+                                    <h4 style="color: white; margin-bottom: 0.5rem;">Registrar un Gasto</h4>
+                                    <p style="color: var(--gray-400);">En <strong>Egresos</strong>, carga compras de
+                                        mercadería, pagos de servicios o sueldos. Es vital para calcular la ganancia
+                                        neta real.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PÁGINA: INVENTARIO -->
+                    <div class="manual-page" id="manual-inventario" style="display: none;">
+                        <h2 style="color: #FACC15; margin-bottom: 1.5rem;">Control de Stock & Señas</h2>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="color: white; margin-bottom: 1rem;">Ciclo de Vida de un Producto</h3>
+                            <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                <div
+                                    style="border: 1px solid var(--accent-green); padding: 1rem; border-radius: 8px; color: var(--accent-green);">
+                                    <strong>1. Disponible</strong><br>
+                                    <small>En catálogo público</small>
+                                </div>
+                                ➡️
+                                <div
+                                    style="border: 1px solid var(--estilo-gold); padding: 1rem; border-radius: 8px; color: var(--estilo-gold); background: rgba(250, 204, 21, 0.1);">
+                                    <strong>2. Reservado (Seña)</strong><br>
+                                    <small>Stock bloqueado</small>
+                                </div>
+                                ➡️
+                                <div
+                                    style="border: 1px solid var(--gray-600); padding: 1rem; border-radius: 8px; color: var(--gray-400);">
+                                    <strong>3. Vendido</strong><br>
+                                    <small>Fuera de stock</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="background: rgba(250, 204, 21, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--estilo-gold);">
+                            <h3 style="color: var(--estilo-gold); margin-bottom: 0.5rem;">Cómo Señar un Equipo</h3>
+                            <ol
+                                style="color: var(--gray-300); margin-left: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <li>Busca el equipo en el Catálogo.</li>
+                                <li>Haz clic en el botón <strong>$ Señar</strong>.</li>
+                                <li>Ingresa cuánto deja el cliente (ej: $50 USD). El sistema calcula el saldo restante
+                                    solo.</li>
+                                <li>Al confirmar, el equipo queda <strong>Amarillo</strong> y nadie más podrá venderlo.
+                                </li>
+                                <li>Cuando el cliente pague el resto, da click en <strong>✓ Completar</strong>.</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- PÁGINA: TOOLS -->
+                    <div class="manual-page" id="manual-tools" style="display: none;">
+                        <h2 style="color: var(--accent-blue); margin-bottom: 1.5rem;">Herramientas Públicas</h2>
+                        <p style="color: var(--gray-300); margin-bottom: 1.5rem;">Estas herramientas son para compartir
+                            con el cliente.</p>
+
+                        <div class="glass-card" style="display: flex; gap: 1.5rem; align-items: center;">
+                            <div style="font-size: 2rem;">📱</div>
+                            <div>
+                                <h3 style="color: white;">Diagnóstico AI</h3>
+                                <p style="color: var(--gray-400); margin-bottom: 0.5rem;">
+                                    Envía el link al cliente. Él sube la foto de su equipo roto y la IA le dice cuánto
+                                    cuesta arreglarlo en segundos.
+                                </p>
+                                <span
+                                    style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; color: #fff;">Ideal
+                                    para filtrar curiosos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal: Enviar Mensaje Manual -->
     <div class="modal" id="modalEnviar">
@@ -2054,6 +2677,16 @@
             <!-- <div class="chat-footer" style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1);"> ... </div> -->
         </div>
     </div>
+    <!-- External Libraries Restoration -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <!-- Scripts -->
+    <script type="module" src="/config.js"></script>
+    <script type="module" src="/app.js"></script>
 </body>
 
 </html>
