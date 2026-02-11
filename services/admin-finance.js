@@ -355,32 +355,11 @@ function setupEventListeners() {
         });
     });
 
-    // Paginación: Densidad
-    const segBtns = document.querySelectorAll('#paginationDensity .seg-btn');
-    segBtns.forEach(btn => {
-        btn.addEventListener('click', async () => {
-            segBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            pageSize = parseInt(btn.dataset.size);
-            currentPage = 1;
-            await cargarTablaMovimientos();
-        });
-    });
-
-    // Paginación: Navegación
-    document.getElementById('btnPrevPage')?.addEventListener('click', async () => {
-        if (currentPage > 1) {
-            currentPage--;
-            await cargarTablaMovimientos();
-        }
-    });
-
-    document.getElementById('btnNextPage')?.addEventListener('click', async () => {
-        const totalPages = Math.ceil(totalRecords / pageSize);
-        if (currentPage < totalPages) {
-            currentPage++;
-            await cargarTablaMovimientos();
-        }
+    // Paginación: Movimientos - Page Size Selector
+    document.getElementById('movimientosPageSize')?.addEventListener('change', (e) => {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1;
+        cargarTablaMovimientos();
     });
 
     // Page size selectors: Ventas & Gastos Tabs
@@ -1062,21 +1041,27 @@ async function cargarTablaMovimientos() {
         filtros.fechaFin = h.toISOString();
     }
 
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--gray-400);">Cargando movimientos...</td></tr>';
+
     const result = await supabaseService.obtenerUltimasTransacciones(filtros, currentPage, pageSize);
     const movimientos = result.data;
     totalRecords = result.total;
 
-    // Actualizar labels Paginación
-    const totalLabel = document.getElementById('erpTotalRecords');
-    if (totalLabel) totalLabel.textContent = `${totalRecords} registros`;
+    const totalPages = Math.ceil(totalRecords / pageSize);
 
-    const pageLabel = document.getElementById('erpPageIndicator');
-    if (pageLabel) pageLabel.textContent = currentPage;
+    // Update info label
+    const infoEl = document.getElementById('movimientosTotalInfo');
+    if (infoEl) {
+        const from = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+        const to = Math.min(currentPage * pageSize, totalRecords);
+        infoEl.textContent = `${from}–${to} de ${totalRecords}`;
+    }
 
-    const btnPrev = document.getElementById('btnPrevPageErp');
-    const btnNext = document.getElementById('btnNextPageErp');
-    if (btnPrev) btnPrev.disabled = currentPage === 1;
-    if (btnNext) btnNext.disabled = currentPage * pageSize >= totalRecords;
+    // Render pagination buttons
+    renderPaginationButtons('movimientosPages', currentPage, totalPages, (page) => {
+        currentPage = page;
+        cargarTablaMovimientos();
+    });
 
     // Render Rows
     tbody.innerHTML = '';
@@ -1114,20 +1099,6 @@ async function cargarTablaMovimientos() {
         `;
         tbody.appendChild(tr);
     });
-}
-
-function actualizarPaginacionUI() {
-    const from = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-    const to = Math.min(currentPage * pageSize, totalRecords);
-
-    document.getElementById('paginationInfo').textContent = `Mostrando ${from}-${to} de ${totalRecords}`;
-    document.getElementById('currentPageLabel').textContent = currentPage;
-
-    const btnPrev = document.getElementById('btnPrevPage');
-    const btnNext = document.getElementById('btnNextPage');
-
-    if (btnPrev) btnPrev.disabled = currentPage === 1;
-    if (btnNext) btnNext.disabled = to >= totalRecords;
 }
 
 // ----------------------------------------------------------------------

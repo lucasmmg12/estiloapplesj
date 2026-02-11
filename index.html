@@ -1107,54 +1107,29 @@
                             </table>
                         </div>
 
-                        <!-- Paginación Footer -->
-                        <div class="pagination-footer"
-                            style="padding: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
-                            <span id="erpTotalRecords" style="color: var(--gray-400); font-size: 0.9rem;">0
-                                registros</span>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn-pagination" id="btnPrevPageErp" disabled>&lt; Anterior</button>
-                                <span id="erpPageIndicator" style="color: #fff;">1</span>
-                                <button class="btn-pagination" id="btnNextPageErp" disabled>Siguiente &gt;</button>
+                        <!-- Pagination Controls: Movimientos -->
+                        <div id="paginacionMovimientos" class="pagination-controls"
+                            style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <span
+                                    style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                <select id="movimientosPageSize"
+                                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                    <option value="10">10</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span id="movimientosTotalInfo" style="font-size: 0.75rem; color: var(--gray-400);">0
+                                    registros</span>
+                            </div>
+                            <div id="movimientosPages" style="display: flex; align-items: center; gap: 0.3rem;">
+                                <!-- Page buttons injected by JS -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="table-pagination-footer">
-                <div class="page-density">
-                    <span style="font-size: 0.75rem; color: var(--gray-400);">Filas:</span>
-                    <div class="segmented-control" id="paginationDensity">
-                        <button class="seg-btn" data-size="10">10</button>
-                        <button class="seg-btn" data-size="20">20</button>
-                        <button class="seg-btn active" data-size="50">50</button>
-                    </div>
-                </div>
-
-                <div class="pagination-info" id="paginationInfo">
-                    Mostrando 0-0 de 0
-                </div>
-
-                <div class="pagination-nav">
-                    <button class="btn-nav-arrow" id="btnPrevPage" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                    <span id="currentPageLabel"
-                        style="font-weight: 600; font-size: 0.9rem; min-width: 20px; text-align: center;">1</span>
-                    <button class="btn-nav-arrow" id="btnNextPage" disabled>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-            </div>
         </div>
-        </div>
-
         </div>
         <div class="tab-content" id="tabConversaciones">
             <div class="glass-card">
