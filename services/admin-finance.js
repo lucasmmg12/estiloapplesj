@@ -8,6 +8,16 @@ let currentPage = 1;
 let pageSize = 50;
 let totalRecords = 0;
 
+// Pagination state: Ventas Tab
+let ventasTabPage = 1;
+let ventasTabPageSize = 10;
+let ventasTabTotal = 0;
+
+// Pagination state: Gastos Tab
+let gastosTabPage = 1;
+let gastosTabPageSize = 10;
+let gastosTabTotal = 0;
+
 // Helper para sincronizar visibilidad del formulario de ingreso
 function actualizarVisibilidadCategoriaIngreso() {
     const radios = document.getElementsByName('ingresoCategoria');
@@ -371,6 +381,19 @@ function setupEventListeners() {
             currentPage++;
             await cargarTablaMovimientos();
         }
+    });
+
+    // Page size selectors: Ventas & Gastos Tabs
+    document.getElementById('ventasTabPageSize')?.addEventListener('change', (e) => {
+        ventasTabPageSize = parseInt(e.target.value);
+        ventasTabPage = 1;
+        cargarTablaVentasTab();
+    });
+
+    document.getElementById('gastosTabPageSize')?.addEventListener('change', (e) => {
+        gastosTabPageSize = parseInt(e.target.value);
+        gastosTabPage = 1;
+        cargarTablaGastosTab();
     });
 
     // Formulario Edición
@@ -1108,24 +1131,164 @@ function actualizarPaginacionUI() {
 }
 
 // ----------------------------------------------------------------------
-// NEW: TAB-SPECIFIC TABLES (SALES & EXPENSES)
+// NEW: TAB-SPECIFIC TABLES (SALES & EXPENSES) WITH PAGINATION
 // ----------------------------------------------------------------------
+
+// Reusable pagination button renderer
+function renderPaginationButtons(containerId, currentPg, totalPg, onPageClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (totalPg <= 1) return;
+
+    const btnStyle = `
+        padding: 0.35rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        color: var(--gray-400);
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'JetBrains Mono', monospace;
+        min-width: 32px;
+        text-align: center;
+    `;
+
+    const activeStyle = `
+        padding: 0.35rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid var(--accent-green, #00ff88);
+        background: rgba(0,255,136,0.12);
+        color: #00ff88;
+        font-size: 0.8rem;
+        cursor: default;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+        min-width: 32px;
+        text-align: center;
+        box-shadow: 0 0 8px rgba(0,255,136,0.15);
+    `;
+
+    const disabledStyle = `
+        padding: 0.35rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.04);
+        background: transparent;
+        color: rgba(255,255,255,0.15);
+        font-size: 0.8rem;
+        cursor: not-allowed;
+        font-family: 'JetBrains Mono', monospace;
+        min-width: 32px;
+        text-align: center;
+    `;
+
+    // Prev button
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '‹';
+    prevBtn.style.cssText = currentPg === 1 ? disabledStyle : btnStyle;
+    prevBtn.disabled = currentPg === 1;
+    if (currentPg > 1) {
+        prevBtn.addEventListener('click', () => onPageClick(currentPg - 1));
+        prevBtn.addEventListener('mouseenter', () => { prevBtn.style.background = 'rgba(255,255,255,0.08)'; prevBtn.style.color = '#fff'; });
+        prevBtn.addEventListener('mouseleave', () => { prevBtn.style.background = 'rgba(255,255,255,0.03)'; prevBtn.style.color = 'var(--gray-400)'; });
+    }
+    container.appendChild(prevBtn);
+
+    // Page numbers with ellipsis for large page counts
+    const maxVisible = 7;
+    let pages = [];
+
+    if (totalPg <= maxVisible) {
+        for (let i = 1; i <= totalPg; i++) pages.push(i);
+    } else {
+        pages.push(1);
+        let start = Math.max(2, currentPg - 1);
+        let end = Math.min(totalPg - 1, currentPg + 1);
+
+        if (currentPg <= 3) { start = 2; end = 5; }
+        if (currentPg >= totalPg - 2) { start = totalPg - 4; end = totalPg - 1; }
+
+        if (start > 2) pages.push('...');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < totalPg - 1) pages.push('...');
+        pages.push(totalPg);
+    }
+
+    pages.forEach(p => {
+        const btn = document.createElement('button');
+        btn.textContent = p;
+
+        if (p === '...') {
+            btn.style.cssText = `
+                padding: 0.35rem 0.4rem;
+                border: none; background: transparent;
+                color: var(--gray-400); font-size: 0.8rem;
+                cursor: default; font-family: 'JetBrains Mono', monospace;
+            `;
+            btn.disabled = true;
+        } else if (p === currentPg) {
+            btn.style.cssText = activeStyle;
+        } else {
+            btn.style.cssText = btnStyle;
+            btn.addEventListener('click', () => onPageClick(p));
+            btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(255,255,255,0.08)'; btn.style.color = '#fff'; });
+            btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.color = 'var(--gray-400)'; });
+        }
+        container.appendChild(btn);
+    });
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = '›';
+    nextBtn.style.cssText = currentPg === totalPg ? disabledStyle : btnStyle;
+    nextBtn.disabled = currentPg === totalPg;
+    if (currentPg < totalPg) {
+        nextBtn.addEventListener('click', () => onPageClick(currentPg + 1));
+        nextBtn.addEventListener('mouseenter', () => { nextBtn.style.background = 'rgba(255,255,255,0.08)'; nextBtn.style.color = '#fff'; });
+        nextBtn.addEventListener('mouseleave', () => { nextBtn.style.background = 'rgba(255,255,255,0.03)'; nextBtn.style.color = 'var(--gray-400)'; });
+    }
+    container.appendChild(nextBtn);
+}
 
 async function cargarTablaVentasTab() {
     const tbody = document.getElementById('tablaUltimasVentas_Tab');
     if (!tbody) return;
 
     try {
-        // Fetch recent INCOMES (limit 20, no pagination for simplicity in this view, or use filtering)
-        // We reuse obtenerUltimasTransacciones but we might need a type filter in it?
-        // Currently it accepts dates. Let's fetch broader range and filter client side or add type support to service.
-        // Quick fix: Fetch last 50 and filter by INCOME.
-        const result = await supabaseService.obtenerUltimasTransacciones({ fechaInicio: null, fechaFin: null }, 1, 50);
-        const ventas = result.data.filter(t => t.type === 'INCOME').slice(0, 15);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--gray-400);">Cargando ventas...</td></tr>`;
 
+        // Server-side paginated query filtering by INCOME type
+        const result = await supabaseService.obtenerUltimasTransacciones(
+            { fechaInicio: null, fechaFin: null, tipo: 'INCOME' },
+            ventasTabPage,
+            ventasTabPageSize
+        );
+
+        const ventas = result.data;
+        ventasTabTotal = result.total;
+
+        const totalPages = Math.ceil(ventasTabTotal / ventasTabPageSize);
+
+        // Update info label
+        const infoEl = document.getElementById('ventasTabTotalInfo');
+        if (infoEl) {
+            const from = ventasTabTotal === 0 ? 0 : (ventasTabPage - 1) * ventasTabPageSize + 1;
+            const to = Math.min(ventasTabPage * ventasTabPageSize, ventasTabTotal);
+            infoEl.textContent = `${from}–${to} de ${ventasTabTotal}`;
+        }
+
+        // Render pagination buttons
+        renderPaginationButtons('ventasTabPages', ventasTabPage, totalPages, (page) => {
+            ventasTabPage = page;
+            cargarTablaVentasTab();
+        });
+
+        // Render rows
         tbody.innerHTML = '';
-        if (ventas.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay ventas recientes</td></tr>`;
+        if (!ventas || ventas.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay ventas registradas</td></tr>`;
             return;
         }
 
@@ -1160,12 +1323,38 @@ async function cargarTablaGastosTab() {
     if (!tbody) return;
 
     try {
-        const result = await supabaseService.obtenerUltimasTransacciones({ fechaInicio: null, fechaFin: null }, 1, 50);
-        const gastos = result.data.filter(t => t.type === 'EXPENSE').slice(0, 15);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--gray-400);">Cargando gastos...</td></tr>`;
 
+        // Server-side paginated query filtering by EXPENSE type
+        const result = await supabaseService.obtenerUltimasTransacciones(
+            { fechaInicio: null, fechaFin: null, tipo: 'EXPENSE' },
+            gastosTabPage,
+            gastosTabPageSize
+        );
+
+        const gastos = result.data;
+        gastosTabTotal = result.total;
+
+        const totalPages = Math.ceil(gastosTabTotal / gastosTabPageSize);
+
+        // Update info label
+        const infoEl = document.getElementById('gastosTabTotalInfo');
+        if (infoEl) {
+            const from = gastosTabTotal === 0 ? 0 : (gastosTabPage - 1) * gastosTabPageSize + 1;
+            const to = Math.min(gastosTabPage * gastosTabPageSize, gastosTabTotal);
+            infoEl.textContent = `${from}–${to} de ${gastosTabTotal}`;
+        }
+
+        // Render pagination buttons
+        renderPaginationButtons('gastosTabPages', gastosTabPage, totalPages, (page) => {
+            gastosTabPage = page;
+            cargarTablaGastosTab();
+        });
+
+        // Render rows
         tbody.innerHTML = '';
-        if (gastos.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay gastos recientes</td></tr>`;
+        if (!gastos || gastos.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem;">No hay gastos registrados</td></tr>`;
             return;
         }
 

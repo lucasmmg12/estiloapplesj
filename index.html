@@ -520,7 +520,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Últimas Ventas Registradas</h3>
                                 </div>
-                                <div class="table-container" style="flex: 1; max-height: 400px; overflow-y: auto;">
+                                <div class="table-container" style="flex: 1; overflow-y: auto;">
                                     <table class="data-table">
                                         <thead>
                                             <tr>
@@ -537,6 +537,25 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <!-- Pagination Controls: Ventas -->
+                                <div id="paginacionVentasTab" class="pagination-controls"
+                                    style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span
+                                            style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                        <select id="ventasTabPageSize"
+                                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                            <option value="10" selected>10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                        <span id="ventasTabTotalInfo"
+                                            style="font-size: 0.75rem; color: var(--gray-400);">0 registros</span>
+                                    </div>
+                                    <div id="ventasTabPages" style="display: flex; align-items: center; gap: 0.3rem;">
+                                        <!-- Page buttons injected by JS -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -690,7 +709,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Últimos Gastos Registrados</h3>
                                 </div>
-                                <div class="table-container" style="flex: 1; max-height: 350px; overflow-y: auto;">
+                                <div class="table-container" style="flex: 1; overflow-y: auto;">
                                     <table class="data-table">
                                         <thead>
                                             <tr>
@@ -708,6 +727,25 @@
                                             </tr>
                                         </tbody>
                                     </table>
+                                </div>
+                                <!-- Pagination Controls: Gastos -->
+                                <div id="paginacionGastosTab" class="pagination-controls"
+                                    style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span
+                                            style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                        <select id="gastosTabPageSize"
+                                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                            <option value="10" selected>10</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                        <span id="gastosTabTotalInfo"
+                                            style="font-size: 0.75rem; color: var(--gray-400);">0 registros</span>
+                                    </div>
+                                    <div id="gastosTabPages" style="display: flex; align-items: center; gap: 0.3rem;">
+                                        <!-- Page buttons injected by JS -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
