@@ -123,6 +123,8 @@ function setupEventListeners() {
                     <option value="Transferencia">Transferencia</option>
                     <option value="USDT">USDT</option>
                     <option value="MercadoPago">MercadoPago</option>
+                    <option value="Tarjeta Débito">Tarjeta Débito</option>
+                    <option value="Tarjeta Crédito">Tarjeta Crédito</option>
                 </select>
                 <select name="monedaPago[]" class="select-std" style="width: 80px;">
                     <option value="ARS">ARS</option>
@@ -1479,11 +1481,19 @@ export async function renderizarGraficos() {
                 expenseCatMap[catName] = (expenseCatMap[catName] || 0) + monto;
             }
 
-            // Payment Methods
-            let pm = 'Desconocido';
+            // Payment Methods — only count valid methods
+            const VALID_PAYMENT_METHODS = ['Efectivo', 'Transferencia', 'USDT', 'MercadoPago', 'Tarjeta Crédito', 'Tarjeta Débito'];
             const pmMatch = desc.match(/\(([^)]+)\)$/);
-            if (pmMatch) pm = pmMatch[1];
-            paymentMap[pm] = (paymentMap[pm] || 0) + 1;
+            if (pmMatch) {
+                let pm = pmMatch[1];
+                // Remap generic "Tarjeta" to MercadoPago
+                if (pm === 'Tarjeta') {
+                    pm = 'MercadoPago';
+                }
+                if (VALID_PAYMENT_METHODS.includes(pm)) {
+                    paymentMap[pm] = (paymentMap[pm] || 0) + 1;
+                }
+            }
 
             // Services
             if (catName === 'Servicio Tecnico') {
