@@ -123,7 +123,6 @@ function setupEventListeners() {
                     <option value="Transferencia">Transferencia</option>
                     <option value="USDT">USDT</option>
                     <option value="MercadoPago">MercadoPago</option>
-                     <option value="Tarjeta">Tarjeta</option>
                 </select>
                 <select name="monedaPago[]" class="select-std" style="width: 80px;">
                     <option value="ARS">ARS</option>
