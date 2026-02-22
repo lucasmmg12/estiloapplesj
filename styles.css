@@ -4511,6 +4511,17 @@ textarea,
     box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
 }
 
+.chip-filter-gastos.active {
+    background: rgba(255, 77, 77, 0.85) !important;
+    border-color: #ff4d4d !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+}
+
+.chip-filter-gastos:hover {
+    border-color: rgba(255, 77, 77, 0.4);
+}
+
 .date-range-capsule {
     display: flex;
     align-items: center;
@@ -4803,6 +4814,12 @@ svg {
     padding-top: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
+
 /* EMERGENCY TAB FIX */
-.tab-content { display: none; }
-.tab-content.active { display: block !important; }
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block !important;
+}

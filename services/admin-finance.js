@@ -54,6 +54,9 @@ export async function initErp() {
 
     // 4. Renderizar Gráficos
     renderizarGraficos();
+
+    // 5. Inicializar filtro de gastos en "Este Mes"
+    aplicarPresetGastos('month');
 }
 
 
@@ -346,14 +349,42 @@ function setupEventListeners() {
         });
     }
 
-    // Chips de Tiempo Presets
-    const chips = document.querySelectorAll('.chip-filter');
-    chips.forEach(chip => {
+    // Chips de Tiempo Presets (SOLO Movimientos - usan data-preset)
+    const chipsMovimientos = document.querySelectorAll('.chip-filter[data-preset]');
+    chipsMovimientos.forEach(chip => {
         chip.addEventListener('click', async () => {
-            chips.forEach(c => c.classList.remove('active'));
+            chipsMovimientos.forEach(c => c.classList.remove('active'));
             chip.classList.add('active');
             aplicarPresetTiempo(chip.dataset.preset);
         });
+    });
+
+    // ============================================
+    // FILTROS DE FECHA - TAB GASTOS
+    // ============================================
+    const gastosChips = document.querySelectorAll('.chip-filter-gastos');
+    gastosChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            gastosChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            aplicarPresetGastos(chip.dataset.gastosPreset);
+        });
+    });
+
+    // Botón Filtrar (rango personalizado)
+    document.getElementById('btnGastosFilterApply')?.addEventListener('click', () => {
+        gastosChips.forEach(c => c.classList.remove('active'));
+        aplicarFiltroGastos();
+    });
+
+    // Botón Limpiar Filtro
+    document.getElementById('btnGastosFilterClear')?.addEventListener('click', () => {
+        document.getElementById('gastosFilterDesde').value = '';
+        document.getElementById('gastosFilterHasta').value = '';
+        // Reactivar preset "Este Mes" por defecto
+        gastosChips.forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-gastos-preset="month"]')?.classList.add('active');
+        aplicarPresetGastos('month');
     });
 
     // Paginación: Movimientos - Page Size Selector
@@ -1297,9 +1328,14 @@ async function cargarTablaGastosTab() {
     try {
         tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--gray-400);">Cargando gastos...</td></tr>`;
 
-        // Server-side paginated query filtering by EXPENSE type
+        // Server-side paginated query filtering by EXPENSE type with date filters
+        const filtros = {
+            fechaInicio: gastosFilterDesde ? new Date(gastosFilterDesde).toISOString() : null,
+            fechaFin: gastosFilterHasta ? (() => { const h = new Date(gastosFilterHasta); h.setDate(h.getDate() + 1); return h.toISOString(); })() : null,
+            tipo: 'EXPENSE'
+        };
         const result = await supabaseService.obtenerUltimasTransacciones(
-            { fechaInicio: null, fechaFin: null, tipo: 'EXPENSE' },
+            filtros,
             gastosTabPage,
             gastosTabPageSize
         );
@@ -1360,6 +1396,168 @@ function obtenerNombreProducto(id) {
     const p = productosCache.find(p => p.id == id);
     return p ? p.modelo : 'Desconocido';
 }
+
+
+// ----------------------------------------------------------------------
+// GASTOS TAB: DATE FILTER SYSTEM
+// ----------------------------------------------------------------------
+
+// Store gastos filter state
+let gastosFilterDesde = null;
+let gastosFilterHasta = null;
+
+function aplicarPresetGastos(preset) {
+    const hoy = new Date();
+    const hoyISO = hoy.toISOString().split('T')[0];
+    let desde = hoyISO;
+    let hasta = hoyISO;
+    let labelText = '';
+
+    if (preset === 'today') {
+        desde = hoyISO;
+        hasta = hoyISO;
+        labelText = 'Hoy';
+    } else if (preset === 'week') {
+        const d = new Date();
+        d.setDate(d.getDate() - 7);
+        desde = d.toISOString().split('T')[0];
+        labelText = 'Última semana';
+    } else if (preset === 'month') {
+        const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+        desde = d.toISOString().split('T')[0];
+        labelText = 'Este mes';
+    } else if (preset === 'year') {
+        desde = `${hoy.getFullYear()}-01-01`;
+        hasta = `${hoy.getFullYear()}-12-31`;
+        labelText = `Año ${hoy.getFullYear()}`;
+    } else if (preset === 'all') {
+        desde = '';
+        hasta = '';
+        labelText = 'Todo el historial';
+    }
+
+    document.getElementById('gastosFilterDesde').value = desde;
+    document.getElementById('gastosFilterHasta').value = hasta;
+
+    gastosFilterDesde = desde || null;
+    gastosFilterHasta = hasta || null;
+
+    // Update active label
+    const labelContainer = document.getElementById('gastosFilterActiveLabel');
+    const labelSpan = document.getElementById('gastosFilterRangeText');
+    if (preset === 'all') {
+        labelContainer.style.display = 'none';
+    } else {
+        labelContainer.style.display = 'block';
+        labelSpan.textContent = labelText;
+    }
+
+    // Trigger filter
+    gastosTabPage = 1;
+    renderizarGastosConFiltro();
+    cargarTablaGastosTab();
+}
+
+function aplicarFiltroGastos() {
+    const desde = document.getElementById('gastosFilterDesde').value;
+    const hasta = document.getElementById('gastosFilterHasta').value;
+
+    if (!desde && !hasta) {
+        // Sin filtro personalizado, resetear a "Todo"
+        gastosFilterDesde = null;
+        gastosFilterHasta = null;
+        document.getElementById('gastosFilterActiveLabel').style.display = 'none';
+    } else {
+        gastosFilterDesde = desde || null;
+        gastosFilterHasta = hasta || null;
+
+        // Show active label
+        const labelContainer = document.getElementById('gastosFilterActiveLabel');
+        const labelSpan = document.getElementById('gastosFilterRangeText');
+        labelContainer.style.display = 'block';
+
+        const desdeLabel = desde ? new Date(desde + 'T12:00:00').toLocaleDateString('es-AR') : 'Inicio';
+        const hastaLabel = hasta ? new Date(hasta + 'T12:00:00').toLocaleDateString('es-AR') : 'Hoy';
+        labelSpan.textContent = `${desdeLabel} → ${hastaLabel}`;
+    }
+
+    gastosTabPage = 1;
+    renderizarGastosConFiltro();
+    cargarTablaGastosTab();
+}
+
+async function renderizarGastosConFiltro() {
+    try {
+        // Fetch all expenses
+        const transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
+        if (!transacciones || transacciones.length === 0) return;
+
+        const getMontoARS = (t) => {
+            let tasa = t.exchange_rate || 1485;
+            return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+        };
+
+        // Filter by gastos only
+        let gastos = transacciones.filter(t => t.type === 'EXPENSE');
+
+        // Apply date filter
+        if (gastosFilterDesde) {
+            const desdeDate = new Date(gastosFilterDesde + 'T00:00:00');
+            gastos = gastos.filter(t => new Date(t.date) >= desdeDate);
+        }
+        if (gastosFilterHasta) {
+            const hastaDate = new Date(gastosFilterHasta + 'T23:59:59');
+            gastos = gastos.filter(t => new Date(t.date) <= hastaDate);
+        }
+
+        // Aggregate by category
+        const expenseCatMap = {};
+        let totalFiltrado = 0;
+        gastos.forEach(t => {
+            const monto = getMontoARS(t);
+            const catName = t.transaction_categories?.name || 'Otro';
+            expenseCatMap[catName] = (expenseCatMap[catName] || 0) + monto;
+            totalFiltrado += monto;
+        });
+
+        // Re-render the donut chart
+        const sortedExpCat = Object.entries(expenseCatMap).sort((a, b) => b[1] - a[1]);
+        const fmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+
+        renderChart('chartGastosCat_Tab', 'doughnut', sortedExpCat.map(x => x[0]), [{
+            data: sortedExpCat.map(x => x[1]),
+            backgroundColor: [
+                '#ff4d4d', '#ff8c00', '#f59e0b', '#8b5cf6', '#ec4899',
+                '#3b82f6', '#10b981', '#6366f1', '#a8a29e', '#64748b',
+                '#e11d48', '#06b6d4', '#84cc16'
+            ],
+            borderWidth: 0
+        }], {
+            cutout: '60%',
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: (ctx) => {
+                            const val = ctx.raw;
+                            const pct = totalFiltrado > 0 ? ((val / totalFiltrado) * 100).toFixed(1) : 0;
+                            return ` ${ctx.label}: ${fmt.format(val)} (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update hero metric with filtered total
+        const heroGastos = document.getElementById('heroGastosMes');
+        if (heroGastos) {
+            heroGastos.textContent = fmt.format(totalFiltrado);
+        }
+
+    } catch (e) {
+        console.error("Error renderizando gastos con filtro:", e);
+    }
+}
+
 
 
 // ----------------------------------------------------------------------

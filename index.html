@@ -580,6 +580,64 @@
                         </div>
                     </div>
 
+                    <!-- FILTROS DE FECHA - GASTOS -->
+                    <div class="glass-card" id="gastosFilterBar"
+                        style="padding: 1rem 1.5rem; margin-bottom: 0.5rem; border: 1px solid rgba(255,77,77,0.15);">
+                        <div
+                            style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                            <!-- Presets Rápidos -->
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <span
+                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
+                                    Período</span>
+                                <div class="filter-chips" id="gastosFilterChips" style="display: flex; gap: 0.4rem;">
+                                    <button class="chip-filter chip-filter-gastos"
+                                        data-gastos-preset="today">Hoy</button>
+                                    <button class="chip-filter chip-filter-gastos"
+                                        data-gastos-preset="week">Semana</button>
+                                    <button class="chip-filter chip-filter-gastos active"
+                                        data-gastos-preset="month">Este Mes</button>
+                                    <button class="chip-filter chip-filter-gastos"
+                                        data-gastos-preset="year">2026</button>
+                                    <button class="chip-filter chip-filter-gastos"
+                                        data-gastos-preset="all">Todo</button>
+                                </div>
+                            </div>
+
+                            <!-- Rango Personalizado -->
+                            <div class="date-range-capsule" style="border-color: rgba(255,77,77,0.2);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" style="opacity: 0.6;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <input type="date" id="gastosFilterDesde" class="input-minimal" title="Desde">
+                                <span style="opacity: 0.4; font-size: 0.75rem;">→</span>
+                                <input type="date" id="gastosFilterHasta" class="input-minimal" title="Hasta">
+                                <button id="btnGastosFilterApply" class="btn-search-inner"
+                                    style="background: rgba(255,77,77,0.8);" title="Aplicar filtro">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                </button>
+                                <button id="btnGastosFilterClear"
+                                    style="background: rgba(255,255,255,0.05); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; font-size: 0.7rem;"
+                                    title="Limpiar filtro">✕</button>
+                            </div>
+                        </div>
+                        <!-- Indicador de rango activo -->
+                        <div id="gastosFilterActiveLabel"
+                            style="margin-top: 0.6rem; font-size: 0.72rem; color: rgba(255,77,77,0.7); font-weight: 600; letter-spacing: 0.3px; display: none;">
+                            <span
+                                style="display: inline-block; width: 6px; height: 6px; background: #ff4d4d; border-radius: 50%; margin-right: 0.4rem; animation: pulse 2s infinite;"></span>
+                            Filtro activo: <span id="gastosFilterRangeText"></span>
+                        </div>
+                    </div>
+
                     <!-- KPI GRID -->
                     <div
                         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
