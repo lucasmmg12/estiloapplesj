@@ -387,6 +387,29 @@ function setupEventListeners() {
         aplicarPresetGastos('month');
     });
 
+    // ---- VENTAS TAB: DATE FILTER LISTENERS ----
+    const ventasChips = document.querySelectorAll('.chip-filter-ventas[data-vpreset]');
+    ventasChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            ventasChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            aplicarPresetVentas(chip.dataset.vpreset);
+        });
+    });
+
+    document.getElementById('ventasFilterApply')?.addEventListener('click', () => {
+        ventasChips.forEach(c => c.classList.remove('active'));
+        aplicarFiltroVentas();
+    });
+
+    document.getElementById('ventasFilterClear')?.addEventListener('click', () => {
+        document.getElementById('ventasFilterDesde').value = '';
+        document.getElementById('ventasFilterHasta').value = '';
+        ventasChips.forEach(c => c.classList.remove('active'));
+        document.querySelector('[data-vpreset="month"]')?.classList.add('active');
+        aplicarPresetVentas('month');
+    });
+
     // Paginación: Movimientos - Page Size Selector
     document.getElementById('movimientosPageSize')?.addEventListener('change', (e) => {
         pageSize = parseInt(e.target.value);
@@ -1260,11 +1283,16 @@ async function cargarTablaVentasTab() {
     if (!tbody) return;
 
     try {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 2rem; color: var(--gray-400);">Cargando ventas...</td></tr>`;
+        tbody.innerHTML = Array(4).fill('').map(() => `<tr><td><div class="skeleton skeleton-text short"></div></td><td><div class="skeleton skeleton-text medium"></div></td><td><div class="skeleton skeleton-text short"></div></td><td><div class="skeleton skeleton-text medium"></div></td><td><div class="skeleton skeleton-text short"></div></td></tr>`).join('');
 
-        // Server-side paginated query filtering by INCOME type
+        // Server-side paginated query filtering by INCOME type with date filters
+        const filtrosVentas = {
+            fechaInicio: ventasFilterDesdeVal ? new Date(ventasFilterDesdeVal).toISOString() : null,
+            fechaFin: ventasFilterHastaVal ? (() => { const d = new Date(ventasFilterHastaVal); d.setHours(23, 59, 59, 999); return d.toISOString(); })() : null,
+            tipo: 'INCOME'
+        };
         const result = await supabaseService.obtenerUltimasTransacciones(
-            { fechaInicio: null, fechaFin: null, tipo: 'INCOME' },
+            filtrosVentas,
             ventasTabPage,
             ventasTabPageSize
         );
@@ -1558,6 +1586,123 @@ async function renderizarGastosConFiltro() {
     }
 }
 
+
+// ----------------------------------------------------------------------
+// VENTAS TAB: DATE FILTER SYSTEM
+// ----------------------------------------------------------------------
+
+let ventasFilterDesdeVal = null;
+let ventasFilterHastaVal = null;
+
+function aplicarPresetVentas(preset) {
+    const hoy = new Date();
+    const hoyISO = hoy.toISOString().split('T')[0];
+    let desde = hoyISO;
+    let hasta = hoyISO;
+    let labelText = '';
+
+    if (preset === 'today') { desde = hoyISO; hasta = hoyISO; labelText = 'Hoy'; }
+    else if (preset === 'week') { const d = new Date(); d.setDate(d.getDate() - 7); desde = d.toISOString().split('T')[0]; labelText = 'Última semana'; }
+    else if (preset === 'month') { const d = new Date(hoy.getFullYear(), hoy.getMonth(), 1); desde = d.toISOString().split('T')[0]; labelText = 'Este mes'; }
+    else if (preset === 'year') { desde = `${hoy.getFullYear()}-01-01`; hasta = `${hoy.getFullYear()}-12-31`; labelText = `Año ${hoy.getFullYear()}`; }
+    else if (preset === 'all') { desde = ''; hasta = ''; labelText = 'Todo el historial'; }
+
+    document.getElementById('ventasFilterDesde').value = desde;
+    document.getElementById('ventasFilterHasta').value = hasta;
+    ventasFilterDesdeVal = desde || null;
+    ventasFilterHastaVal = hasta || null;
+
+    const label = document.getElementById('ventasFilterLabel');
+    if (label) { label.textContent = labelText; label.style.opacity = preset === 'all' ? '0' : '1'; }
+
+    ventasTabPage = 1;
+    renderizarVentasConFiltro();
+    cargarTablaVentasTab();
+}
+
+function aplicarFiltroVentas() {
+    const desde = document.getElementById('ventasFilterDesde').value;
+    const hasta = document.getElementById('ventasFilterHasta').value;
+    ventasFilterDesdeVal = desde || null;
+    ventasFilterHastaVal = hasta || null;
+
+    const label = document.getElementById('ventasFilterLabel');
+    if (desde || hasta) {
+        const desdeL = desde ? new Date(desde + 'T12:00:00').toLocaleDateString('es-AR') : 'Inicio';
+        const hastaL = hasta ? new Date(hasta + 'T12:00:00').toLocaleDateString('es-AR') : 'Hoy';
+        if (label) { label.textContent = `${desdeL} → ${hastaL}`; label.style.opacity = '1'; }
+    } else {
+        if (label) label.style.opacity = '0';
+    }
+
+    ventasTabPage = 1;
+    renderizarVentasConFiltro();
+    cargarTablaVentasTab();
+}
+
+async function renderizarVentasConFiltro() {
+    try {
+        const transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
+        if (!transacciones || transacciones.length === 0) return;
+
+        const getMontoARS = (t) => {
+            let tasa = t.exchange_rate || 1485;
+            return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+        };
+
+        let ventas = transacciones.filter(t => t.type === 'INCOME');
+
+        if (ventasFilterDesdeVal) {
+            const desdeDate = new Date(ventasFilterDesdeVal + 'T00:00:00');
+            ventas = ventas.filter(t => new Date(t.date) >= desdeDate);
+        }
+        if (ventasFilterHastaVal) {
+            const hastaDate = new Date(ventasFilterHastaVal + 'T23:59:59');
+            ventas = ventas.filter(t => new Date(t.date) <= hastaDate);
+        }
+
+        let totalFiltrado = 0;
+        const paymentMethodMap = {};
+        ventas.forEach(t => {
+            const monto = getMontoARS(t);
+            totalFiltrado += monto;
+            const pm = t.payment_method || 'Otro';
+            paymentMethodMap[pm] = (paymentMethodMap[pm] || 0) + monto;
+        });
+
+        const fmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+
+        // Update hero metric
+        const heroVentas = document.getElementById('heroIngresosMes');
+        if (heroVentas) heroVentas.textContent = fmt.format(totalFiltrado);
+
+        // Re-render payment methods chart
+        const sortedPM = Object.entries(paymentMethodMap).sort((a, b) => b[1] - a[1]);
+        if (sortedPM.length > 0) {
+            renderChart('chartPaymentMethods_Tab', 'doughnut', sortedPM.map(x => x[0]), [{
+                data: sortedPM.map(x => x[1]),
+                backgroundColor: ['#00FF88', '#0ea5e9', '#f59e0b', '#ec4899', '#8b5cf6', '#64748b'],
+                borderWidth: 0
+            }], {
+                cutout: '60%',
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const val = ctx.raw;
+                                const pct = totalFiltrado > 0 ? ((val / totalFiltrado) * 100).toFixed(1) : 0;
+                                return ` ${ctx.label}: ${fmt.format(val)} (${pct}%)`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+    } catch (e) {
+        console.error("Error renderizando ventas con filtro:", e);
+    }
+}
 
 
 // ----------------------------------------------------------------------

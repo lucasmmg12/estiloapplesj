@@ -1,0 +1,22 @@
+{
+    "name": "Estilo Apple SJ - Sistema de Gestión",
+    "short_name": "Estilo SJ",
+    "description": "Sistema integral de gestión: CRM, Finanzas, Inventario, Chat y IA",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/public/logogrow.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "business",
+        "productivity"
+    ]
+}

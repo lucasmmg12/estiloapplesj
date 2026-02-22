@@ -281,14 +281,18 @@ function asignarVendedoresMock() {
 
 
 function mostrarCargando() {
-    document.getElementById('tablaConversaciones').innerHTML = `
-        <tr class="loading-row">
-            <td colspan="7">
-                <div class="loading-spinner"></div>
-                <p>Cargando conversaciones...</p>
-            </td>
+    const skeletonRows = Array(5).fill('').map(() => `
+        <tr>
+            <td><div class="skeleton skeleton-text medium"></div></td>
+            <td><div class="skeleton skeleton-text short"></div></td>
+            <td><div class="skeleton skeleton-text medium"></div></td>
+            <td><div class="skeleton skeleton-text short"></div></td>
+            <td><div class="skeleton skeleton-text long"></div></td>
+            <td><div class="skeleton skeleton-text short"></div></td>
+            <td><div class="skeleton skeleton-text short"></div></td>
         </tr>
-    `;
+    `).join('');
+    document.getElementById('tablaConversaciones').innerHTML = skeletonRows;
 }
 
 // ============================================
@@ -1710,6 +1714,65 @@ function abrirModalDolar() {
     const modal = document.getElementById('modalDolar');
     document.getElementById('formDolar').reset();
     modal.classList.add('active');
+
+    // Load dolar history chart
+    (async () => {
+        try {
+            const historial = await supabaseService.obtenerHistorialCotizacion(10);
+            if (historial && historial.length > 1) {
+                const reversed = [...historial].reverse();
+                const labels = reversed.map(h => {
+                    const d = new Date(h.updated_at || h.created_at);
+                    return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+                });
+                const values = reversed.map(h => h.valor);
+
+                // Variation
+                const first = values[0], last = values[values.length - 1];
+                const varPct = ((last - first) / first * 100).toFixed(1);
+                const varEl = document.getElementById('dolarVariacion');
+                if (varEl) {
+                    varEl.textContent = `${varPct > 0 ? '+' : ''}${varPct}%`;
+                    varEl.style.color = varPct >= 0 ? '#00FF88' : '#FF3131';
+                }
+
+                // Destroy existing chart
+                const canvas = document.getElementById('chartDolarHistorial');
+                if (canvas) {
+                    const existingChart = Chart.getChart(canvas);
+                    if (existingChart) existingChart.destroy();
+
+                    new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels,
+                            datasets: [{
+                                data: values,
+                                borderColor: '#00D1FF',
+                                backgroundColor: 'rgba(0,209,255,0.08)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#00D1FF'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 } } },
+                                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.3)', font: { size: 9 }, callback: v => '$' + v.toLocaleString() } }
+                            }
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('Error cargando historial dólar:', e);
+        }
+    })();
 }
 
 function cerrarModalDolar() {

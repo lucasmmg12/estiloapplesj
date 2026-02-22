@@ -4875,3 +4875,187 @@ svg {
     color: rgba(255, 255, 255, 0.75) !important;
     line-height: 1.3;
 }
+
+/* ============================================
+   COMMAND PALETTE (Ctrl+K)
+   ============================================ */
+.chip-filter-ventas.active {
+    background: rgba(0, 255, 136, 0.15) !important;
+    border-color: #00FF88 !important;
+    color: #00FF88 !important;
+    font-weight: 600;
+}
+
+.command-palette-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+    animation: cpFadeIn 0.15s ease;
+}
+
+@keyframes cpFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.command-palette {
+    width: 560px;
+    max-width: 90vw;
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 163, 115, 0.08);
+    animation: cpSlideIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cpSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.cp-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cp-header input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}
+
+.cp-header input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.cp-header kbd,
+.cp-footer kbd {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Inter', sans-serif;
+}
+
+.cp-results {
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.cp-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem 1.2rem;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+
+.cp-item:hover,
+.cp-item.active {
+    background: rgba(212, 163, 115, 0.1);
+}
+
+.cp-icon {
+    font-size: 1.2rem;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.cp-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.cp-desc {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 1px;
+}
+
+.cp-footer {
+    display: flex;
+    gap: 1.2rem;
+    padding: 0.55rem 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================
+   SKELETON LOADERS
+   ============================================ */
+@keyframes shimmer {
+    0% {
+        background-position: -200px 0;
+    }
+
+    100% {
+        background-position: calc(200px + 100%) 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
+    background-size: 200px 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 8px;
+}
+
+.skeleton-text {
+    height: 12px;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-text.short {
+    width: 40%;
+}
+
+.skeleton-text.medium {
+    width: 65%;
+}
+
+.skeleton-text.long {
+    width: 90%;
+}
+
+.skeleton-card {
+    height: 80px;
+    margin-bottom: 1rem;
+}
+
+.skeleton-kpi {
+    height: 100px;
+    border-radius: 12px;
+}

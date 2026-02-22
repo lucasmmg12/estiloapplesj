@@ -11,6 +11,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#000000">
+    <meta name="description" content="Estilo Apple SJ - Sistema de Gestión Integral: CRM, Finanzas, Inventario y Chat">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -34,12 +39,25 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="header-content">
-                <img src="logoestilo.png" alt="Estilo Apple SJ" class="logo">
-                <h1 class="header-title">Gestión de Conversaciones</h1>
+            <div class="header-content" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <img src="logoestilo.png" alt="Estilo Apple SJ" class="logo">
+                    <h1 class="header-title">Gestión de Conversaciones</h1>
+                </div>
+                <button onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true}))"
+                    style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.35);font-size:0.75rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;"
+                    onmouseover="this.style.borderColor='rgba(212,163,115,0.4)';this.style.color='rgba(255,255,255,0.6)'"
+                    onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.35)'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    Buscar...
+                    <kbd
+                        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:rgba(255,255,255,0.3);">Ctrl+K</kbd>
+                </button>
             </div>
         </div>
-    </header>
     </header>
 
     <!-- Main Content -->
@@ -322,6 +340,45 @@
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%;"></span>
                             Ingresos Este Mes
+                        </div>
+                    </div>
+
+                    <!-- FILTROS DE FECHA - VENTAS -->
+                    <div class="glass-card" id="ventasFilterBar"
+                        style="padding: 1rem 1.5rem; margin-bottom: 0.5rem; border: 1px solid rgba(0,255,136,0.15);">
+                        <div
+                            style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <span
+                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
+                                    Período</span>
+                                <button class="chip-filter-ventas" data-vpreset="today"
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Hoy</button>
+                                <button class="chip-filter-ventas" data-vpreset="week"
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Semana</button>
+                                <button class="chip-filter-ventas active" data-vpreset="month"
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Este
+                                    Mes</button>
+                                <button class="chip-filter-ventas" data-vpreset="year"
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Año</button>
+                                <button class="chip-filter-ventas" data-vpreset="all"
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Todo</button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                <label style="font-size:0.7rem; color:rgba(255,255,255,0.35);">Desde</label>
+                                <input type="date" id="ventasFilterDesde"
+                                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#fff; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
+                                <label style="font-size:0.7rem; color:rgba(255,255,255,0.35);">Hasta</label>
+                                <input type="date" id="ventasFilterHasta"
+                                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#fff; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
+                                <button id="ventasFilterApply"
+                                    style="padding:0.35rem 0.75rem; border-radius:8px; border:1px solid rgba(0,255,136,0.3); background:rgba(0,255,136,0.1); color:#00FF88; font-size:0.7rem; cursor:pointer; font-weight:600;">Aplicar</button>
+                                <button id="ventasFilterClear"
+                                    style="padding:0.35rem 0.6rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:rgba(255,255,255,0.4); font-size:0.7rem; cursor:pointer;"
+                                    title="Limpiar filtros">✕</button>
+                                <span id="ventasFilterLabel"
+                                    style="font-size:0.65rem; color:#00FF88; font-weight:600; opacity:0;">—</span>
+                            </div>
                         </div>
                     </div>
 
@@ -2706,6 +2763,19 @@
                     </button>
                 </div>
 
+                <!-- Mini Chart: Historial Dólar -->
+                <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span
+                            style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; font-weight:700;">📈
+                            Evolución (últimos valores)</span>
+                        <span id="dolarVariacion" style="font-size:0.7rem; font-weight:600;"></span>
+                    </div>
+                    <div style="height:120px;">
+                        <canvas id="chartDolarHistorial"></canvas>
+                    </div>
+                </div>
+
                 <div class="divider" style="margin: 1rem 0; text-align: center; opacity: 0.5; font-size: 0.8rem;">O
                     ACTUALIZAR MANUALMENTE</div>
 
@@ -3017,6 +3087,95 @@
     <!-- Scripts -->
     <script type="module" src="/config.js"></script>
     <script type="module" src="/app.js"></script>
+
+    <!-- COMMAND PALETTE (Ctrl+K) -->
+    <div id="commandPalette" class="command-palette-overlay" style="display:none;">
+        <div class="command-palette">
+            <div class="cp-header">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)"
+                    stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="cpInput" placeholder="Buscar tabs, clientes, acciones..." autocomplete="off"
+                    spellcheck="false">
+                <kbd>ESC</kbd>
+            </div>
+            <div id="cpResults" class="cp-results"></div>
+            <div class="cp-footer">
+                <span><kbd>↑↓</kbd> Navegar</span>
+                <span><kbd>Enter</kbd> Seleccionar</span>
+                <span><kbd>Esc</kbd> Cerrar</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Command Palette Logic
+        (function () {
+            const palette = document.getElementById('commandPalette');
+            const input = document.getElementById('cpInput');
+            const results = document.getElementById('cpResults');
+            let selectedIndex = 0;
+
+            const commands = [
+                { icon: '👥', label: 'Clientes', desc: 'Ver lista de clientes', action: () => { cambiarTab('conversaciones'); navTo('clientes'); } },
+                { icon: '💰', label: 'Ventas Financieras', desc: 'Dashboard de ventas', action: () => { cambiarTab('ventas-financieras'); navTo('ventas'); } },
+                { icon: '📉', label: 'Gastos Financieros', desc: 'Dashboard de gastos', action: () => { cambiarTab('gastos-financieros'); navTo('ventas'); } },
+                { icon: '📊', label: 'Movimientos', desc: 'Historial de transacciones', action: () => { cambiarTab('movimientos-financieros'); navTo('ventas'); } },
+                { icon: '🏪', label: 'ERP / Inventario', desc: 'Gestión de stock', action: () => { cambiarTab('erp'); navTo('erp'); } },
+                { icon: '📦', label: 'Catálogo', desc: 'Productos en venta', action: () => { cambiarTab('catalogo'); navTo('erp'); } },
+                { icon: '🔒', label: 'Señas y Reservas', desc: 'Gestión de reservas', action: () => { cambiarTab('senas'); navTo('ventas'); } },
+                { icon: '🗂️', label: 'Embudo de Ventas', desc: 'Pipeline kanban', action: () => { cambiarTab('embudo'); navTo('clientes'); } },
+                { icon: '👤', label: 'Vendedores', desc: 'Equipo de ventas', action: () => { cambiarTab('vendedores'); navTo('clientes'); } },
+                { icon: '📈', label: 'Estadísticas', desc: 'Gráficos y métricas', action: () => { cambiarTab('estadisticas'); navTo('clientes'); } },
+                { icon: '💬', label: 'Chat en Vivo', desc: 'Ir al chat', action: () => { window.location.href = 'chat.html'; } },
+                { icon: '🌐', label: 'Competencia', desc: 'Inteligencia competitiva', action: () => { cambiarTab('competencia'); navTo('inteligencia'); } },
+                { icon: '🔧', label: 'Diagnóstico', desc: 'Herramientas de diagnóstico', action: () => { cambiarTab('diagnostico-hub'); navTo('tools'); } },
+                { icon: '⚡', label: 'Actualizaciones', desc: 'Changelog del sistema', action: () => { cambiarTab('actualizaciones'); } },
+                { icon: '❓', label: 'Ayuda / Manual', desc: 'Manual de usuario', action: () => { abrirManual(); } },
+                { icon: '➕', label: 'Nuevo Producto', desc: 'Agregar producto al catálogo', action: () => { cambiarTab('catalogo'); navTo('erp'); setTimeout(() => { const btn = document.getElementById('btnNuevoProducto'); if (btn) btn.click(); }, 300); } },
+            ];
+
+            function navTo(category) {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                const tab = document.querySelector(`.nav-tab[data-category="${category}"]`);
+                if (tab) { tab.classList.add('active'); tab.click(); }
+            }
+
+            function render(filter = '') {
+                const q = filter.toLowerCase().trim();
+                const filtered = q ? commands.filter(c => c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)) : commands;
+                selectedIndex = 0;
+                results.innerHTML = filtered.map((c, i) => `
+                <div class="cp-item ${i === 0 ? 'active' : ''}" data-index="${i}">
+                    <span class="cp-icon">${c.icon}</span>
+                    <div><div class="cp-label">${c.label}</div><div class="cp-desc">${c.desc}</div></div>
+                </div>
+            `).join('') || '<div style="padding:1.5rem;text-align:center;color:rgba(255,255,255,0.3);">Sin resultados</div>';
+
+                results.querySelectorAll('.cp-item').forEach((item, i) => {
+                    item.addEventListener('click', () => { filtered[i].action(); closePalette(); });
+                });
+            }
+
+            function closePalette() { palette.style.display = 'none'; input.value = ''; }
+            function openPalette() { palette.style.display = 'flex'; input.value = ''; render(); setTimeout(() => input.focus(), 50); }
+
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openPalette(); }
+                if (e.key === 'Escape' && palette.style.display !== 'none') closePalette();
+                if (palette.style.display !== 'none') {
+                    const items = results.querySelectorAll('.cp-item');
+                    if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, items.length - 1); items.forEach((it, i) => it.classList.toggle('active', i === selectedIndex)); items[selectedIndex]?.scrollIntoView({ block: 'nearest' }); }
+                    if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, 0); items.forEach((it, i) => it.classList.toggle('active', i === selectedIndex)); items[selectedIndex]?.scrollIntoView({ block: 'nearest' }); }
+                    if (e.key === 'Enter') { e.preventDefault(); items[selectedIndex]?.click(); }
+                }
+            });
+            input?.addEventListener('input', (e) => render(e.target.value));
+            palette?.addEventListener('click', (e) => { if (e.target === palette) closePalette(); });
+        })();
+    </script>
 </body>
 
 </html>
