@@ -2351,7 +2351,7 @@ function cambiarTab(tabName) {
         const crmFilters = document.getElementById('crmFilters');
         if (crmFilters) {
             // Hide on Finance, Inventory (catalogo), Competencia
-            if (['erp', 'ventas-financieras', 'gastos-financieros', 'movimientos-financieros', 'catalogo', 'competencia'].includes(tabName)) {
+            if (['erp', 'ventas-financieras', 'gastos-financieros', 'movimientos-financieros', 'catalogo', 'competencia', 'actualizaciones'].includes(tabName)) {
                 crmFilters.style.display = 'none';
             } else {
                 crmFilters.style.display = 'flex';

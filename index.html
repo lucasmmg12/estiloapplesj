@@ -113,7 +113,16 @@
                     </button>
 
                     <button class="nav-tab" style="margin-left: auto; border: 1px solid rgba(255,255,255,0.1);"
-                        onclick="abrirManual()">
+                        onclick="cambiarTab('actualizaciones'); document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); document.getElementById('subNavPanel').classList.remove('open');">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 8v4l3 3"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                        </svg>
+                        <span>Updates</span>
+                    </button>
+
+                    <button class="nav-tab" style="border: 1px solid rgba(255,255,255,0.1);" onclick="abrirManual()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -1919,6 +1928,256 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- TAB: ACTUALIZACIONES / CHANGELOG -->
+    <div id="tabActualizaciones" class="tab-content" style="padding: 2rem;">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+                    <span
+                        style="background: linear-gradient(135deg, #d4a373, #fce4ec); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">⚡
+                        Historial de Actualizaciones</span>
+                </h2>
+                <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Últimos 100 commits del proyecto — registro
+                    completo de cambios y mejoras.</p>
+            </div>
+
+            <div class="glass-card" style="padding: 0; overflow: hidden;">
+                <!-- Header -->
+                <div
+                    style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
+                    <span
+                        style="font-size: 0.75rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📋
+                        Changelog</span>
+                    <span style="font-size: 0.7rem; color: rgba(212,163,115,0.7); font-weight: 600;">100
+                        registros</span>
+                </div>
+
+                <!-- Commits List -->
+                <div style="max-height: 70vh; overflow-y: auto; padding: 0.5rem 0;" id="changelogList">
+
+                    <!-- FEB 2026 -->
+                    <div
+                        style="padding: 0.5rem 1.5rem; background: rgba(212,163,115,0.08); border-bottom: 1px solid rgba(255,255,255,0.03);">
+                        <span
+                            style="font-size: 0.7rem; font-weight: 800; color: #d4a373; text-transform: uppercase; letter-spacing: 1.5px;">📅
+                            Febrero 2026</span>
+                    </div>
+
+                    <div class="changelog-item"><code>f798fbe</code><span class="cl-date">22/02</span><span
+                            class="cl-msg">feat: agregar filtros de fecha Desde/Hasta en tab de Gastos</span></div>
+                    <div class="changelog-item"><code>8d17d67</code><span class="cl-date">20/02</span><span
+                            class="cl-msg">fix: restore Tarjeta Débito/Crédito in selectors</span></div>
+                    <div class="changelog-item"><code>6f85211</code><span class="cl-date">20/02</span><span
+                            class="cl-msg">fix: remove payment methods not in DB</span></div>
+                    <div class="changelog-item"><code>ad6240e</code><span class="cl-date">11/02</span><span
+                            class="cl-msg">fix: agregar type=module a scripts de diagnostico.html</span></div>
+                    <div class="changelog-item"><code>67dc5d6</code><span class="cl-date">11/02</span><span
+                            class="cl-msg">fix: agregar diagnostico.html al build de Vite</span></div>
+                    <div class="changelog-item"><code>4b0bb95</code><span class="cl-date">11/02</span><span
+                            class="cl-msg">feat: paginación premium unificada en Historial de Movimientos</span></div>
+                    <div class="changelog-item"><code>a9c8dd4</code><span class="cl-date">11/02</span><span
+                            class="cl-msg">feat: paginación completa en tablas de Ventas y Gastos</span></div>
+                    <div class="changelog-item"><code>74a8ca4</code><span class="cl-date">08/02</span><span
+                            class="cl-msg">fix: Remove duplicado modal y Señas tab</span></div>
+                    <div class="changelog-item"><code>0e09cfe</code><span class="cl-date">02/02</span><span
+                            class="cl-msg">fix: dynamic chart range and correct builderbot blacklist</span></div>
+                    <div class="changelog-item"><code>5fa4804</code><span class="cl-date">02/02</span><span
+                            class="cl-msg">fix: Instagram Blacklist Logic and Dashboard Charts</span></div>
+                    <div class="changelog-item"><code>b6e2d92</code><span class="cl-date">02/02</span><span
+                            class="cl-msg">fix: invalid timestamp error and handle empty transactions</span></div>
+                    <div class="changelog-item"><code>7fa2686</code><span class="cl-date">02/02</span><span
+                            class="cl-msg">feat: update charts and KPIs to show historical data</span></div>
+
+                    <!-- JAN 2026 -->
+                    <div
+                        style="padding: 0.5rem 1.5rem; background: rgba(212,163,115,0.08); border-bottom: 1px solid rgba(255,255,255,0.03);">
+                        <span
+                            style="font-size: 0.7rem; font-weight: 800; color: #d4a373; text-transform: uppercase; letter-spacing: 1.5px;">📅
+                            Enero 2026</span>
+                    </div>
+
+                    <div class="changelog-item"><code>af101bb</code><span class="cl-date">23/01</span><span
+                            class="cl-msg">Update dashboard KPIs to show Yesterday metrics</span></div>
+                    <div class="changelog-item"><code>1da1560</code><span class="cl-date">20/01</span><span
+                            class="cl-msg">fix: Force Vercel to use Vite/Node and ignore Python</span></div>
+                    <div class="changelog-item"><code>8297a3c</code><span class="cl-date">20/01</span><span
+                            class="cl-msg">fix: Sincronización de visibilidad en Servicio Técnico</span></div>
+                    <div class="changelog-item"><code>b0fbe7f</code><span class="cl-date">15/01</span><span
+                            class="cl-msg">feat: control individual de pausa del bot por contacto</span></div>
+                    <div class="changelog-item"><code>c6ecfac</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Change background to cover entire screen</span></div>
+                    <div class="changelog-item"><code>6b6ab22</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Change background to fondoestilodark.jpg and optimize WebP</span></div>
+                    <div class="changelog-item"><code>f7affee</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Increase background darkness to 80% opacity</span></div>
+                    <div class="changelog-item"><code>59d00bd</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Darken background overlay and prevent image pixelation</span></div>
+                    <div class="changelog-item"><code>da67da9</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Add custom background image with subtle dark overlay</span></div>
+                    <div class="changelog-item"><code>18ff25e</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Replace native confirm with custom styled modal</span></div>
+                    <div class="changelog-item"><code>3094b97</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Implement toast notification system</span></div>
+                    <div class="changelog-item"><code>1bb059f</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Major UX: darken modals, payment editing, split cards, fix dates</span></div>
+                    <div class="changelog-item"><code>b9cc046</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Add fluid gradient backgrounds for expense KPI cards</span></div>
+                    <div class="changelog-item"><code>65ce618</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Rewrite PDF export with professional layout</span></div>
+                    <div class="changelog-item"><code>97c3240</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: AI analysis remove periodFilter, make renderChart global</span></div>
+                    <div class="changelog-item"><code>8bd9c22</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Enhance AI Strategic Analysis with visual charts</span></div>
+                    <div class="changelog-item"><code>b2ea9d2</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Improve payment methods chart visual design</span></div>
+                    <div class="changelog-item"><code>de363ca</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: fluid background path</span></div>
+                    <div class="changelog-item"><code>e56458b</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Add fluid Apple gradient backgrounds to KPI cards</span></div>
+                    <div class="changelog-item"><code>e2e55f9</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: currency conversion logic and enhance export UI</span></div>
+                    <div class="changelog-item"><code>8c1e61a</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Add export PDF/Excel/CSV and fix KPI summation</span></div>
+                    <div class="changelog-item"><code>d03f7d0</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: KPI calculation logic strict checks</span></div>
+                    <div class="changelog-item"><code>4bcba3f</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Add Transaction History tab with Type filters</span></div>
+                    <div class="changelog-item"><code>bce53be</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: KPI calculation logic strict local date comparison</span></div>
+                    <div class="changelog-item"><code>ae1c01e</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Replace Average Ticket KPI with Current Month Revenue</span></div>
+                    <div class="changelog-item"><code>5156f4b</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: duplicate declaration of cambiarTab in app.js</span></div>
+                    <div class="changelog-item"><code>75bf7a7</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: restore missing cambiarTab function in app.js</span></div>
+                    <div class="changelog-item"><code>030c9bc</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">Enhance Finance Tabs: Separate Sales/Expenses views</span></div>
+                    <div class="changelog-item"><code>c86abe1</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: remove duplicate cambiarTab declaration</span></div>
+                    <div class="changelog-item"><code>2a26bba</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">feat: separate sales and expenses tabs with enhanced KPIs</span></div>
+                    <div class="changelog-item"><code>c44f4f9</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">feat: finance dashboard overhaul, advanced analytics</span></div>
+                    <div class="changelog-item"><code>54f6426</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">feat: Implementar persistencia del estado del bot en Supabase</span></div>
+                    <div class="changelog-item"><code>2b7f0a1</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">fix: Corregir fondo blanco aplicando gradiente borgoña</span></div>
+                    <div class="changelog-item"><code>a88790c</code><span class="cl-date">14/01</span><span
+                            class="cl-msg">feat: Implementar estética de marca ESTILO en toda la app</span></div>
+                    <div class="changelog-item"><code>8fa26a3</code><span class="cl-date">13/01</span><span
+                            class="cl-msg">otra vez yo</span></div>
+                    <div class="changelog-item"><code>1535f0a</code><span class="cl-date">13/01</span><span
+                            class="cl-msg">se colgo</span></div>
+                    <div class="changelog-item"><code>527cf65</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">fix: nested tabs issue by closing missing div</span></div>
+                    <div class="changelog-item"><code>58bcc33</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Add Sentinel error monitoring service (WhatsApp alerts)</span></div>
+                    <div class="changelog-item"><code>3e69141</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Add verDetallesConversacion and refresh data after AI</span></div>
+                    <div class="changelog-item"><code>4368f64</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Persist AI analysis results to database for caching</span></div>
+                    <div class="changelog-item"><code>b729dac</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">fix: chat modal temp IDs, ensure AI analysis, enable close</span></div>
+                    <div class="changelog-item"><code>ebbe7e5</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Trigger redeploy to activate AI name detection</span></div>
+                    <div class="changelog-item"><code>b640351</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Update AI analysis to extract client name from chat</span></div>
+                    <div class="changelog-item"><code>dce9fb9</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Refactor conversation list from messages table</span></div>
+                    <div class="changelog-item"><code>f6dea1f</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Refactor conversation fetching using 'clientes' table</span></div>
+                    <div class="changelog-item"><code>532a053</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">fix: chat history rendering correct database fields</span></div>
+                    <div class="changelog-item"><code>c31fc2a</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">feat: premium chat history with summary and intent</span></div>
+                    <div class="changelog-item"><code>bfad5e9</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">feat: tabla premium con paginación, filtros por chips</span></div>
+                    <div class="changelog-item"><code>9dc3eec</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">feat: rediseño premium glassmorphism del dashboard</span></div>
+                    <div class="changelog-item"><code>a95d732</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">feat: script importacion finanzas desde Google Sheets</span></div>
+                    <div class="changelog-item"><code>9e0e6cd</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Enhance UI: moved charts to stats tab, styled cards</span></div>
+                    <div class="changelog-item"><code>1f1f5f3</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">Add success modal, multi-payment, delete, charts</span></div>
+                    <div class="changelog-item"><code>a2bbd1f</code><span class="cl-date">12/01</span><span
+                            class="cl-msg">fix: expense form null values, add technical service</span></div>
+                    <div class="changelog-item"><code>a503aff</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: prevent null pointer in updateStats</span></div>
+                    <div class="changelog-item"><code>d936873</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">style: fix global text colors, switch dashboard to ARS</span></div>
+                    <div class="changelog-item"><code>e833038</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: switch dashboard currencies to ARS with colors</span></div>
+                    <div class="changelog-item"><code>c82a204</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">style: force pastel text color for dark visibility</span></div>
+                    <div class="changelog-item"><code>bc116c7</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">style: remove header stats and change text to pastel</span></div>
+                    <div class="changelog-item"><code>a9aa49d</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: Burgundy/Pastel theme for new navigation</span></div>
+                    <div class="changelog-item"><code>5a4c9ea</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: clean styles.css encoding issues for Vite build</span></div>
+                    <div class="changelog-item"><code>920abc7</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: update Club del iPhone coordinates to exact GPS</span></div>
+                    <div class="changelog-item"><code>e866e36</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: remove null bytes from app.js causing build error</span></div>
+                    <div class="changelog-item"><code>c76380a</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: grouped navigation with slide-out panel</span></div>
+                    <div class="changelog-item"><code>219cd0c</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: update exact GPS coordinates for stores</span></div>
+                    <div class="changelog-item"><code>fb4fce9</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: correct Meta Ads status for active stores</span></div>
+                    <div class="changelog-item"><code>669e1bb</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: update competitors with real verified businesses</span></div>
+                    <div class="changelog-item"><code>3317b21</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">fix: add tab switching for ERP and Competitor Intel</span></div>
+                    <div class="changelog-item"><code>051dba9</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: competitor intelligence dashboard with maps</span></div>
+                    <div class="changelog-item"><code>d463870</code><span class="cl-date">08/01</span><span
+                            class="cl-msg">feat: implement ERP module - sales, expenses, inventory</span></div>
+                    <div class="changelog-item"><code>c5e0fa0</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Add handwritten style vendor selection hint</span></div>
+                    <div class="changelog-item"><code>1dfdef5</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Enhance bot status button UI with glowing badge</span></div>
+                    <div class="changelog-item"><code>90f22fd</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Remove auto-pause bot logic on manual message send</span></div>
+                    <div class="changelog-item"><code>b9feecd</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Implement multi-platform support (IG/WA) for bot toggle</span></div>
+                    <div class="changelog-item"><code>1654cb5</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Add manual bot toggle button in chat header</span></div>
+                    <div class="changelog-item"><code>d9cca0c</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">fix: duplicate message bubbles by removing optimistic UI</span></div>
+                    <div class="changelog-item"><code>fa1e0fa</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Implement native audio player for voice notes</span></div>
+                    <div class="changelog-item"><code>c7fb204</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Implement media URL extraction and thumbnail rendering</span></div>
+                    <div class="changelog-item"><code>f279e21</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">fix: outgoing bot message phone mapping in webhooks</span></div>
+                    <div class="changelog-item"><code>5d2a655</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Enhance webhook: buttons, lists, and templates</span></div>
+                    <div class="changelog-item"><code>9d84f28</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Implement IG Webhook, Bot Blacklist/Pause Logic</span></div>
+                    <div class="changelog-item"><code>63340b1</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">fix: outgoing message recipient identification</span></div>
+                    <div class="changelog-item"><code>5e36b5d</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Add HEIC image conversion for product catalog</span></div>
+                    <div class="changelog-item"><code>f82c058</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">fix: incorrect contact name updates in webhook</span></div>
+                    <div class="changelog-item"><code>1f776d1</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">fix: message directionality detection in webhook</span></div>
+                    <div class="changelog-item"><code>88b99c7</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Update webhook-instagram for new payload structure</span></div>
+                    <div class="changelog-item"><code>fa28605</code><span class="cl-date">07/01</span><span
+                            class="cl-msg">Update webhook-live-chat for new payload structure</span></div>
+                    <div class="changelog-item"><code>2c863d0</code><span class="cl-date">05/01</span><span
+                            class="cl-msg">Revert: Eliminado sistema de login por problemas</span></div>
+                    <div class="changelog-item"><code>d066329</code><span class="cl-date">05/01</span><span
+                            class="cl-msg">Debug: cache buster y logs para diagnosticar login</span></div>
+
+                </div>
+            </div>
         </div>
     </div>
 
