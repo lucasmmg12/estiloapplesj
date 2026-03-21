@@ -496,7 +496,8 @@ function setupEventListeners() {
             productosCache.forEach(p => {
                 const opt = document.createElement('option');
                 opt.value = p.id;
-                opt.textContent = `${p.modelo} - Stock: ${p.stock}`;
+                const stockText = (p.stock != null && p.stock > 0) ? `Stock: ${p.stock}` : 'No disponible';
+                opt.textContent = `${p.modelo} - ${stockText}`;
                 if (m.related_product_id === p.id) opt.selected = true;
                 slProd.appendChild(opt);
             });
@@ -633,7 +634,12 @@ function llenarSelectorProductos(productos) {
     productos.forEach(p => {
         const option = document.createElement('option');
         option.value = p.id;
-        option.textContent = `${p.modelo} (${p.almacenamiento}) - Stock: ${p.stock || '?'}`;
+        const almInfo = p.almacenamiento ? ` (${p.almacenamiento})` : '';
+        const stockInfo = (p.stock != null && p.stock > 0) ? `Stock: ${p.stock}` : 'No disponible';
+        option.textContent = `${p.modelo}${almInfo} - ${stockInfo}`;
+        if (p.stock == null || p.stock <= 0) {
+            option.style.color = '#999';
+        }
         select.appendChild(option);
     });
 }

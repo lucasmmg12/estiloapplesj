@@ -8,9 +8,18 @@ const REPARACIONES_DB = [
     { modelo: 'iPhone 11 Pro', reparacion: 'Cambio de Módulo', calidad: 'Soft OLED (Simil Original)', precio_usd: 65, garantia: '3 Meses' },
     { modelo: 'iPhone 11 Pro', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 110, garantia: '6 Meses' },
 
+    { modelo: 'iPhone 11 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Soft OLED (Simil Original)', precio_usd: 75, garantia: '3 Meses' },
+    { modelo: 'iPhone 11 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 120, garantia: '6 Meses' },
+
     { modelo: 'iPhone 12', reparacion: 'Cambio de Módulo', calidad: 'Incell (Básico)', precio_usd: 50, garantia: '3 Meses' },
     { modelo: 'iPhone 12', reparacion: 'Cambio de Módulo', calidad: 'OLED (Premium)', precio_usd: 85, garantia: '6 Meses' },
     { modelo: 'iPhone 12', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 130, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 12 Pro', reparacion: 'Cambio de Módulo', calidad: 'OLED (Premium)', precio_usd: 90, garantia: '3 Meses' },
+    { modelo: 'iPhone 12 Pro', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 140, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 12 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'OLED (Premium)', precio_usd: 100, garantia: '3 Meses' },
+    { modelo: 'iPhone 12 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 160, garantia: '6 Meses' },
 
     { modelo: 'iPhone 13', reparacion: 'Cambio de Módulo', calidad: 'Incell', precio_usd: 60, garantia: '3 Meses' },
     { modelo: 'iPhone 13', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 150, garantia: '6 Meses' },
@@ -21,16 +30,72 @@ const REPARACIONES_DB = [
     { modelo: 'iPhone 13 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 240, garantia: '3 Meses' },
     { modelo: 'iPhone 13 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 380, garantia: '6 Meses' },
 
+    { modelo: 'iPhone 14', reparacion: 'Cambio de Módulo', calidad: 'Incell', precio_usd: 70, garantia: '3 Meses' },
+    { modelo: 'iPhone 14', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 170, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 14 Plus', reparacion: 'Cambio de Módulo', calidad: 'Incell', precio_usd: 80, garantia: '3 Meses' },
+    { modelo: 'iPhone 14 Plus', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 190, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 14 Pro', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 260, garantia: '3 Meses' },
+    { modelo: 'iPhone 14 Pro', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 420, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 14 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 280, garantia: '3 Meses' },
+    { modelo: 'iPhone 14 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 450, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 15', reparacion: 'Cambio de Módulo', calidad: 'Incell', precio_usd: 85, garantia: '3 Meses' },
+    { modelo: 'iPhone 15', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 200, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 15 Plus', reparacion: 'Cambio de Módulo', calidad: 'Incell', precio_usd: 95, garantia: '3 Meses' },
+    { modelo: 'iPhone 15 Plus', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 220, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 15 Pro', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 300, garantia: '3 Meses' },
+    { modelo: 'iPhone 15 Pro', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 480, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 15 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 320, garantia: '3 Meses' },
+    { modelo: 'iPhone 15 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 520, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 16', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium', precio_usd: 110, garantia: '3 Meses' },
+    { modelo: 'iPhone 16', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 250, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 16 Pro', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 350, garantia: '3 Meses' },
+    { modelo: 'iPhone 16 Pro', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 550, garantia: '6 Meses' },
+
+    { modelo: 'iPhone 16 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'OLED Premium 120Hz', precio_usd: 380, garantia: '3 Meses' },
+    { modelo: 'iPhone 16 Pro Max', reparacion: 'Cambio de Módulo', calidad: 'Original', precio_usd: 600, garantia: '6 Meses' },
+
     // BATERIAS
     { modelo: 'iPhone 11', reparacion: 'Cambio de Batería', calidad: 'Premium (Sin Error)', precio_usd: 35, garantia: '6 Meses' },
+    { modelo: 'iPhone 11 Pro', reparacion: 'Cambio de Batería', calidad: 'Premium (Sin Error)', precio_usd: 35, garantia: '6 Meses' },
+    { modelo: 'iPhone 11 Pro Max', reparacion: 'Cambio de Batería', calidad: 'Premium (Sin Error)', precio_usd: 40, garantia: '6 Meses' },
     { modelo: 'iPhone 12', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 40, garantia: '6 Meses' },
+    { modelo: 'iPhone 12 Pro', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 40, garantia: '6 Meses' },
+    { modelo: 'iPhone 12 Pro Max', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 45, garantia: '6 Meses' },
     { modelo: 'iPhone 13', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 50, garantia: '6 Meses' },
+    { modelo: 'iPhone 13 Pro', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 50, garantia: '6 Meses' },
+    { modelo: 'iPhone 13 Pro Max', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 55, garantia: '6 Meses' },
+    { modelo: 'iPhone 14', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 55, garantia: '6 Meses' },
+    { modelo: 'iPhone 14 Plus', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 55, garantia: '6 Meses' },
+    { modelo: 'iPhone 14 Pro', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 60, garantia: '6 Meses' },
+    { modelo: 'iPhone 14 Pro Max', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 60, garantia: '6 Meses' },
+    { modelo: 'iPhone 15', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 60, garantia: '6 Meses' },
+    { modelo: 'iPhone 15 Plus', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 60, garantia: '6 Meses' },
+    { modelo: 'iPhone 15 Pro', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 65, garantia: '6 Meses' },
+    { modelo: 'iPhone 15 Pro Max', reparacion: 'Cambio de Batería', calidad: 'Premium', precio_usd: 65, garantia: '6 Meses' },
 
     // TAPA TRASERA (LÁSER)
     { modelo: 'iPhone 11', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 40, garantia: 'N/A' },
     { modelo: 'iPhone 12', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 50, garantia: 'N/A' },
+    { modelo: 'iPhone 12 Pro', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 50, garantia: 'N/A' },
+    { modelo: 'iPhone 12 Pro Max', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 55, garantia: 'N/A' },
     { modelo: 'iPhone 13', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 60, garantia: 'N/A' },
+    { modelo: 'iPhone 13 Pro', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 65, garantia: 'N/A' },
     { modelo: 'iPhone 13 Pro Max', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 70, garantia: 'N/A' },
+    { modelo: 'iPhone 14', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 65, garantia: 'N/A' },
+    { modelo: 'iPhone 14 Pro', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 70, garantia: 'N/A' },
+    { modelo: 'iPhone 14 Pro Max', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 75, garantia: 'N/A' },
+    { modelo: 'iPhone 15', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 70, garantia: 'N/A' },
+    { modelo: 'iPhone 15 Pro', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 80, garantia: 'N/A' },
+    { modelo: 'iPhone 15 Pro Max', reparacion: 'Cambio de Tapa Trasera (Láser)', calidad: 'Vidrio Premium', precio_usd: 85, garantia: 'N/A' },
 ];
 
 const DOLLAR_RATE_DEFAULT = 1485; // Fallback inicial
@@ -268,12 +333,22 @@ function setupFormLogic() {
             .filter(item => item.modelo === model)
             .map(item => item.reparacion))];
 
-        repairs.forEach(rep => {
+        if (repairs.length === 0) {
             const opt = document.createElement('option');
-            opt.value = rep;
-            opt.textContent = rep;
+            opt.value = '';
+            opt.textContent = 'No disponible — Consultar por WhatsApp';
+            opt.disabled = true;
+            opt.selected = true;
             repairSelect.appendChild(opt);
-        });
+            repairSelect.disabled = true;
+        } else {
+            repairs.forEach(rep => {
+                const opt = document.createElement('option');
+                opt.value = rep;
+                opt.textContent = rep;
+                repairSelect.appendChild(opt);
+            });
+        }
     });
 
     // 2. Repair Change -> Show Qualities
