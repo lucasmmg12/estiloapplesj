@@ -5,4 +5,5 @@ __pycache__/
 dist/
 .DS_Store
 *.log
-
+.agents/
+.gemini/

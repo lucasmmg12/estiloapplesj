@@ -375,7 +375,7 @@ function setupFormLogic() {
                 const glowClass = isPremium ? 'shadow-[0_0_15px_rgba(212,175,55,0.2)]' : '';
 
                 // Base classes
-                let classes = `cursor-pointer border ${borderColor} ${glowClass} bg-black/40 rounded-lg p-3 hover:bg-white/5 transition-all flex flex-col justify-between relative quality-card mb-2 sm:mb-0 backdrop-blur-sm`;
+                let classes = `cursor-pointer border ${borderColor} ${glowClass} bg-white rounded-lg p-3 hover:bg-gray-50 transition-all flex flex-col justify-between relative quality-card mb-2 sm:mb-0 backdrop-blur-sm`;
 
                 card.className = classes;
                 card.onclick = () => selectQuality(opt, card);

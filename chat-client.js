@@ -225,7 +225,7 @@ function getAvatarHtml(contact) {
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            color: #fff; 
+            color: #1D1D1F; 
             font-family: 'Montserrat', sans-serif; 
             font-size: 14px; 
             font-weight: 700;

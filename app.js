@@ -1749,7 +1749,7 @@ function abrirModalDolar() {
                             datasets: [{
                                 data: values,
                                 borderColor: '#00D1FF',
-                                backgroundColor: 'rgba(0,209,255,0.08)',
+                                backgroundColor: 'rgba(0, 122, 255, 0.06)',
                                 borderWidth: 2,
                                 fill: true,
                                 tension: 0.4,
@@ -1878,7 +1878,7 @@ function renderizarEstadisticas() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(0,0,0,0.06)' },
                         ticks: { color: '#ccc' }
                     },
                     x: {
@@ -1918,7 +1918,7 @@ function renderizarEstadisticas() {
                 scales: {
                     x: {
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        grid: { color: 'rgba(0,0,0,0.06)' },
                         ticks: { color: '#ccc' }
                     },
                     y: {

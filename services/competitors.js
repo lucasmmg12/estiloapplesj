@@ -228,7 +228,7 @@ function initChartJS() {
             plugins: {
                 legend: {
                     position: 'right',
-                    labels: { color: '#fff', font: { family: 'Inter' } }
+                    labels: { color: '#6E6E73', font: { family: 'Inter' } }
                 }
             },
             cutout: '70%'
@@ -321,7 +321,7 @@ function showEventDetails(event) {
 
     panel.style.display = 'block';
     panel.innerHTML = `
-        <h3 style="margin-bottom:1rem; color:#fff;">Estrategia: ${event.name}</h3>
+        <h3 style="margin-bottom:1rem; color:#1D1D1F;">Estrategia: ${event.name}</h3>
         <div class="tactic-list">
             <div class="tactic-group">
                 <h4>🚀 Pre-Lanzamiento</h4>

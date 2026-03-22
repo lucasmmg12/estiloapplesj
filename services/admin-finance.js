@@ -1223,7 +1223,7 @@ function renderPaginationButtons(containerId, currentPg, totalPg, onPageClick) {
     prevBtn.disabled = currentPg === 1;
     if (currentPg > 1) {
         prevBtn.addEventListener('click', () => onPageClick(currentPg - 1));
-        prevBtn.addEventListener('mouseenter', () => { prevBtn.style.background = 'rgba(255,255,255,0.08)'; prevBtn.style.color = '#fff'; });
+        prevBtn.addEventListener('mouseenter', () => { prevBtn.style.background = '#F2F2F7'; prevBtn.style.color = '#1D1D1F'; });
         prevBtn.addEventListener('mouseleave', () => { prevBtn.style.background = 'rgba(255,255,255,0.03)'; prevBtn.style.color = 'var(--gray-400)'; });
     }
     container.appendChild(prevBtn);
@@ -1265,7 +1265,7 @@ function renderPaginationButtons(containerId, currentPg, totalPg, onPageClick) {
         } else {
             btn.style.cssText = btnStyle;
             btn.addEventListener('click', () => onPageClick(p));
-            btn.addEventListener('mouseenter', () => { btn.style.background = 'rgba(255,255,255,0.08)'; btn.style.color = '#fff'; });
+            btn.addEventListener('mouseenter', () => { btn.style.background = '#F2F2F7'; btn.style.color = '#1D1D1F'; });
             btn.addEventListener('mouseleave', () => { btn.style.background = 'rgba(255,255,255,0.03)'; btn.style.color = 'var(--gray-400)'; });
         }
         container.appendChild(btn);
@@ -1278,7 +1278,7 @@ function renderPaginationButtons(containerId, currentPg, totalPg, onPageClick) {
     nextBtn.disabled = currentPg === totalPg;
     if (currentPg < totalPg) {
         nextBtn.addEventListener('click', () => onPageClick(currentPg + 1));
-        nextBtn.addEventListener('mouseenter', () => { nextBtn.style.background = 'rgba(255,255,255,0.08)'; nextBtn.style.color = '#fff'; });
+        nextBtn.addEventListener('mouseenter', () => { nextBtn.style.background = '#F2F2F7'; nextBtn.style.color = '#1D1D1F'; });
         nextBtn.addEventListener('mouseleave', () => { nextBtn.style.background = 'rgba(255,255,255,0.03)'; nextBtn.style.color = 'var(--gray-400)'; });
     }
     container.appendChild(nextBtn);
@@ -1878,7 +1878,7 @@ export async function renderizarGraficos() {
             label: 'Ingresos Históricos (ARS)',
             data: dataIncTrends,
             borderColor: '#00ff88',
-            backgroundColor: 'rgba(0, 255, 136, 0.1)',
+            backgroundColor: 'rgba(52, 199, 89, 0.1)',
             fill: true,
             tension: 0.4
         }]);
@@ -1931,7 +1931,7 @@ export async function renderizarGraficos() {
                 legend: {
                     position: 'right',
                     labels: {
-                        color: '#fff',
+                        color: '#6E6E73',
                         font: { size: 13, weight: '600' },
                         padding: 15,
                         usePointStyle: true,
@@ -1949,7 +1949,7 @@ export async function renderizarGraficos() {
             label: 'Evolución Histórica (ARS)',
             data: dataIncTrends,
             borderColor: '#00ff88',
-            backgroundColor: 'rgba(0, 255, 136, 0.15)',
+            backgroundColor: 'rgba(52, 199, 89, 0.12)',
             fill: true,
             tension: 0.3
         }]);
@@ -1957,7 +1957,7 @@ export async function renderizarGraficos() {
         // 2. Payment Methods Tab
         renderChart('chartPaymentMethods_Tab', 'doughnut', sortedPay.map(x => x[0]), [{
             data: sortedPay.map(x => x[1]),
-            backgroundColor: ['#ffffffaa', '#00ff88aa', '#00d4ffaa', '#f59e0baa', '#ff4d4daa'],
+            backgroundColor: ['#5C2E2Ecc', '#34C759cc', '#007AFFcc', '#FF9500cc', '#FF3B30cc'],
             borderWidth: 0
         }], { cutout: '50%' }); // Doughnut looks cleaner in tab
 
@@ -2036,8 +2036,8 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: {
-            x: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-            y: { ticks: { color: '#fff' }, grid: { display: false } }
+            x: { ticks: { color: '#6E6E73' }, grid: { color: 'rgba(0,0,0,0.06)' } },
+            y: { ticks: { color: '#6E6E73' }, grid: { display: false } }
         }
     });
 
@@ -2059,7 +2059,7 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     }], {
         cutout: '65%',
         plugins: {
-            legend: { position: 'bottom', labels: { color: '#fff', font: { size: 11 } } }
+            legend: { position: 'bottom', labels: { color: '#6E6E73', font: { size: 11 } } }
         }
     });
 
@@ -2088,8 +2088,8 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     }], {
         plugins: { legend: { display: false } },
         scales: {
-            x: { ticks: { color: '#fff' }, grid: { display: false } },
-            y: { ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+            x: { ticks: { color: '#6E6E73' }, grid: { display: false } },
+            y: { ticks: { color: '#6E6E73' }, grid: { color: 'rgba(0,0,0,0.06)' } }
         }
     });
 

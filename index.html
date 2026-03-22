@@ -45,9 +45,9 @@
                     <h1 class="header-title">Gestión de Conversaciones</h1>
                 </div>
                 <button onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true}))"
-                    style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.35);font-size:0.75rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;"
-                    onmouseover="this.style.borderColor='rgba(212,163,115,0.4)';this.style.color='rgba(255,255,255,0.6)'"
-                    onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='rgba(255,255,255,0.35)'">
+                    style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid #E5E5EA;background:#F5F5F7;color:#86868B;font-size:0.75rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;"
+                    onmouseover="this.style.borderColor='#D2D2D7';this.style.color='rgba(255,255,255,0.6)'"
+                    onmouseout="this.style.borderColor='#E5E5EA';this.style.color='rgba(255,255,255,0.35)'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -130,7 +130,7 @@
                         <span>Apps</span>
                     </button>
 
-                    <button class="nav-tab" style="margin-left: auto; border: 1px solid rgba(255,255,255,0.1);"
+                    <button class="nav-tab" style="margin-left: auto; border: 1px solid #E5E5EA;"
                         onclick="cambiarTab('actualizaciones'); document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); document.getElementById('subNavPanel').classList.remove('open');">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -140,7 +140,7 @@
                         <span>Updates</span>
                     </button>
 
-                    <button class="nav-tab" style="border: 1px solid rgba(255,255,255,0.1);" onclick="abrirManual()">
+                    <button class="nav-tab" style="border: 1px solid #E5E5EA;" onclick="abrirManual()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
                             <circle cx="12" cy="12" r="10"></circle>
@@ -332,11 +332,11 @@
                     style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem;">
 
                     <!-- HERO METRIC -->
-                    <div style="text-align: left; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <h2 style="font-size: 3.5rem; color: var(--accent-green); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.2rem;"
+                    <div style="text-align: left; padding: 1rem 0; border-bottom: 1px solid #F2F2F7;">
+                        <h2 style="font-size: 3.5rem; color: #1D1D1F; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.2rem;"
                             id="heroIngresosMes">$0</h2>
                         <div
-                            style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                            style="display: flex; align-items: center; gap: 0.5rem; color: #6E6E73; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%;"></span>
                             Ingresos Este Mes
@@ -353,28 +353,28 @@
                                     style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
                                     Período</span>
                                 <button class="chip-filter-ventas" data-vpreset="today"
-                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Hoy</button>
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Hoy</button>
                                 <button class="chip-filter-ventas" data-vpreset="week"
-                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Semana</button>
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Semana</button>
                                 <button class="chip-filter-ventas active" data-vpreset="month"
-                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Este
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Este
                                     Mes</button>
                                 <button class="chip-filter-ventas" data-vpreset="year"
-                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Año</button>
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Año</button>
                                 <button class="chip-filter-ventas" data-vpreset="all"
-                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid rgba(0,255,136,0.2); background:transparent; color:rgba(255,255,255,0.6); cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Todo</button>
+                                    style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Todo</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                                <label style="font-size:0.7rem; color:rgba(255,255,255,0.35);">Desde</label>
+                                <label style="font-size:0.7rem; color:#86868B;">Desde</label>
                                 <input type="date" id="ventasFilterDesde"
-                                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#fff; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
-                                <label style="font-size:0.7rem; color:rgba(255,255,255,0.35);">Hasta</label>
+                                    style="background:#F5F5F7; border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#1D1D1F; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
+                                <label style="font-size:0.7rem; color:#86868B;">Hasta</label>
                                 <input type="date" id="ventasFilterHasta"
-                                    style="background:rgba(255,255,255,0.05); border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#fff; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
+                                    style="background:#F5F5F7; border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#1D1D1F; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
                                 <button id="ventasFilterApply"
-                                    style="padding:0.35rem 0.75rem; border-radius:8px; border:1px solid rgba(0,255,136,0.3); background:rgba(0,255,136,0.1); color:#00FF88; font-size:0.7rem; cursor:pointer; font-weight:600;">Aplicar</button>
+                                    style="padding:0.35rem 0.75rem; border-radius:8px; border:1px solid rgba(0,255,136,0.3); background:rgba(92,46,46,0.06); color:#00FF88; font-size:0.7rem; cursor:pointer; font-weight:600;">Aplicar</button>
                                 <button id="ventasFilterClear"
-                                    style="padding:0.35rem 0.6rem; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:transparent; color:rgba(255,255,255,0.4); font-size:0.7rem; cursor:pointer;"
+                                    style="padding:0.35rem 0.6rem; border-radius:8px; border:1px solid #E5E5EA; background:transparent; color:rgba(255,255,255,0.4); font-size:0.7rem; cursor:pointer;"
                                     title="Limpiar filtros">✕</button>
                                 <span id="ventasFilterLabel"
                                     style="font-size:0.65rem; color:#00FF88; font-weight:600; opacity:0;">—</span>
@@ -390,9 +390,9 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Ayer</span>
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Ayer</span>
                             <div class="value" id="kpiIngresoHoy_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                style="font-size: 1.8rem; font-weight: 700; color: #1D1D1F; position: relative; z-index: 1;">
                                 $0</div>
                         </div>
                         <div class="glass-card kpi-card-fluid" style="position: relative; overflow: hidden;">
@@ -400,10 +400,10 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📈</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Esta
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Esta
                                 Semana</span>
                             <div class="value" id="kpiIngresoSemana_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                style="font-size: 1.8rem; font-weight: 700; color: #1D1D1F; position: relative; z-index: 1;">
                                 $0</div>
                         </div>
                         <div class="glass-card kpi-card-fluid" style="position: relative; overflow: hidden;">
@@ -411,7 +411,7 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Total
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Total
                                 Histórico</span>
                             <div class="value" id="kpiIngresosHistoricos"
                                 style="font-size: 1.8rem; font-weight: 700; color: var(--accent-light); position: relative; z-index: 1;">
@@ -437,19 +437,19 @@
                                             <div class="radio-group"
                                                 style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                                                 <label class="radio-chip"
-                                                    style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                    style="cursor: pointer; padding: 0.5rem; background: #F9F9FB; border-radius: 8px; border: 1px solid var(--gray-600);">
                                                     <input type="radio" name="ingresoCategoria" value="Venta de Equipos"
                                                         required>
                                                     <span>📱 Equipos</span>
                                                 </label>
                                                 <label class="radio-chip"
-                                                    style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                    style="cursor: pointer; padding: 0.5rem; background: #F9F9FB; border-radius: 8px; border: 1px solid var(--gray-600);">
                                                     <input type="radio" name="ingresoCategoria"
                                                         value="Venta de Accesorios">
                                                     <span>🎧 Accesorios</span>
                                                 </label>
                                                 <label class="radio-chip"
-                                                    style="cursor: pointer; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--gray-600);">
+                                                    style="cursor: pointer; padding: 0.5rem; background: #F9F9FB; border-radius: 8px; border: 1px solid var(--gray-600);">
                                                     <input type="radio" name="ingresoCategoria" value="Servicio Tecnico"
                                                         checked>
                                                     <span>🔧 Servicio</span>
@@ -476,18 +476,18 @@
                                     </div>
 
                                     <div class="form-group" id="selectorEquipoContainer"
-                                        style="display: none; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                                        style="display: none; margin-bottom: 1rem; padding: 1rem; background: #F9F9FB; border-radius: 8px;">
                                         <label style="color: #00ff88;">Seleccionar Equipo del Stock</label>
                                         <select id="ingresoProductoId" name="ingresoProductoId" class="select-lg"
                                             style="width: 100%; padding: 0.5rem;">
                                             <option value="">Buscar modelo...</option>
                                         </select>
-                                        <small style="color: var(--gray-400);">Se descontará 1 unidad del
+                                        <small style="color: #6E6E73;">Se descontará 1 unidad del
                                             inventario.</small>
                                     </div>
 
                                     <div class="form-group" id="selectorServicioContainer"
-                                        style="display: block; margin-bottom: 1rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--primary);">
+                                        style="display: block; margin-bottom: 1rem; padding: 1rem; background: #F9F9FB; border-radius: 8px; border: 1px solid var(--primary);">
                                         <label style="color: var(--primary);">Tipo de Servicio</label>
                                         <select id="ingresoTipoServicio" name="ingresoTipoServicio" class="select-lg"
                                             style="width: 100%; padding: 0.5rem;" required>
@@ -611,15 +611,15 @@
                                     style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
                                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                                         <span
-                                            style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                            style="font-size: 0.75rem; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
                                         <select id="ventasTabPageSize"
-                                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                            style="background: rgba(255,255,255,0.05); border: 1px solid #E5E5EA; color: #1D1D1F; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
                                             <option value="10" selected>10</option>
                                             <option value="50">50</option>
                                             <option value="100">100</option>
                                         </select>
                                         <span id="ventasTabTotalInfo"
-                                            style="font-size: 0.75rem; color: var(--gray-400);">0 registros</span>
+                                            style="font-size: 0.75rem; color: #6E6E73;">0 registros</span>
                                     </div>
                                     <div id="ventasTabPages" style="display: flex; align-items: center; gap: 0.3rem;">
                                         <!-- Page buttons injected by JS -->
@@ -637,11 +637,11 @@
                     style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem;">
 
                     <!-- HERO METRIC -->
-                    <div style="text-align: left; padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <h2 style="font-size: 3.5rem; color: var(--accent-red); font-weight: 800; letter-spacing: -1px; margin-bottom: 0.2rem;"
+                    <div style="text-align: left; padding: 1rem 0; border-bottom: 1px solid #F2F2F7;">
+                        <h2 style="font-size: 3.5rem; color: #1D1D1F; font-weight: 800; letter-spacing: -1px; margin-bottom: 0.2rem;"
                             id="heroGastosMes">$0</h2>
                         <div
-                            style="display: flex; align-items: center; gap: 0.5rem; color: var(--gray-400); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                            style="display: flex; align-items: center; gap: 0.5rem; color: #6E6E73; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
                             <span
                                 style="display: inline-block; width: 8px; height: 8px; background: var(--accent-red); border-radius: 50%;"></span>
                             Gastos Este Mes
@@ -656,7 +656,7 @@
                             <!-- Presets Rápidos -->
                             <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                                 <span
-                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
+                                    style="font-size: 0.7rem; color: #6E6E73; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
                                     Período</span>
                                 <div class="filter-chips" id="gastosFilterChips" style="display: flex; gap: 0.4rem;">
                                     <button class="chip-filter chip-filter-gastos"
@@ -693,7 +693,7 @@
                                     </svg>
                                 </button>
                                 <button id="btnGastosFilterClear"
-                                    style="background: rgba(255,255,255,0.05); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s; font-size: 0.7rem;"
+                                    style="background: rgba(255,255,255,0.05); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #6E6E73; cursor: pointer; transition: all 0.2s; font-size: 0.7rem;"
                                     title="Limpiar filtro">✕</button>
                             </div>
                         </div>
@@ -714,9 +714,9 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📅</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Ayer</span>
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Ayer</span>
                             <div class="value" id="kpiGastoHoy_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                style="font-size: 1.8rem; font-weight: 700; color: #1D1D1F; position: relative; z-index: 1;">
                                 $0</div>
                         </div>
                         <div class="glass-card kpi-card-fluid-expense" style="position: relative; overflow: hidden;">
@@ -724,10 +724,10 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📉</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Esta
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Esta
                                 Semana</span>
                             <div class="value" id="kpiGastoSemana_Tab"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff; position: relative; z-index: 1;">
+                                style="font-size: 1.8rem; font-weight: 700; color: #1D1D1F; position: relative; z-index: 1;">
                                 $0</div>
                         </div>
                         <div class="glass-card kpi-card-fluid-expense" style="position: relative; overflow: hidden;">
@@ -735,10 +735,10 @@
                                 style="position: absolute; top: -10px; right: -10px; font-size: 4rem; opacity: 0.05; z-index: 0;">
                                 📉</div>
                             <span class="label"
-                                style="display: block; margin-bottom: 0.5rem; color: rgba(255,255,255,0.7); position: relative; z-index: 1;">Egresos
+                                style="display: block; margin-bottom: 0.5rem; color: #48484A; position: relative; z-index: 1;">Egresos
                                 del Histórico</span>
                             <div class="value" id="kpiGastoTotalHistorico"
-                                style="font-size: 1.8rem; font-weight: 700; color: #fff; line-height: 1.4; margin-top: 0.5rem; position: relative; z-index: 1;">
+                                style="font-size: 1.8rem; font-weight: 700; color: #1D1D1F; line-height: 1.4; margin-top: 0.5rem; position: relative; z-index: 1;">
                                 -</div>
                         </div>
                     </div>
@@ -859,15 +859,15 @@
                                     style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
                                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                                         <span
-                                            style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                            style="font-size: 0.75rem; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
                                         <select id="gastosTabPageSize"
-                                            style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                            style="background: rgba(255,255,255,0.05); border: 1px solid #E5E5EA; color: #1D1D1F; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
                                             <option value="10" selected>10</option>
                                             <option value="50">50</option>
                                             <option value="100">100</option>
                                         </select>
                                         <span id="gastosTabTotalInfo"
-                                            style="font-size: 0.75rem; color: var(--gray-400);">0 registros</span>
+                                            style="font-size: 0.75rem; color: #6E6E73;">0 registros</span>
                                     </div>
                                     <div id="gastosTabPages" style="display: flex; align-items: center; gap: 0.3rem;">
                                         <!-- Page buttons injected by JS -->
@@ -891,7 +891,7 @@
                         <!-- Columna Ingresos -->
                         <div class="glass-card" style="border-top: 4px solid var(--accent-green);">
                             <div class="card-header">
-                                <h2 class="card-title" style="color: var(--accent-green);">Ingresos (Ventas)</h2>
+                                <h2 class="card-title" style="color: #1D1D1F;">Ingresos (Ventas)</h2>
                             </div>
                             <!-- KPIs Ingresos -->
                             <div
@@ -922,7 +922,7 @@
                         <!-- Columna Egresos -->
                         <div class="glass-card" style="border-top: 4px solid var(--accent-red);">
                             <div class="card-header">
-                                <h2 class="card-title" style="color: var(--accent-red);">Egresos (Gastos)</h2>
+                                <h2 class="card-title" style="color: #1D1D1F;">Egresos (Gastos)</h2>
                             </div>
                             <!-- KPIs Egresos -->
                             <div
@@ -1022,7 +1022,7 @@
                                     style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 1rem; font-style: italic;">
                                     ¿Qué pasó? Resumen de métricas clave del período.</p>
                                 <p id="analisisDescriptivo"
-                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                                    style="color: #48484A; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
                                     Generando
                                     análisis...</p>
                                 <div style="height: 180px; margin-top: 1rem;">
@@ -1040,7 +1040,7 @@
                                     style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 1rem; font-style: italic;">
                                     ¿Por qué pasó? Comparativa con período anterior.</p>
                                 <p id="analisisDiagnostico"
-                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                                    style="color: #48484A; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
                                     Comparando con
                                     período anterior...</p>
                                 <div style="height: 180px; margin-top: 1rem;">
@@ -1058,7 +1058,7 @@
                                     style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 1rem; font-style: italic;">
                                     ¿Qué pasará? Proyección inteligente basada en tendencias.</p>
                                 <p id="analisisPredictivo"
-                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
+                                    style="color: #48484A; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem;">
                                     Proyectando
                                     tendencias...</p>
                                 <div style="height: 180px; margin-top: 1rem;">
@@ -1076,7 +1076,7 @@
                                     style="color: rgba(255,255,255,0.6); font-size: 0.8rem; margin-bottom: 1rem; font-style: italic;">
                                     ¿Qué hacer? Recomendaciones accionables para mejorar.</p>
                                 <ul id="analisisPrescriptivo"
-                                    style="color: var(--gray-300); font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem;">
+                                    style="color: #48484A; font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem;">
                                     <li>Generando recomendaciones...</li>
                                 </ul>
                             </div>
@@ -1099,13 +1099,13 @@
                         <div class="card-header"
                             style="flex-direction: column; align-items: flex-start; gap: 1.2rem; padding: 1.5rem;">
                             <div
-                                style="display: flex; justify-content: space-between; width: 100%; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; margin-bottom: 0.5rem;">
+                                style="display: flex; justify-content: space-between; width: 100%; align-items: center; border-bottom: 1px solid #F2F2F7; padding-bottom: 1rem; margin-bottom: 0.5rem;">
                                 <h2 class="card-title" style="margin: 0; font-size: 1.5rem; letter-spacing: -0.5px;">
                                     Historial de Movimientos</h2>
 
                                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem;">
                                     <span
-                                        style="font-size: 0.7rem; color: var(--gray-400); font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;">Descargar
+                                        style="font-size: 0.7rem; color: #6E6E73; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase;">Descargar
                                         Reportes</span>
                                     <div style="display: flex; gap: 0.6rem; align-items: center;">
                                         <!-- Grupos de Exportación -->
@@ -1238,14 +1238,14 @@
                             style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); gap: 1rem; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; gap: 0.75rem;">
                                 <span
-                                    style="font-size: 0.75rem; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
+                                    style="font-size: 0.75rem; color: #6E6E73; text-transform: uppercase; letter-spacing: 0.5px;">Mostrar</span>
                                 <select id="movimientosPageSize"
-                                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
+                                    style="background: rgba(255,255,255,0.05); border: 1px solid #E5E5EA; color: #1D1D1F; padding: 0.35rem 0.6rem; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'JetBrains Mono', monospace;">
                                     <option value="10">10</option>
                                     <option value="50" selected>50</option>
                                     <option value="100">100</option>
                                 </select>
-                                <span id="movimientosTotalInfo" style="font-size: 0.75rem; color: var(--gray-400);">0
+                                <span id="movimientosTotalInfo" style="font-size: 0.75rem; color: #6E6E73;">0
                                     registros</span>
                             </div>
                             <div id="movimientosPages" style="display: flex; align-items: center; gap: 0.3rem;">
@@ -1326,7 +1326,7 @@
             </div>
 
             <!-- 3. Auditoría de Rivales (Cards) -->
-            <h3 class="section-title" style="margin: 1.5rem 0 1rem; color: #fff;">Auditoría de Competidores</h3>
+            <h3 class="section-title" style="margin: 1.5rem 0 1rem; color: #1D1D1F;">Auditoría de Competidores</h3>
             <div class="competitor-grid" id="gridCompetidores">
                 <!-- Cards inyectadas por JS -->
             </div>
@@ -1366,7 +1366,7 @@
                         <div
                             style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
                             <div>
-                                <h3 style="color: #fff; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem;">
+                                <h3 style="color: #1D1D1F; font-size: 1.3rem; font-weight: 700; margin-bottom: 0.25rem;">
                                     📱 Diagnóstico AI
                                 </h3>
                                 <span
@@ -1377,7 +1377,7 @@
                             <div style="font-size: 2.5rem; opacity: 0.5;">🔍</div>
                         </div>
 
-                        <p style="color: var(--gray-400); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                        <p style="color: #6E6E73; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.5rem;">
                             Herramienta pública para clientes. Suben fotos del dispositivo dañado y la IA identifica el
                             modelo, daño y presupuesto estimado automáticamente.
                         </p>
@@ -1397,7 +1397,7 @@
                             </a>
                             <button
                                 onclick="navigator.clipboard.writeText(window.location.origin + '/diagnostico.html').then(() => { this.innerHTML = '✓ Copiado!'; setTimeout(() => this.innerHTML = '📋 Copiar Link', 2000); })"
-                                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(255, 255, 255, 0.1); color: #fff; font-weight: 600; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease;"
+                                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(255, 255, 255, 0.1); color: #1D1D1F; font-weight: 600; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; transition: all 0.3s ease;"
                                 onmouseover="this.style.background='rgba(255, 255, 255, 0.15)';"
                                 onmouseout="this.style.background='rgba(255, 255, 255, 0.1)';">
                                 📋 Copiar Link
@@ -1447,7 +1447,7 @@
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="card-title">Equipo de Ventas</h2>
-                        <p style="font-size: 0.9rem; color: var(--gray-400);">Gestión y rendimiento del equipo</p>
+                        <p style="font-size: 0.9rem; color: #6E6E73;">Gestión y rendimiento del equipo</p>
                     </div>
                     <div class="embudo-grid" id="vendedoresGrid">
                         <!-- Se llena con JS -->
@@ -1541,7 +1541,7 @@
                                 <!-- Equipo (Más pequeño) -->
                                 <div style="flex: 1; min-width: 300px;">
                                     <h4
-                                        style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem; text-align: center;">
+                                        style="font-size: 0.8rem; color: #6E6E73; margin-bottom: 0.5rem; text-align: center;">
                                         Ventas por Vendedor</h4>
                                     <div style="height: 200px; position: relative;">
                                         <canvas id="chartEquipo"></canvas>
@@ -1550,7 +1550,7 @@
                                 <!-- Embudo -->
                                 <div style="flex: 2; min-width: 400px;">
                                     <h4
-                                        style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem; text-align: center;">
+                                        style="font-size: 0.8rem; color: #6E6E73; margin-bottom: 0.5rem; text-align: center;">
                                         Estado de Clientes</h4>
                                     <div style="height: 250px; position: relative;">
                                         <canvas id="chartEmbudo"></canvas>
@@ -1907,8 +1907,8 @@
                         </svg>
                     </div>
                     <div>
-                        <h2 class="card-title" style="font-size: 1.5rem; color: white;">Nueva Reserva / Seña</h2>
-                        <p style="color: var(--gray-400);">Registra un adelanto para bloquear stock.</p>
+                        <h2 class="card-title" style="font-size: 1.5rem; color: #1D1D1F;">Nueva Reserva / Seña</h2>
+                        <p style="color: #6E6E73;">Registra un adelanto para bloquear stock.</p>
                     </div>
                 </div>
             </div>
@@ -1918,11 +1918,11 @@
 
                 <!-- Producto Seleccionado -->
                 <div class="form-group"
-                    style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid #E5E5EA;">
                     <label style="color: var(--estilo-gold); margin-bottom: 0.5rem; display: block;">Producto a
                         Reservar</label>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 id="senaProductoNombre" style="font-size: 1.25rem; font-weight: 700; color: white;">
+                        <h3 id="senaProductoNombre" style="font-size: 1.25rem; font-weight: 700; color: #1D1D1F;">
                             Selecciona un producto desde el Catálogo</h3>
                         <p id="senaProductoPrecio"
                             style="font-size: 1.5rem; font-family: monospace; color: var(--estilo-gold); font-weight: bold;">
@@ -1940,13 +1940,13 @@
                             <label>Nombre del Cliente *</label>
                             <input type="text" id="senaClienteNombre" class="input-lg w-full"
                                 placeholder="Ej: Juan Pérez" required
-                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: #F5F5F7; border: 1px solid #E5E5EA; border-radius: 8px; color: #1D1D1F;">
                         </div>
 
                         <div class="form-group" style="margin-bottom: 1.5rem;">
                             <label>Vendedor</label>
                             <select id="senaVendedor" class="select-lg w-full"
-                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;">
+                                style="width: 100%; padding: 1rem; font-size: 1.1rem; background: #F5F5F7; border: 1px solid #E5E5EA; border-radius: 8px; color: #1D1D1F;">
                                 <option value="1">Nahuel</option>
                                 <option value="2">Cristofer</option>
                             </select>
@@ -1954,19 +1954,19 @@
                     </div>
 
                     <!-- Montos -->
-                    <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 12px;">
+                    <div style="background: #F9F9FB; padding: 1.5rem; border-radius: 12px;">
                         <div class="form-group" style="margin-bottom: 1.5rem;">
-                            <label style="color: var(--accent-green);">Monto de Seña (Adelanto) *</label>
+                            <label style="color: #1D1D1F;">Monto de Seña (Adelanto) *</label>
                             <div class="relative">
                                 <input type="number" id="senaMonto" class="input-lg w-full" placeholder="0.00" required
-                                    style="width: 100%; padding: 1rem; font-size: 1.5rem; font-weight: bold; color: var(--accent-green); background: rgba(0,0,0,0.5); border: 1px solid var(--accent-green); border-radius: 8px;">
+                                    style="width: 100%; padding: 1rem; font-size: 1.5rem; font-weight: bold; color: #1D1D1F; background: rgba(0,0,0,0.5); border: 1px solid var(--accent-green); border-radius: 8px;">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Saldo Restante (A Pagar)</label>
                             <input type="text" id="senaSaldo" readonly
-                                style="width: 100%; padding: 1rem; font-size: 1.2rem; background: transparent; border: none; color: var(--gray-400); font-family: monospace;">
+                                style="width: 100%; padding: 1rem; font-size: 1.2rem; background: transparent; border: none; color: #6E6E73; font-family: monospace;">
                         </div>
                     </div>
                 </div>
@@ -1975,7 +1975,7 @@
                     <label>Observaciones / Notas</label>
                     <textarea id="senaObservaciones" class="input-dark w-full" rows="3"
                         placeholder="Detalles adicionales..."
-                        style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white;"></textarea>
+                        style="width: 100%; padding: 1rem; background: #F5F5F7; border: 1px solid #E5E5EA; border-radius: 8px; color: #1D1D1F;"></textarea>
                 </div>
 
                 <div class="form-actions"
@@ -1999,7 +1999,7 @@
                         style="background: linear-gradient(135deg, #d4a373, #fce4ec); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">⚡
                         Historial de Actualizaciones</span>
                 </h2>
-                <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem;">Últimos 100 commits del proyecto — registro
+                <p style="color: #6E6E73; font-size: 0.85rem;">Últimos 100 commits del proyecto — registro
                     completo de cambios y mejoras.</p>
             </div>
 
@@ -2387,7 +2387,7 @@
 
             <!-- Header Manual -->
             <div class="modal-header"
-                style="padding: 1.5rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.4);">
+                style="padding: 1.5rem 2rem; border-bottom: 1px solid #F2F2F7; background: rgba(0,0,0,0.4);">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div style="background: var(--estilo-gold); color: black; padding: 0.5rem; border-radius: 8px;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2398,7 +2398,7 @@
                     </div>
                     <div>
                         <h3 class="modal-title" style="font-size: 1.5rem;">Estilo Apple Academy</h3>
-                        <p style="color: var(--gray-400); font-size: 0.9rem; margin: 0;">Guía oficial de uso - v2.0</p>
+                        <p style="color: #6E6E73; font-size: 0.9rem; margin: 0;">Guía oficial de uso - v2.0</p>
                     </div>
                 </div>
                 <button class="modal-close" onclick="cerrarModal('modalManual')">
@@ -2440,7 +2440,7 @@
                     <!-- PÁGINA: INICIO -->
                     <div class="manual-page active" id="manual-inicio">
                         <h2 style="color: var(--estilo-gold); margin-bottom: 1rem;">Bienvenido al Sistema Operativo</h2>
-                        <p style="color: var(--gray-300); margin-bottom: 2rem; font-size: 1.1rem;">
+                        <p style="color: #48484A; margin-bottom: 2rem; font-size: 1.1rem;">
                             Esta plataforma está diseñada para centralizar toda la operación de <strong>Estilo Apple
                                 SJ</strong>.
                             A continuación, selecciona un módulo a la izquierda para aprender a dominarlo.
@@ -2450,14 +2450,14 @@
                             style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
                             <div class="glass-card" style="text-align: center; padding: 2rem;">
                                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">🤖</div>
-                                <h3 style="color: white; margin-bottom: 0.5rem;">IA Integrada</h3>
-                                <p style="color: var(--gray-400); font-size: 0.9rem;">El sistema lee los chats y te
+                                <h3 style="color: #1D1D1F; margin-bottom: 0.5rem;">IA Integrada</h3>
+                                <p style="color: #6E6E73; font-size: 0.9rem;">El sistema lee los chats y te
                                     resume qué quiere el cliente automáticamente.</p>
                             </div>
                             <div class="glass-card" style="text-align: center; padding: 2rem;">
                                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">📊</div>
-                                <h3 style="color: white; margin-bottom: 0.5rem;">Caja Real-Time</h3>
-                                <p style="color: var(--gray-400); font-size: 0.9rem;">Tus ventas impactan los gráficos
+                                <h3 style="color: #1D1D1F; margin-bottom: 0.5rem;">Caja Real-Time</h3>
+                                <p style="color: #6E6E73; font-size: 0.9rem;">Tus ventas impactan los gráficos
                                     al instante. Sin planillas extra.</p>
                             </div>
                         </div>
@@ -2469,14 +2469,14 @@
 
                         <div style="margin-bottom: 2rem;">
                             <h3
-                                style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                style="color: #1D1D1F; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; margin-bottom: 1rem;">
                                 1. El Tablero de Conversaciones</h3>
-                            <p style="color: var(--gray-300); margin-bottom: 1rem;">
+                            <p style="color: #48484A; margin-bottom: 1rem;">
                                 En la pestaña "Clientes" verás todas las personas que han escrito.
                                 El sistema usa un <strong>Semáforo de Intenciones</strong>:
                             </p>
                             <ul
-                                style="color: var(--gray-400); list-style: none; padding-left: 0; display: flex; gap: 1rem; flex-wrap: wrap;">
+                                style="color: #6E6E73; list-style: none; padding-left: 0; display: flex; gap: 1rem; flex-wrap: wrap;">
                                 <li
                                     style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 4px;">
                                     🟢 Compra (Alta prioridad)</li>
@@ -2490,9 +2490,9 @@
                         </div>
 
                         <div
-                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                            <h3 style="color: white; margin-bottom: 0.5rem;">🧠 Resumen Inteligente</h3>
-                            <p style="color: var(--gray-400);">
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid #E5E5EA;">
+                            <h3 style="color: #1D1D1F; margin-bottom: 0.5rem;">🧠 Resumen Inteligente</h3>
+                            <p style="color: #6E6E73;">
                                 No necesitas leer 50 mensajes. Al hacer clic en <strong>"Ver"</strong>, la IA leerá el
                                 chat y te dirá:
                                 <br><em>"El cliente busca un iPhone 13 Pro de 256GB y pregunta si aceptamos USDT."</em>
@@ -2502,7 +2502,7 @@
 
                     <!-- PÁGINA: FINANZAS -->
                     <div class="manual-page" id="manual-finanzas" style="display: none;">
-                        <h2 style="color: var(--accent-green); margin-bottom: 1.5rem;">Finanzas y Caja (ERP)</h2>
+                        <h2 style="color: #1D1D1F; margin-bottom: 1.5rem;">Finanzas y Caja (ERP)</h2>
 
                         <div style="display: grid; gap: 2rem;">
                             <!-- Paso 1 -->
@@ -2511,8 +2511,8 @@
                                     style="background: var(--accent-green); color: black; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
                                     1</div>
                                 <div>
-                                    <h4 style="color: white; margin-bottom: 0.5rem;">Registrar una Venta</h4>
-                                    <p style="color: var(--gray-400);">Ve a la pestaña <strong>ERP > Ingresos</strong>.
+                                    <h4 style="color: #1D1D1F; margin-bottom: 0.5rem;">Registrar una Venta</h4>
+                                    <p style="color: #6E6E73;">Ve a la pestaña <strong>ERP > Ingresos</strong>.
                                         Carga el monto y selecciona la categoría. Esto actualiza tu "Caja del Día".</p>
                                 </div>
                             </div>
@@ -2520,11 +2520,11 @@
                             <!-- Paso 2 -->
                             <div style="display: flex; gap: 1rem;">
                                 <div
-                                    style="background: var(--accent-red); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
+                                    style="background: var(--accent-red); color: #1D1D1F; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
                                     2</div>
                                 <div>
-                                    <h4 style="color: white; margin-bottom: 0.5rem;">Registrar un Gasto</h4>
-                                    <p style="color: var(--gray-400);">En <strong>Egresos</strong>, carga compras de
+                                    <h4 style="color: #1D1D1F; margin-bottom: 0.5rem;">Registrar un Gasto</h4>
+                                    <p style="color: #6E6E73;">En <strong>Egresos</strong>, carga compras de
                                         mercadería, pagos de servicios o sueldos. Es vital para calcular la ganancia
                                         neta real.</p>
                                 </div>
@@ -2537,10 +2537,10 @@
                         <h2 style="color: #FACC15; margin-bottom: 1.5rem;">Control de Stock & Señas</h2>
 
                         <div style="margin-bottom: 2rem;">
-                            <h3 style="color: white; margin-bottom: 1rem;">Ciclo de Vida de un Producto</h3>
+                            <h3 style="color: #1D1D1F; margin-bottom: 1rem;">Ciclo de Vida de un Producto</h3>
                             <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
                                 <div
-                                    style="border: 1px solid var(--accent-green); padding: 1rem; border-radius: 8px; color: var(--accent-green);">
+                                    style="border: 1px solid var(--accent-green); padding: 1rem; border-radius: 8px; color: #1D1D1F;">
                                     <strong>1. Disponible</strong><br>
                                     <small>En catálogo público</small>
                                 </div>
@@ -2552,7 +2552,7 @@
                                 </div>
                                 ➡️
                                 <div
-                                    style="border: 1px solid var(--gray-600); padding: 1rem; border-radius: 8px; color: var(--gray-400);">
+                                    style="border: 1px solid var(--gray-600); padding: 1rem; border-radius: 8px; color: #6E6E73;">
                                     <strong>3. Vendido</strong><br>
                                     <small>Fuera de stock</small>
                                 </div>
@@ -2563,7 +2563,7 @@
                             style="background: rgba(250, 204, 21, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--estilo-gold);">
                             <h3 style="color: var(--estilo-gold); margin-bottom: 0.5rem;">Cómo Señar un Equipo</h3>
                             <ol
-                                style="color: var(--gray-300); margin-left: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                style="color: #48484A; margin-left: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
                                 <li>Busca el equipo en el Catálogo.</li>
                                 <li>Haz clic en el botón <strong>$ Señar</strong>.</li>
                                 <li>Ingresa cuánto deja el cliente (ej: $50 USD). El sistema calcula el saldo restante
@@ -2578,19 +2578,19 @@
                     <!-- PÁGINA: TOOLS -->
                     <div class="manual-page" id="manual-tools" style="display: none;">
                         <h2 style="color: var(--accent-blue); margin-bottom: 1.5rem;">Herramientas Públicas</h2>
-                        <p style="color: var(--gray-300); margin-bottom: 1.5rem;">Estas herramientas son para compartir
+                        <p style="color: #48484A; margin-bottom: 1.5rem;">Estas herramientas son para compartir
                             con el cliente.</p>
 
                         <div class="glass-card" style="display: flex; gap: 1.5rem; align-items: center;">
                             <div style="font-size: 2rem;">📱</div>
                             <div>
-                                <h3 style="color: white;">Diagnóstico AI</h3>
-                                <p style="color: var(--gray-400); margin-bottom: 0.5rem;">
+                                <h3 style="color: #1D1D1F;">Diagnóstico AI</h3>
+                                <p style="color: #6E6E73; margin-bottom: 0.5rem;">
                                     Envía el link al cliente. Él sube la foto de su equipo roto y la IA le dice cuánto
                                     cuesta arreglarlo en segundos.
                                 </p>
                                 <span
-                                    style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; color: #fff;">Ideal
+                                    style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.5rem; border-radius: 4px; color: #1D1D1F;">Ideal
                                     para filtrar curiosos</span>
                             </div>
                         </div>
@@ -2704,7 +2704,7 @@
 
                     <div class="form-group">
                         <label for="productoImagenes">Fotos del Producto (puedes seleccionar varias)</label>
-                        <p style="font-size: 0.8rem; color: var(--gray-400); margin-bottom: 0.5rem;">
+                        <p style="font-size: 0.8rem; color: #6E6E73; margin-bottom: 0.5rem;">
                             Formatos: JPG, PNG, WEBP. Máximo: 2MB por foto.
                         </p>
                         <div class="image-upload-wrapper">
@@ -2766,7 +2766,7 @@
                 </div>
 
                 <!-- Mini Chart: Historial Dólar -->
-                <div style="background:rgba(255,255,255,0.03); border-radius:12px; padding:1rem; margin-bottom:1rem;">
+                <div style="background:#FAFAFA; border-radius:12px; padding:1rem; margin-bottom:1rem;">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
                         <span
                             style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; font-weight:700;">📈
@@ -2836,7 +2836,7 @@
 
                     <!-- Dynamic Fields based on Category -->
                     <div class="form-group" id="editSelectorEquipoContainer"
-                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: #F9F9FB; border-radius: 8px;">
                         <label style="color: #00ff88; font-size: 0.9rem;">Producto / Stock</label>
                         <select id="editTransaccionProductoId" class="select-std">
                             <option value="">Seleccionar producto...</option>
@@ -2845,7 +2845,7 @@
                     </div>
 
                     <div class="form-group" id="editSelectorServicioContainer"
-                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        style="display: none; margin-bottom: 1rem; padding: 0.8rem; background: #F9F9FB; border-radius: 8px;">
                         <label style="color: var(--primary); font-size: 0.9rem;">Tipo de Servicio</label>
                         <select id="editTransaccionTipoServicio" class="select-std">
                             <option value="">Seleccionar servicio...</option>
@@ -2896,7 +2896,7 @@
                             <option value="INCOME">Ingreso</option>
                             <option value="EXPENSE">Gasto</option>
                         </select>
-                        <small style="color: var(--gray-400);">El tipo de movimiento no se puede cambiar.</small>
+                        <small style="color: #6E6E73;">El tipo de movimiento no se puede cambiar.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -3038,7 +3038,7 @@
                     <div>
                         <h3 class="modal-title" id="chatClienteNombre"
                             style="font-size: 1.2rem; margin-bottom: 0.2rem;">Cliente</h3>
-                        <span id="chatClienteTelefono" style="font-size: 0.9rem; color: var(--gray-400);">+54 9
+                        <span id="chatClienteTelefono" style="font-size: 0.9rem; color: #6E6E73;">+54 9
                             ...</span>
                     </div>
                     <button class="modal-close" id="btnCerrarModalChat" style="background: rgba(255,255,255,0.1);">
@@ -3056,7 +3056,7 @@
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                         <span
-                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-400);">Resumen
+                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #6E6E73;">Resumen
                             IA</span>
                         <span id="chatIntencionBadge" class="badge">Intención</span>
                     </div>
@@ -3071,7 +3071,7 @@
             <div class="chat-body" id="chatContainer"
                 style="flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: #0a0a0a;">
                 <!-- Mensajes inyectados via JS -->
-                <div style="text-align: center; color: var(--gray-400); margin-top: 2rem;">
+                <div style="text-align: center; color: #6E6E73; margin-top: 2rem;">
                     <div class="loading-spinner"></div>
                     <p>Cargando historial...</p>
                 </div>

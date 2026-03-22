@@ -1,22 +1,22 @@
-﻿/* ============================================
-   CATÃLOGO PÃšBLICO - ESTILO APPLE
+/* ============================================
+   CATÁLOGO PÚBLICO - ESTILO APPLE
    ============================================ */
 
 :root {
-    --primary: #800020;
+    --primary: #5C2E2E;
     /* Borravino (Burgundy) */
-    --primary-light: #a3304b;
-    --secondary: #fce4ec;
+    --primary-light: #7A4545;
+    --secondary: #F5F5F7;
     /* Pastel (Soft Pink/Cream) */
     --accent: #d81b60;
     --success: #10b981;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --dark: #0f0505;
+    --dark: #F5F5F7;
     /* Dark Wine base */
-    --gray-900: #111827;
-    --gray-200: #e5e7eb;
-    --gray-400: #9ca3af;
+    --gray-900: #F5F5F7;
+    --gray-200: #1D1D1F;
+    --gray-400: #6E6E73;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -28,8 +28,8 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: radial-gradient(circle at top left, #2d0a10 0%, #0f0505 100%);
-    color: var(--gray-200);
+    background: #F5F5F7;
+    color: #1D1D1F;
     min-height: 100vh;
     line-height: 1.6;
     background-attachment: fixed;
@@ -43,11 +43,11 @@ body {
 
 /* Glassmorphism Utility */
 .glass-panel {
-    background: rgba(92, 46, 46, 0.08);
+    background: #FFFFFF;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(232, 213, 196, 0.15);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    border: 1px solid #E5E5EA;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     border-radius: 20px;
 }
 
@@ -60,10 +60,10 @@ body {
    ============================================ */
 
 .header {
-    background: rgba(18, 18, 18, 0.6);
+    background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #E5E5EA;
     padding: 2rem 0;
     position: sticky;
     top: 0;
@@ -74,10 +74,10 @@ body {
 /* Estado cuando se hace scroll */
 .header.scrolled {
     padding: 0.8rem 0;
-    background: rgba(10, 10, 10, 0.85);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(30px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid #E5E5EA;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .header-content {
@@ -102,8 +102,8 @@ body {
     height: 150px;
     object-fit: cover;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 2px solid #E5E5EA;
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -112,7 +112,7 @@ body {
     height: 50px;
     border-radius: 12px;
     box-shadow: none;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #E5E5EA;
 }
 
 .header-texts {
@@ -131,7 +131,7 @@ body {
 .header-title {
     font-size: 2.5rem;
     font-weight: 800;
-    color: #fff;
+    color: #1D1D1F;
     margin: 0;
     transition: all 0.3s ease;
     letter-spacing: -1px;
@@ -144,7 +144,7 @@ body {
 
 .header-subtitle {
     font-size: 1rem;
-    color: #a1a1a6;
+    color: #6E6E73;
     margin: 0;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -174,10 +174,10 @@ body {
     flex: 1;
     min-width: 200px;
     padding: 1rem 1.5rem;
-    background: rgba(31, 41, 55, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
     border-radius: 16px;
-    color: var(--gray-200);
+    color: #1D1D1F;
     font-size: 1rem;
     font-family: inherit;
     transition: var(--transition);
@@ -187,8 +187,8 @@ body {
 .filter-select:focus {
     outline: none;
     border-color: var(--secondary);
-    box-shadow: 0 0 0 4px rgba(92, 46, 46, 0.2);
-    background: rgba(31, 41, 55, 0.8);
+    box-shadow: 0 0 0 3px rgba(92, 46, 46, 0.1);
+    background: #FAFAFA;
 }
 
 /* Updated Button Styles for Theme */
@@ -255,12 +255,12 @@ body {
 
 .rules-list li {
     padding: 0.8rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #E5E5EA;
     display: flex;
     align-items: flex-start;
     gap: 0.8rem;
     font-size: 1rem;
-    color: var(--gray-200);
+    color: #1D1D1F;
 }
 
 .rules-list li:last-child {
@@ -268,7 +268,7 @@ body {
 }
 
 .rules-list li::before {
-    content: "â€¢";
+    content: "•";
     color: var(--primary);
     font-weight: bold;
     font-size: 1.2rem;
@@ -277,21 +277,21 @@ body {
 
 /* Table Updates with Glassmorphism */
 .pricelist-container {
-    background: rgba(45, 10, 16, 0.4);
+    background: #FFFFFF;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #E5E5EA;
     border-radius: 20px;
     overflow: hidden;
     margin-bottom: 4rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .pricelist-table th {
-    background: rgba(128, 0, 32, 0.6);
+    background: rgba(92, 46, 46, 0.08);
     /* Semi-transparent Burgundy */
     font-weight: 600;
-    color: #fff;
+    color: #1D1D1F;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 1px;
@@ -299,7 +299,7 @@ body {
 }
 
 .pricelist-table tr:hover {
-    background: rgba(252, 228, 236, 0.05);
+    background: #F9F9FB;
     /* Slight pastel hover */
 }
 
@@ -307,7 +307,7 @@ body {
 .search-input:focus,
 .filter-select:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(128, 0, 32, 0.2);
+    box-shadow: 0 0 0 3px rgba(92, 46, 46, 0.1);
 }
 
 .search-input::placeholder {
@@ -330,12 +330,12 @@ body {
 }
 
 .producto-card {
-    background: #121212;
+    background: #FFFFFF;
     border-radius: 20px;
     overflow: hidden;
     transition: transform 0.4s ease, box-shadow 0.4s ease;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    /* LÃ­mite sutil */
+    border: 1px solid #E5E5EA;
+    /* Límite sutil */
     display: flex;
     flex-direction: column;
     position: relative;
@@ -343,15 +343,15 @@ body {
 
 .producto-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border-color: #D2D2D7;
 }
 
 /* Slider Styles */
 .card-image-container {
     position: relative;
     padding: 3rem 1.5rem 2rem;
-    background: radial-gradient(circle at center, rgba(40, 40, 40, 0.5) 0%, rgba(18, 18, 18, 0) 70%);
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.02) 0%, transparent 70%);
     text-align: center;
 }
 
@@ -366,10 +366,10 @@ body {
     position: absolute;
     top: 15px;
     right: 15px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.04);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
+    color: #1D1D1F;
     font-size: 0.7rem;
     font-weight: 600;
     padding: 0.3rem 0.8rem;
@@ -408,7 +408,7 @@ body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.04);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: white;
@@ -424,7 +424,7 @@ body {
 }
 
 .slider-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.08);
     transform: translateY(-50%) scale(1.1);
 }
 
@@ -446,7 +446,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    background: #121212;
+    background: #FFFFFF;
 }
 
 /* Rating */
@@ -459,14 +459,14 @@ body {
 
 .rating-text {
     font-size: 0.85rem;
-    color: #888;
+    color: #86868B;
     font-weight: 400;
 }
 
 .producto-modelo {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #f5f5f7;
+    color: #1D1D1F;
     margin-bottom: 0.75rem;
     letter-spacing: -0.01em;
 }
@@ -482,10 +482,10 @@ body {
     font-size: 0.75rem;
     padding: 0.35rem 0.7rem;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #d1d1d6;
+    background: #F2F2F7;
+    color: #6E6E73;
     font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #E5E5EA;
 }
 
 .spec-bubble.bateria {
@@ -504,14 +504,14 @@ body {
 .price-section {
     margin-top: auto;
     margin-bottom: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid #E5E5EA;
     padding-top: 1.5rem;
 }
 
 .main-price {
     display: flex;
     align-items: flex-start;
-    color: #fff;
+    color: #1D1D1F;
     font-weight: 700;
     line-height: 1;
     margin-bottom: 0.25rem;
@@ -521,7 +521,7 @@ body {
     font-size: 1rem;
     margin-top: 6px;
     margin-right: 4px;
-    color: #86868b;
+    color: #6E6E73;
 }
 
 .amount {
@@ -531,7 +531,7 @@ body {
 
 .ars-price {
     font-size: 0.95rem;
-    color: #86868b;
+    color: #6E6E73;
     font-weight: 400;
 }
 
@@ -542,8 +542,8 @@ body {
 
 .installment-badge {
     display: inline-block;
-    background: linear-gradient(90deg, rgba(0, 113, 227, 0.15) 0%, rgba(0, 113, 227, 0.05) 100%);
-    color: #0071e3;
+    background: rgba(92, 46, 46, 0.06);
+    color: var(--primary);
     padding: 0.5rem 1rem;
     border-radius: 8px;
     font-size: 0.9rem;
@@ -552,10 +552,10 @@ body {
     text-align: center;
 }
 
-/* BotÃ³n de compra */
+/* Botón de compra */
 .btn-buy {
     width: 100%;
-    background: #0071e3;
+    background: var(--primary);
     color: white;
     border: none;
     padding: 1rem;
@@ -567,9 +567,9 @@ body {
 }
 
 .btn-buy:hover {
-    background: #0077ed;
+    background: var(--primary-light);
     transform: scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 113, 227, 0.4);
+    box-shadow: 0 4px 12px rgba(92, 46, 46, 0.2);
 }
 
 /* ============================================
@@ -577,9 +577,9 @@ body {
    ============================================ */
 
 .contact-section {
-    background: rgba(31, 41, 55, 0.6);
+    background: #FFFFFF;
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #E5E5EA;
     border-radius: 24px;
     padding: 3rem;
     text-align: center;
@@ -590,7 +590,7 @@ body {
     font-size: 2rem;
     font-weight: 700;
     margin-bottom: 1rem;
-    color: var(--gray-100);
+    color: #1D1D1F;
 }
 
 .contact-section p {
@@ -624,7 +624,7 @@ body {
    ============================================ */
 
 .footer {
-    background: rgba(26, 31, 53, 0.8);
+    background: #FFFFFF;
     backdrop-filter: blur(20px);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding: 2rem 0;
@@ -650,7 +650,7 @@ body {
 .loading-spinner {
     width: 60px;
     height: 60px;
-    border: 4px solid rgba(0, 212, 255, 0.1);
+    border: 4px solid #E5E5EA;
     border-top-color: var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -691,38 +691,38 @@ body {
    ============================================ */
 
 .pricelist-container {
-    background: #121212;
+    background: #FFFFFF;
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid #E5E5EA;
     overflow: hidden;
     margin-bottom: 4rem;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .pricelist-table {
     width: 100%;
     border-collapse: collapse;
-    color: var(--gray-200);
+    color: #1D1D1F;
 }
 
 .pricelist-table th,
 .pricelist-table td {
     padding: 1rem 1.5rem;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #E5E5EA;
 }
 
 .pricelist-table th {
-    background: rgba(255, 255, 255, 0.05);
+    background: #F9F9FB;
     font-weight: 600;
-    color: #fff;
+    color: #1D1D1F;
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 1px;
 }
 
 .pricelist-table tr:hover {
-    background: rgba(255, 255, 255, 0.02);
+    background: #FAFAFA;
 }
 
 .pricelist-table tr:last-child td {
@@ -731,7 +731,7 @@ body {
 
 .model-cell {
     font-weight: 600;
-    color: #fff;
+    color: #1D1D1F;
 }
 
 .price-range {
@@ -761,8 +761,8 @@ body {
 .main-footer {
     margin-top: 4rem;
     padding: 3rem 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(10, 5, 5, 0.4);
+    border-top: 1px solid #E5E5EA;
+    background: #F5F5F7;
     backdrop-filter: blur(10px);
 }
 
@@ -820,11 +820,11 @@ body {
     height: 40px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid #E5E5EA;
 }
 
 .social-link:hover {
-    color: #fff;
+    color: #1D1D1F;
     background: var(--primary);
     transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(128, 0, 32, 0.4);
