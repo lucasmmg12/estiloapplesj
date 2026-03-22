@@ -5088,6 +5088,164 @@ select:focus {
     background: #EFEFEF;
 }
 
+
+/* ============================================
+   FINANCE FILTERS PANEL - TABLEAU STYLE
+   ============================================ */
+
+.finance-filters-panel {
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid #F2F2F7;
+    background: #FAFAFA;
+}
+
+.filters-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5C2E2E;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filters-title svg {
+    color: #5C2E2E;
+}
+
+.filters-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.85rem;
+    background: transparent;
+    border: 1px solid #E5E5EA;
+    border-radius: 8px;
+    color: #8E8E93;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.filters-reset-btn:hover {
+    background: #F2F2F7;
+    border-color: #5C2E2E;
+    color: #5C2E2E;
+}
+
+.filters-body {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1;
+    min-width: 140px;
+}
+
+.filter-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.filter-input,
+.filter-select {
+    padding: 0.55rem 0.75rem;
+    background: #F9F9FB;
+    border: 1px solid #E5E5EA;
+    border-radius: 8px;
+    color: #1D1D1F;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: #5C2E2E;
+    box-shadow: 0 0 0 3px rgba(92, 46, 46, 0.1);
+    background: #FFFFFF;
+}
+
+.filter-input:hover,
+.filter-select:hover {
+    border-color: #C7C7CC;
+}
+
+.filter-date-range {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-date-range .filter-input {
+    flex: 1;
+    min-width: 120px;
+}
+
+.filter-separator {
+    color: #C7C7CC;
+    font-weight: 300;
+}
+
+.filters-active-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1.25rem;
+    background: rgba(92, 46, 46, 0.04);
+    border-top: 1px solid rgba(92, 46, 46, 0.1);
+}
+
+.filters-active-count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #5C2E2E;
+}
+
+.filters-active-results {
+    font-size: 0.8rem;
+    color: #6E6E73;
+}
+
+@media (max-width: 768px) {
+    .filters-body {
+        flex-direction: column;
+    }
+    .filter-group {
+        width: 100%;
+    }
+    .filter-date-range {
+        flex-direction: column;
+    }
+}
+
 /* ============================================
    APPLE LIGHT - FINAL OVERRIDES
    ============================================ */

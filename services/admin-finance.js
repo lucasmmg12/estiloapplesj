@@ -8,6 +8,9 @@ let currentPage = 1;
 let pageSize = 50;
 let totalRecords = 0;
 
+// Finance Filters: Global transaction cache
+let allTransaccionesCache = [];
+
 // Pagination state: Ventas Tab
 let ventasTabPage = 1;
 let ventasTabPageSize = 10;
@@ -57,6 +60,9 @@ export async function initErp() {
 
     // 5. Inicializar filtro de gastos en "Este Mes"
     aplicarPresetGastos('month');
+
+    // 6. Inicializar Filtros Tableau
+    initFinanceFilters();
 }
 
 
@@ -1734,10 +1740,16 @@ const renderChart = (id, type, labels, datasets, options = {}) => {
     });
 };
 
-export async function renderizarGraficos() {
+export async function renderizarGraficos(filteredData = null) {
     try {
-        // 1. Fetch ALL Data
-        const transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
+        // 1. Fetch ALL Data (or use filtered)
+        let transacciones;
+        if (filteredData) {
+            transacciones = filteredData;
+        } else {
+            transacciones = await supabaseService.obtenerResumenFinanciero(null, null);
+            allTransaccionesCache = transacciones || [];
+        }
 
         // helpers
         const getMontoARS = (t) => {
@@ -2258,4 +2270,178 @@ function exportarReportePDF() {
         console.error('Error al generar PDF:', error);
         alert('Error al generar el PDF: ' + error.message);
     }
+}
+
+// ============================================
+// FINANCE FILTERS - TABLEAU STYLE
+// ============================================
+
+function initFinanceFilters() {
+    const filterIds = ['filterDateFrom', 'filterDateTo', 'filterTipoOp', 'filterCategoria', 'filterMetodoPago', 'filterMoneda'];
+    
+    filterIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', applyFinanceFilters);
+        }
+    });
+
+    // Reset button
+    const btnReset = document.getElementById('btnResetFilters');
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            filterIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            applyFinanceFilters();
+        });
+    }
+}
+
+function applyFinanceFilters() {
+    if (!allTransaccionesCache || allTransaccionesCache.length === 0) return;
+
+    const dateFrom = document.getElementById('filterDateFrom')?.value;
+    const dateTo = document.getElementById('filterDateTo')?.value;
+    const tipoOp = document.getElementById('filterTipoOp')?.value;
+    const categoria = document.getElementById('filterCategoria')?.value;
+    const metodoPago = document.getElementById('filterMetodoPago')?.value;
+    const moneda = document.getElementById('filterMoneda')?.value;
+
+    let filtered = [...allTransaccionesCache];
+    let activeFilters = 0;
+
+    // Date From
+    if (dateFrom) {
+        const fromDate = new Date(dateFrom + 'T00:00:00');
+        filtered = filtered.filter(t => new Date(t.date) >= fromDate);
+        activeFilters++;
+    }
+
+    // Date To
+    if (dateTo) {
+        const toDate = new Date(dateTo + 'T23:59:59');
+        filtered = filtered.filter(t => new Date(t.date) <= toDate);
+        activeFilters++;
+    }
+
+    // Type (INCOME / EXPENSE)
+    if (tipoOp) {
+        filtered = filtered.filter(t => t.type === tipoOp);
+        activeFilters++;
+    }
+
+    // Category
+    if (categoria) {
+        filtered = filtered.filter(t => {
+            const catName = t.transaction_categories?.name || 'Otro';
+            return catName === categoria;
+        });
+        activeFilters++;
+    }
+
+    // Payment Method
+    if (metodoPago) {
+        filtered = filtered.filter(t => {
+            const desc = t.description || '';
+            const pmMatch = desc.match(/\(([^)]+)\)$/);
+            if (!pmMatch) return false;
+            let pm = pmMatch[1];
+            if (pm === 'Tarjeta') pm = 'MercadoPago';
+            return pm === metodoPago;
+        });
+        activeFilters++;
+    }
+
+    // Currency
+    if (moneda) {
+        filtered = filtered.filter(t => t.currency === moneda);
+        activeFilters++;
+    }
+
+    // Update active filters bar
+    const activeBar = document.getElementById('filtersActiveBar');
+    const activeCount = document.getElementById('filtersActiveCount');
+    const activeResults = document.getElementById('filtersActiveResults');
+
+    if (activeBar) {
+        if (activeFilters > 0) {
+            activeBar.style.display = 'flex';
+            activeCount.textContent = `${activeFilters} filtro${activeFilters > 1 ? 's' : ''} activo${activeFilters > 1 ? 's' : ''}`;
+            activeResults.textContent = `${filtered.length} de ${allTransaccionesCache.length} transacciones`;
+        } else {
+            activeBar.style.display = 'none';
+        }
+    }
+
+    // Re-render charts with filtered data
+    renderizarGraficos(filtered);
+
+    // Also update KPIs with filtered data
+    updateKPIsWithFilteredData(filtered);
+}
+
+function updateKPIsWithFilteredData(transacciones) {
+    const getMontoARS = (t) => {
+        let tasa = t.exchange_rate || 1485;
+        return t.currency === 'ARS' ? t.amount : (t.amount * tasa);
+    };
+
+    const fmt = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+    
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const currentDay = now.getDate();
+
+    // Yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    // Start of week (Monday)
+    const dayOfWeek = now.getDay() || 7;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    let incYesterday = 0, incWeek = 0, incMonth = 0, incTotal = 0;
+    let expYesterday = 0, expWeek = 0, expMonth = 0, expTotal = 0;
+
+    transacciones.forEach(t => {
+        const monto = getMontoARS(t);
+        const tDate = new Date(t.date);
+        const tDateStr = t.date ? t.date.split('T')[0] : '';
+
+        if (t.type === 'INCOME') {
+            incTotal += monto;
+            if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
+                incMonth += monto;
+                if (tDate.getDate() === currentDay) incYesterday += monto;
+            }
+            if (tDateStr === yesterdayStr) incYesterday = monto;
+            if (tDate >= startOfWeek) incWeek += monto;
+        } else if (t.type === 'EXPENSE') {
+            expTotal += monto;
+            if (tDate.getFullYear() === currentYear && tDate.getMonth() === currentMonth) {
+                expMonth += monto;
+            }
+            if (tDateStr === yesterdayStr) expYesterday += monto;
+            if (tDate >= startOfWeek) expWeek += monto;
+        }
+    });
+
+    // Update dashboard KPIs
+    const updates = {
+        'kpiIngresoHoy': incYesterday, 'kpiIngresoSemana': incWeek,
+        'kpiIngresoMes': incMonth, 'kpiIngresoTotal': incTotal,
+        'kpiGastoHoy': expYesterday, 'kpiGastoSemana': expWeek,
+        'kpiGastoMes': expMonth, 'kpiGastoTotal': expTotal
+    };
+
+    Object.entries(updates).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = fmt.format(val);
+    });
 }

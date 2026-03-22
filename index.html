@@ -885,6 +885,79 @@
                 <div class="dashboard-finance-layout"
                     style="display: flex; flex-direction: column; gap: 2rem; margin-bottom: 3rem;">
 
+                    <!-- FILTROS TABLEAU-STYLE -->
+                    <div class="finance-filters-panel" id="financeFiltersPanel">
+                        <div class="filters-header">
+                            <div class="filters-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                                <span>Filtros</span>
+                            </div>
+                            <button type="button" class="filters-reset-btn" id="btnResetFilters" title="Limpiar filtros">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                                Limpiar
+                            </button>
+                        </div>
+                        <div class="filters-body">
+                            <!-- Filtro: Rango de Fechas -->
+                            <div class="filter-group">
+                                <label class="filter-label">Rango de Fechas</label>
+                                <div class="filter-date-range">
+                                    <input type="date" id="filterDateFrom" class="filter-input">
+                                    <span class="filter-separator">—</span>
+                                    <input type="date" id="filterDateTo" class="filter-input">
+                                </div>
+                            </div>
+                            <!-- Filtro: Tipo de Operación -->
+                            <div class="filter-group">
+                                <label class="filter-label">Tipo</label>
+                                <select id="filterTipoOp" class="filter-select">
+                                    <option value="">Todos</option>
+                                    <option value="INCOME">Ingresos</option>
+                                    <option value="EXPENSE">Egresos</option>
+                                </select>
+                            </div>
+                            <!-- Filtro: Categoría -->
+                            <div class="filter-group">
+                                <label class="filter-label">Categoría</label>
+                                <select id="filterCategoria" class="filter-select">
+                                    <option value="">Todas</option>
+                                    <option value="Servicio Tecnico">Servicio Técnico</option>
+                                    <option value="Venta de Equipos">Venta de Equipos</option>
+                                    <option value="Venta de Accesorios">Venta de Accesorios</option>
+                                    <option value="Gastos Operativos">Gastos Operativos</option>
+                                    <option value="Compra de Stock">Compra de Stock</option>
+                                </select>
+                            </div>
+                            <!-- Filtro: Método de Pago -->
+                            <div class="filter-group">
+                                <label class="filter-label">Método de Pago</label>
+                                <select id="filterMetodoPago" class="filter-select">
+                                    <option value="">Todos</option>
+                                    <option value="Efectivo">Efectivo</option>
+                                    <option value="MercadoPago">MercadoPago</option>
+                                    <option value="Transferencia">Transferencia</option>
+                                    <option value="Tarjeta Crédito">Tarjeta Crédito</option>
+                                    <option value="Tarjeta Débito">Tarjeta Débito</option>
+                                    <option value="USDT">USDT</option>
+                                </select>
+                            </div>
+                            <!-- Filtro: Moneda -->
+                            <div class="filter-group">
+                                <label class="filter-label">Moneda</label>
+                                <select id="filterMoneda" class="filter-select">
+                                    <option value="">Todas</option>
+                                    <option value="ARS">ARS</option>
+                                    <option value="USD">USD</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Indicador de filtros activos -->
+                        <div class="filters-active-bar" id="filtersActiveBar" style="display: none;">
+                            <span class="filters-active-count" id="filtersActiveCount">0 filtros activos</span>
+                            <span class="filters-active-results" id="filtersActiveResults"></span>
+                        </div>
+                    </div>
+
                     <!-- SECCIÓN 1: BALANCE Y TENDENCIAS (Separado) -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
 
