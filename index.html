@@ -46,15 +46,15 @@
                 </div>
                 <button onclick="document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true}))"
                     style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid #E5E5EA;background:#F5F5F7;color:#86868B;font-size:0.75rem;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;"
-                    onmouseover="this.style.borderColor='#D2D2D7';this.style.color='rgba(255,255,255,0.6)'"
-                    onmouseout="this.style.borderColor='#E5E5EA';this.style.color='rgba(255,255,255,0.35)'">
+                    onmouseover="this.style.borderColor='#D2D2D7';this.style.color='#1D1D1F'"
+                    onmouseout="this.style.borderColor='#E5E5EA';this.style.color='#86868B'">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                     Buscar...
                     <kbd
-                        style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:rgba(255,255,255,0.3);">Ctrl+K</kbd>
+                        style="background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:#AEAEB2;">Ctrl+K</kbd>
                 </button>
             </div>
         </div>
@@ -350,7 +350,7 @@
                             style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                                 <span
-                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
+                                    style="font-size: 0.7rem; color: #86868B; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">📅
                                     Período</span>
                                 <button class="chip-filter-ventas" data-vpreset="today"
                                     style="padding:0.35rem 0.85rem; border-radius:20px; border:1px solid #E5E5EA; background:transparent; color:#6E6E73; cursor:pointer; font-size:0.75rem; transition:all 0.2s;">Hoy</button>
@@ -372,9 +372,9 @@
                                 <input type="date" id="ventasFilterHasta"
                                     style="background:#F5F5F7; border:1px solid rgba(0,255,136,0.15); border-radius:8px; padding:0.3rem 0.5rem; color:#1D1D1F; font-size:0.75rem; font-family:'JetBrains Mono',monospace;">
                                 <button id="ventasFilterApply"
-                                    style="padding:0.35rem 0.75rem; border-radius:8px; border:1px solid rgba(0,255,136,0.3); background:rgba(92,46,46,0.06); color:#00FF88; font-size:0.7rem; cursor:pointer; font-weight:600;">Aplicar</button>
+                                    style="padding:0.35rem 0.75rem; border-radius:8px; border:1px solid var(--primary); background:rgba(92,46,46,0.06); color:var(--primary); font-size:0.7rem; cursor:pointer; font-weight:600;">Aplicar</button>
                                 <button id="ventasFilterClear"
-                                    style="padding:0.35rem 0.6rem; border-radius:8px; border:1px solid #E5E5EA; background:transparent; color:rgba(255,255,255,0.4); font-size:0.7rem; cursor:pointer;"
+                                    style="padding:0.35rem 0.6rem; border-radius:8px; border:1px solid #E5E5EA; background:transparent; color:#86868B; font-size:0.7rem; cursor:pointer;"
                                     title="Limpiar filtros">✕</button>
                                 <span id="ventasFilterLabel"
                                     style="font-size:0.65rem; color:#00FF88; font-weight:600; opacity:0;">—</span>
@@ -1230,7 +1230,7 @@
                                             </button>
                                         </div>
 
-                                        <div style="width: 1px; height: 28px; background: rgba(255,255,255,0.1);"></div>
+                                        <div style="width: 1px; height: 28px; background: #E5E5EA;"></div>
 
                                         <button class="btn-refresh-sm" id="btnRefreshErp" title="Refrescar Tabla"
                                             style="width: 36px; height: 36px; border-radius: 8px;">

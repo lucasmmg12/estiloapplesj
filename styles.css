@@ -4423,7 +4423,7 @@ select option,
 .input-minimal {
     background: transparent !important;
     border: none !important;
-    color: white !important;
+    color: #1D1D1F !important;
     font-size: 0.8rem;
     padding: 0 !important;
     cursor: pointer;
