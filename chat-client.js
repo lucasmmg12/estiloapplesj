@@ -652,7 +652,7 @@ function appendMessageToUI(msg) {
     div.innerHTML = `
         <div class="msg-content">
             ${msg.media_url ? renderMedia(msg.media_url) : ''}
-            ${msg.contenido && !msg.contenido.startsWith('_event_') ? `<span>${msg.contenido}</span>` : ''}
+            ${msg.contenido && !msg.contenido.startsWith('_event_') ? `<span>${msg.contenido.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>')}</span>` : ''}
         </div>
         <div class="msg-meta">
             ${time}

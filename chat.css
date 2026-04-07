@@ -515,10 +515,11 @@ body {
 .message.sent {
     align-self: flex-end;
     background: var(--primary);
-    color: #1D1D1F;
+    color: #FFFFFF;
     border-bottom-right-radius: 4px;
     box-shadow: 0 2px 8px rgba(92, 46, 46, 0.15);
-    font-weight: 600;
+    font-weight: 500;
+    white-space: pre-line;
 }
 
 .message.received {
@@ -528,6 +529,7 @@ body {
     color: #1D1D1F;
     border-bottom-left-radius: 4px;
     font-weight: 500;
+    white-space: pre-line;
 }
 
 .msg-meta {
