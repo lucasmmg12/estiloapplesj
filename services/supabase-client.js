@@ -660,31 +660,48 @@ export async function eliminarTransaccion(id) {
 }
 
 export async function obtenerResumenFinanciero(fechaInicio, fechaFin) {
-    let query = supabase
-        .from('transactions')
-        .select(`
-            id,
-            date,
-            amount,
-            type,
-            currency,
-            description,
-            exchange_rate,
-            category_id,
-            transaction_categories (name, type)
-        `);
+    let allData = [];
+    let from = 0;
+    const step = 1000;
+    let hasMore = true;
 
-    if (fechaInicio) {
-        query = query.gte('date', fechaInicio);
+    while (hasMore) {
+        let query = supabase
+            .from('transactions')
+            .select(`
+                id,
+                date,
+                amount,
+                type,
+                currency,
+                description,
+                exchange_rate,
+                category_id,
+                transaction_categories (name, type)
+            `)
+            .range(from, from + step - 1);
+
+        if (fechaInicio) {
+            query = query.gte('date', fechaInicio);
+        }
+        if (fechaFin) {
+            query = query.lte('date', fechaFin);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        
+        allData = allData.concat(data);
+        
+        if (data.length < step) {
+            hasMore = false;
+        } else {
+            from += step;
+        }
     }
-    if (fechaFin) {
-        query = query.lte('date', fechaFin);
-    }
 
-    const { data, error } = await query;
-
-    if (error) throw error;
-    return data;
+    return allData;
 }
 
 export async function registrarMovimientoInventario(movimiento) {
