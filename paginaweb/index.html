@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Estilo Apple SJ | Tienda Oficial de iPhones en San Juan</title>
+  <meta name="description" content="Comprá tu iPhone sellado o usado premium con 120 días de garantía escrita, batería certificada y Plan Canje en el acto en San Juan.">
+  <link rel="icon" type="image/png" href="/logoestilo.png">
+
+  <!-- Apple SF Pro Font Fallback & Inter Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Dedicated Apple & Joby Aviation Aesthetic Styles -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Navigation Bar (Apple Frosted Glass) -->
+  <header class="nav-header">
+    <div class="container nav-container">
+      <div class="brand-wrapper">
+        <img src="/logoestilo.png" alt="Estilo Apple SJ" class="brand-logo-img">
+        <div class="brand-text">
+          <span class="brand-name">ESTILO APPLE SJ</span>
+          <span class="brand-badge">San Juan · Equipos Oficiales</span>
+        </div>
+      </div>
+
+      <nav>
+        <ul class="nav-links">
+          <li class="nav-item"><a href="#modelos">Modelos</a></li>
+          <li class="nav-item"><a href="#plancanje">Plan Canje</a></li>
+          <li class="nav-item"><a href="#experiencia">Garantía & Regalos</a></li>
+          <li class="nav-item"><a href="#comparador">Comparador</a></li>
+          <li class="nav-item"><a href="#faq">Preguntas Frecuentes</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <div class="dollar-badge" title="Cotización de referencia">
+          <span class="status-dot"></span>
+          <span>Dólar hoy:</span>
+          <strong id="navDollarRate">$1.485</strong>
+        </div>
+
+        <a href="https://api.whatsapp.com/send/?phone=5492643229503&text=Hola!%20Quiero%20asesoramiento%20sobre%20un%20iPhone%20en%20Estilo%20Apple%20SJ&type=phone_number&app_absent=0" 
+           target="_blank" 
+           class="btn-nav-whatsapp">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
+          </svg>
+          <span>Asesor Online</span>
+        </a>
+
+        <button class="menu-toggle" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       JOBY AVIATION STYLE STICKY SCROLL VIDEO HERO
+       (The video is locked full-screen in the background, text slides crossfade as you scroll)
+       ========================================================================== -->
+  <section class="joby-hero-section" id="jobyHeroSection">
+    <div class="joby-sticky-element">
+      
+      <!-- Video Background Layer -->
+      <div class="joby-media-wrapper">
+        <video id="jobyVideo1" class="joby-video active" playsinline webkit-playsinline muted autoplay loop preload="auto" src="/iPhone_camera_module_panning_20260926090246.mp4"></video>
+        <video id="jobyVideo2" class="joby-video" playsinline webkit-playsinline muted preload="auto" src="/iPhone_18_Pro_Max_display_20260926090336.mp4"></video>
+        <div class="joby-media-overlay"></div>
+      </div>
+
+      <!-- Main Initial Title (Centered, visible at top, fades out upwards on scroll) -->
+      <div class="joby-hero-title-box" id="jobyHeroTitleBox">
+        <span class="joby-hero-eyebrow">NUEVA GENERACIÓN · TITANIO FORJADO</span>
+        <h1 class="joby-hero-title">iPhone 16 Pro.<br>Poder en estado puro.</h1>
+        <p class="joby-hero-subtitle">
+          Diseñado con titanio de grado aeroespacial, chip A18 Pro y la cámara más avanzada de Apple. 
+          Garantía de 120 días y Plan Canje en el acto en San Juan.
+        </p>
+        <div class="joby-scroll-indicator">
+          <span>Deslizá hacia abajo para explorar</span>
+          <div class="joby-scroll-line"></div>
+        </div>
+      </div>
+
+      <!-- Sequential Text Slides (Joby Aviation Scrollytelling Pattern) -->
+      <div class="joby-text-slides">
+        
+        <!-- Slide 1: Cámaras Fusion & Zoom 5x (Phone is lower-center -> Text on Top Left) -->
+        <div class="joby-slide-item" data-start="0.12" data-end="0.32" style="top: 16%; left: 6%;">
+          <span class="joby-slide-number">01 / CÁMARAS</span>
+          <h2 class="joby-slide-title">Cámara Fusion 48 MP.<br>Zoom Óptico 5x Real.</h2>
+          <p class="joby-slide-desc">
+            Sensor Quad-Pixel de 2.ª generación con 100% Focus Pixels. Teleobjetivo tetraprisma de 120 mm para primeros planos nítidos a distancia y grabación cinematográfica en 4K Dolby Vision a 120 fps.
+          </p>
+        </div>
+
+        <!-- Slide 2: Titanio Grado 5 & USB-C 10Gb/s (Phone is center -> Text on Top Right) -->
+        <div class="joby-slide-item" data-start="0.34" data-end="0.52" style="top: 16%; right: 6%;">
+          <span class="joby-slide-number">02 / MATERIALES</span>
+          <h2 class="joby-slide-title">Titanio Grado 5.<br>Conexión USB-C 10 Gb/s.</h2>
+          <p class="joby-slide-desc">
+            La misma aleación utilizada en misiones a Marte. Subestructura térmica de aluminio 100% reciclado y puerto USB 3 para transferencias ultra rápidas y grabación directa a discos SSD externos.
+          </p>
+        </div>
+
+        <!-- Slide 3: Perfil Ultradelgado & Botón de Acción (Phone turns to side -> Text on Left) -->
+        <div class="joby-slide-item" data-start="0.54" data-end="0.74" style="top: 32%; left: 6%;">
+          <span class="joby-slide-number">03 / CONTROL</span>
+          <h2 class="joby-slide-title">Botón de Acción Háptico.<br>Perfil de solo 8.25 mm.</h2>
+          <p class="joby-slide-desc">
+            Acceso instantáneo con un solo toque a la cámara, linterna, notas de voz o atajos personalizables, con respuesta háptica Taptic Engine de alta precisión y bordes micro-curvados.
+          </p>
+        </div>
+
+        <!-- Slide 4: Dynamic Island & Pantalla (Phone turns to front display -> Text Bottom Center) -->
+        <div class="joby-slide-item" data-start="0.76" data-end="0.99" style="bottom: 10%; left: 50%; transform: translateX(-50%); text-align: center;">
+          <span class="joby-slide-number">04 / DISPLAY</span>
+          <h2 class="joby-slide-title">Dynamic Island & Super Retina XDR.</h2>
+          <p class="joby-slide-desc" style="max-width: 580px; margin: 0 auto 18px;">
+            Pantalla ProMotion de 1 a 120 Hz con hasta 2.000 nits bajo luz solar directa. Equipos sellados 0km y usados seleccionados con 120 días de garantía escrita en San Juan.
+          </p>
+          <div class="joby-slide-cta-group">
+            <a href="#modelos" class="btn-primary">Ver Modelos en Stock</a>
+            <a href="#plancanje" class="btn-secondary">Cotizar Plan Canje</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Minimalist Bottom Progress Bar (Joby style) -->
+      <div class="joby-bottom-bar">
+        <div class="joby-progress-track">
+          <div class="joby-progress-fill" id="jobyProgressFill"></div>
+        </div>
+        <div class="joby-current-phase" id="jobyPhaseLabel">FASE 1: ARQUITECTURA & CÁMARAS</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SUBSEQUENT PAGE SECTIONS (Scrolls into view after the video keynote)
+       ========================================================================== -->
+  <main class="main-content-flow">
+
+    <!-- Live Trust Bar -->
+    <div class="container" style="padding-top: 60px; margin-bottom: 50px;">
+      <div class="trust-ribbon">
+        <div class="trust-item">
+          <div class="trust-icon-box">🛡️</div>
+          <div>
+            <div class="trust-title">120 Días de Garantía</div>
+            <div class="trust-desc">Garantía escrita y soporte técnico propio en San Juan.</div>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon-box">🔋</div>
+          <div>
+            <div class="trust-title">Baterías Certificadas</div>
+            <div class="trust-desc">Equipos probados en 30 puntos de control computarizado.</div>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon-box">🔄</div>
+          <div>
+            <div class="trust-title">Plan Canje Inmediato</div>
+            <div class="trust-desc">Dejás tu iPhone anterior y te llevás el nuevo en el acto.</div>
+          </div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon-box">🎁</div>
+          <div>
+            <div class="trust-title">Combo Completo de Regalo</div>
+            <div class="trust-desc">Cable original + Funda a elección + Vidrio templado 9D.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bento Grid (La Experiencia Estilo Apple SJ) -->
+    <section class="section" id="experiencia">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Estándar de Calidad</span>
+          <h2 class="section-title">Por qué elegir Estilo Apple SJ</h2>
+          <p class="section-desc">
+            Comprar un iPhone debe ser una experiencia transparente, segura y placentera. Cuidamos cada detalle desde que entrás a la tienda hasta que prendés tu nuevo equipo.
+          </p>
+        </div>
+
+        <div class="bento-grid">
+          <!-- Bento 1: Plan Canje (Large 7 Cols) -->
+          <div class="bento-card bento-card-large">
+            <div>
+              <span class="bento-pill">Plan Canje Express</span>
+              <h3 class="bento-title">Actualizá tu iPhone en el acto sin vueltas</h3>
+              <p class="bento-text">
+                Traé tu iPhone actual (desde el iPhone 11 en adelante), lo testeamos en 10 minutos y te tomamos el valor exacto como parte de pago de tu nuevo modelo. Solo pagás la diferencia.
+              </p>
+            </div>
+            <div class="bento-preview-wrapper">
+              <img src="/apple_tradein_showcase.jpg" alt="Plan Canje iPhone Estilo Apple" class="bento-preview-img">
+            </div>
+          </div>
+
+          <!-- Bento 2: Regalos Incluidos (Medium 5 Cols) -->
+          <div class="bento-card bento-card-medium">
+            <div>
+              <span class="bento-pill">Todo Incluido</span>
+              <h3 class="bento-title">Listo para usar desde el primer segundo</h3>
+              <p class="bento-text">
+                No tenés que salir a comprar accesorios. Con cada equipo te llevás sin costo adicional:
+              </p>
+              <div class="bento-tags">
+                <span class="bento-tag">⚡ Cable de Carga Original</span>
+                <span class="bento-tag">🛡️ Vidrio Templado 9D Colocado</span>
+                <span class="bento-tag">🎨 Funda Silicona a Elección</span>
+                <span class="bento-tag">📦 Cargador 20W (Gama 17)</span>
+              </div>
+            </div>
+            <div style="margin-top: 30px; padding: 20px; background: rgba(122,69,69,0.2); border-radius: var(--radius-md); border: 1px solid var(--border-brand); text-align: center;">
+              <span style="font-size: 0.85rem; color: #e5c3a6; font-weight: 600;">VALORADO EN MÁS DE $45.000 ARS</span>
+            </div>
+          </div>
+
+          <!-- Bento 3: Garantía Escrita (4 Cols) -->
+          <div class="bento-card bento-card-third">
+            <div>
+              <span class="bento-pill">Seguridad Total</span>
+              <h3 class="bento-title">120 Días de Garantía</h3>
+              <p class="bento-text">
+                Garantía real por escrito. Tenemos laboratorio técnico propio en San Juan para resolver cualquier inquietud de manera inmediata.
+              </p>
+            </div>
+            <div style="font-size: 2.4rem; color: var(--apple-green); font-weight: 800; margin-top: 16px;">
+              120 Días
+            </div>
+          </div>
+
+          <!-- Bento 4: Financiación (4 Cols) -->
+          <div class="bento-card bento-card-third">
+            <div>
+              <span class="bento-pill">Facilidades</span>
+              <h3 class="bento-title">Hasta 12 Cuotas</h3>
+              <p class="bento-text">
+                Aceptamos tarjetas de crédito en hasta 12 cuotas fijas, 3 cuotas bancarias y descuentos exclusivos abonando de contado (Efectivo, Transferencia o Cripto USDT).
+              </p>
+            </div>
+            <div style="font-size: 2.4rem; color: #ffffff; font-weight: 800; margin-top: 16px;">
+              12 Cuotas
+            </div>
+          </div>
+
+          <!-- Bento 5: Migración de Datos (4 Cols) -->
+          <div class="bento-card bento-card-third">
+            <div>
+              <span class="bento-pill">Servicio Premium</span>
+              <h3 class="bento-title">Pase de Datos 1 a 1</h3>
+              <p class="bento-text">
+                Te acompañamos en la configuración inicial y migramos todas tus fotos, contactos y chats de WhatsApp de tu teléfono viejo al nuevo sin perder nada.
+              </p>
+            </div>
+            <div style="font-size: 2.4rem; color: var(--apple-blue); font-weight: 800; margin-top: 16px;">
+              15 Minutos
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Product Catalog -->
+    <section class="section catalog-section" id="modelos">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Catálogo Pro</span>
+          <h2 class="section-title">Elige tu nuevo iPhone</h2>
+          <p class="section-desc">
+            Todos los equipos incluyen 120 días de garantía, combo de accesorios de regalo y batería 100% certificada.
+          </p>
+        </div>
+
+        <!-- Controls & Filters -->
+        <div class="catalog-controls">
+          <div class="filter-pills">
+            <button class="filter-btn active" data-filter="all">Todos los Modelos</button>
+            <button class="filter-btn" data-filter="16">iPhone 16 Series</button>
+            <button class="filter-btn" data-filter="15">iPhone 15 Series</button>
+            <button class="filter-btn" data-filter="14">iPhone 14 Series</button>
+            <button class="filter-btn" data-filter="13">iPhone 13 Series</button>
+            <button class="filter-btn" data-filter="sealed">Sellados 0km</button>
+            <button class="filter-btn" data-filter="used">Usados Premium</button>
+          </div>
+
+          <div class="search-filter-row">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="catalogSearchInput" class="search-input" placeholder="Buscar por modelo, capacidad o color (ej: 15 Pro, Titanio, 256GB)...">
+            </div>
+
+            <div class="stock-badge-counter" id="stockCountBadge">
+              Cargando stock disponible...
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Cards Container -->
+        <div class="products-grid" id="productosGrid">
+          <!-- Rendered via JavaScript -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Trade-In Calculator (Plan Canje) -->
+    <section class="section tradein-section" id="plancanje">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Simulador Oficial</span>
+          <h2 class="section-title">Calculá tu Plan Canje en segundos</h2>
+          <p class="section-desc">
+            Seleccioná tu equipo actual y el modelo que querés llevarte para calcular la cotización estimada y la diferencia neta a pagar.
+          </p>
+        </div>
+
+        <div class="calculator-wrapper">
+          <div class="calc-grid">
+            <!-- Step Form Controls -->
+            <div class="calc-steps">
+              <div class="calc-step-group">
+                <label class="calc-label">
+                  <span class="calc-step-num">1</span>
+                  ¿Qué iPhone entregás como parte de pago?
+                </label>
+                <select id="calcUserModel" class="calc-select"></select>
+              </div>
+
+              <div class="calc-step-group">
+                <label class="calc-label">
+                  <span class="calc-step-num">2</span>
+                  Capacidad y Estado de Batería
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <select id="calcUserCapacity" class="calc-select"></select>
+                  <select id="calcUserBattery" class="calc-select">
+                    <option value="high">Batería Óptima (+88%)</option>
+                    <option value="mid">Batería Buena (84% - 87%)</option>
+                    <option value="low">Batería Regular (80% - 83%)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="calc-step-group">
+                <label class="calc-label">
+                  <span class="calc-step-num">3</span>
+                  ¿Cuál es el nuevo iPhone que querés?
+                </label>
+                <select id="calcTargetModel" class="calc-select"></select>
+              </div>
+            </div>
+
+            <!-- Result Card Summary -->
+            <div class="calc-result-card">
+              <img src="/apple_tradein_showcase.jpg" alt="Simulación Canje" class="calc-trade-illustration">
+              
+              <div class="calc-summary-title">Resumen de Cotización</div>
+
+              <div class="calc-valuation-display">
+                <span>Valor estimado de tu usado:</span>
+                <strong id="calcYourTradeVal">$0</strong>
+              </div>
+
+              <div class="calc-valuation-display">
+                <span>Precio del nuevo equipo:</span>
+                <strong id="calcTargetPriceVal">$0</strong>
+              </div>
+
+              <div class="calc-diff-box">
+                <div class="calc-diff-label">Diferencia estimada a pagar:</div>
+                <div class="calc-diff-amount" id="calcDiffAmount">$0</div>
+                <div class="calc-diff-ars" id="calcDiffArs">≈ $0 ARS</div>
+              </div>
+
+              <button id="btnSubmitTradeIn" class="btn-calc-submit">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
+                </svg>
+                <span>Cotizar Canje por WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model Comparison Matrix (Apple Style) -->
+    <section class="section" id="comparador">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Comparativa Oficial</span>
+          <h2 class="section-title">¿Cuál es el iPhone ideal para vos?</h2>
+          <p class="section-desc">
+            Revisá las diferencias clave entre las generaciones para elegir con total claridad.
+          </p>
+        </div>
+
+        <div class="compare-table-wrapper">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Característica</th>
+                <th class="compare-header-cell">
+                  <img src="/iphone16pro.jpg" alt="iPhone 16 Pro" class="compare-thumb">
+                  <div class="compare-name">iPhone 16 Pro</div>
+                  <div class="compare-price-tag">Desde $1.100 USD</div>
+                </th>
+                <th class="compare-header-cell">
+                  <img src="/iphone15pro.webp" alt="iPhone 15 Pro" class="compare-thumb">
+                  <div class="compare-name">iPhone 15 Pro</div>
+                  <div class="compare-price-tag">Desde $850 USD</div>
+                </th>
+                <th class="compare-header-cell">
+                  <img src="/iphone14pro.webp" alt="iPhone 14 Pro" class="compare-thumb">
+                  <div class="compare-name">iPhone 14 Pro</div>
+                  <div class="compare-price-tag">Desde $610 USD</div>
+                </th>
+                <th class="compare-header-cell">
+                  <img src="/iphone13.jpg" alt="iPhone 13" class="compare-thumb">
+                  <div class="compare-name">iPhone 13</div>
+                  <div class="compare-price-tag">Desde $445 USD</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Pantalla y Tasa de Refresco</td>
+                <td>
+                  <span class="compare-spec-val">Super Retina XDR 6.3"</span>
+                  <span class="compare-spec-sub">ProMotion 120Hz fluida</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Super Retina XDR 6.1"</span>
+                  <span class="compare-spec-sub">ProMotion 120Hz fluida</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Super Retina XDR 6.1"</span>
+                  <span class="compare-spec-sub">ProMotion 120Hz fluida</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Super Retina XDR 6.1"</span>
+                  <span class="compare-spec-sub">60Hz estándar</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Procesador (Chip)</td>
+                <td>
+                  <span class="compare-spec-val">Chip A18 Pro</span>
+                  <span class="compare-spec-sub">Apple Intelligence Ready</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Chip A17 Pro</span>
+                  <span class="compare-spec-sub">GPU con Ray Tracing</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Chip A16 Bionic</span>
+                  <span class="compare-spec-sub">Rendimiento ultra alto</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Chip A15 Bionic</span>
+                  <span class="compare-spec-sub">Gran eficiencia de batería</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Cámara Principal & Zoom</td>
+                <td>
+                  <span class="compare-spec-val">Fusion 48MP</span>
+                  <span class="compare-spec-sub">Zoom óptico 5x periscópico</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Triple 48MP</span>
+                  <span class="compare-spec-sub">Zoom óptico 3x</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Triple 48MP</span>
+                  <span class="compare-spec-sub">Zoom óptico 3x</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Doble cámara 12MP</span>
+                  <span class="compare-spec-sub">Gran angular y Ultra gran angular</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Controles Especiales</td>
+                <td>
+                  <span class="compare-spec-val">Control de Cámara + Acción</span>
+                  <span class="compare-spec-sub">Botón capacitivo háptico</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Botón de Acción</span>
+                  <span class="compare-spec-sub">Personalizable</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Interruptor de Timbre</span>
+                  <span class="compare-spec-sub">Clásico mecánico</span>
+                </td>
+                <td>
+                  <span class="compare-spec-val">Interruptor de Timbre</span>
+                  <span class="compare-spec-sub">Clásico mecánico</span>
+                </td>
+              </tr>
+              <tr>
+                <td>Material del Chasis</td>
+                <td><span class="compare-spec-val">Titanio Grado 5</span></td>
+                <td><span class="compare-spec-val">Titanio Grado 5</span></td>
+                <td><span class="compare-spec-val">Acero Quirúrgico</span></td>
+                <td><span class="compare-spec-val">Aluminio Aeroespacial</span></td>
+              </tr>
+              <tr>
+                <td>Conector de Carga</td>
+                <td><span class="compare-spec-val">USB-C (10 Gb/s)</span></td>
+                <td><span class="compare-spec-val">USB-C (10 Gb/s)</span></td>
+                <td><span class="compare-spec-val">Lightning</span></td>
+                <td><span class="compare-spec-val">Lightning</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials & Social Proof -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Comunidad San Juan</span>
+          <h2 class="section-title">La opinión de quienes ya estrenaron</h2>
+          <p class="section-desc">
+            Más de 500 clientes en San Juan y todo el país confían en nuestra atención y garantía.
+          </p>
+        </div>
+
+        <div class="testimonials-grid">
+          <div class="testimonial-card">
+            <div>
+              <div class="testimonial-stars">★★★★★</div>
+              <p class="testimonial-quote">
+                "Compré el 15 Pro Max por Plan Canje entregando mi 12 Pro. Me lo cotizaron al toque con excelente precio y en 20 minutos me pasaron todos los datos sin perder ningún chat de WhatsApp. 10 de 10."
+              </p>
+            </div>
+            <div class="testimonial-author-box">
+              <div class="author-avatar">MR</div>
+              <div>
+                <div class="author-name">Matías R.</div>
+                <div class="author-meta">Cliente verificado · San Juan Capital</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div>
+              <div class="testimonial-stars">★★★★★</div>
+              <p class="testimonial-quote">
+                "La tranquilidad de tener 120 días de garantía escrita no te la da cualquiera. El equipo vino impecable, batería 100% real y encima me vino con funda, templado y cable original de regalo."
+              </p>
+            </div>
+            <div class="testimonial-author-box">
+              <div class="author-avatar">SF</div>
+              <div>
+                <div class="author-name">Sofía Fernández</div>
+                <div class="author-meta">Cliente verificada · Rivadavia, SJ</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="testimonial-card">
+            <div>
+              <div class="testimonial-stars">★★★★★</div>
+              <p class="testimonial-quote">
+                "Excelente atención de los chicos por WhatsApp y en persona. Pude pagar una parte entregando mi iPhone usado y la otra en cuotas fijas con tarjeta. Súper recomendado."
+              </p>
+            </div>
+            <div class="testimonial-author-box">
+              <div class="author-avatar">GA</div>
+              <div>
+                <div class="author-name">Gonzalo Aguirre</div>
+                <div class="author-meta">Cliente verificado · Santa Lucía, SJ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Accordion -->
+    <section class="section" id="faq">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-label">Resolvé tus dudas</span>
+          <h2 class="section-title">Preguntas Frecuentes</h2>
+        </div>
+
+        <div class="faq-container">
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>¿Qué cubre la garantía de 120 días?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              Nuestra garantía escrita de 120 días cubre el funcionamiento íntegro del dispositivo: placa base, Face ID, cámaras, micrófonos, pantalla y batería. Contamos con laboratorio técnico propio en San Juan para brindarte una solución inmediata sin depender de intermediarios.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>¿Cómo funciona el Plan Canje si soy de San Juan?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              Es muy simple: cotizás previamente por WhatsApp con nuestro simulador, coordinamos la visita a nuestro showroom en San Juan, testeamos el equipo en 10 minutos y te entregamos tu nuevo modelo descontando el valor de tu usado en el momento.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>¿Qué medios de pago reciben?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              Aceptamos Dólar billete (cara grande o chica en perfecto estado), Pesos Argentinos al tipo de cambio del día, Transferencia bancaria directa, Criptomonedas (USDT vía Binance / red TRC20 / BEP20) y tarjetas de crédito bancarias con planes de hasta 12 cuotas.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>¿Hacen envíos a otras provincias de Argentina?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              Sí, despachamos a todo el país a través de Andreani o Correo Argentino con seguro contra todo riesgo y número de seguimiento en tiempo real para que recibas tu compra con total seguridad en la puerta de tu casa.
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <div class="faq-question">
+              <span>¿Los equipos son 100% libres de iCloud y de operador?</span>
+              <span class="faq-icon">+</span>
+            </div>
+            <div class="faq-answer">
+              Absolutamente todos los equipos se entregan restablecidos de fábrica, libres de iCloud, sin bloqueos de operadoras (aptos para Claro, Movistar y Personal) y verificados en listas negras.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <div class="brand-wrapper">
+              <img src="/logoestilo.png" alt="Estilo Apple SJ" class="brand-logo-img">
+              <span class="brand-name">ESTILO APPLE SJ</span>
+            </div>
+            <p class="footer-brand-desc">
+              Especialistas en comercialización de iPhones nuevos y usados premium con respaldo técnico y garantía escrita en San Juan, Argentina.
+            </p>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Navegación</div>
+            <ul class="footer-links">
+              <li><a href="#modelos">Modelos Disponibles</a></li>
+              <li><a href="#plancanje">Plan Canje Usados</a></li>
+              <li><a href="#experiencia">Garantía 120 Días</a></li>
+              <li><a href="#comparador">Comparador de Equipos</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Contacto</div>
+            <ul class="footer-links">
+              <li><a href="https://api.whatsapp.com/send/?phone=5492643229503&text&type=phone_number&app_absent=0" target="_blank">WhatsApp Directo</a></li>
+              <li><a href="https://www.instagram.com/estiloapplesj/" target="_blank">Instagram Oficial</a></li>
+              <li><a href="#plancanje">Cotizador Online</a></li>
+              <li><span>San Juan Capital, Argentina</span></li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="footer-col-title">Desarrollado por</div>
+            <ul class="footer-links">
+              <li><a href="https://www.instagram.com/growsanjuan/" target="_blank">Grow Labs</a></li>
+              <li><span>Infraestructura Digital & CRM</span></li>
+              <li><a href="/index.html">Acceso Sistema CRM</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div>© 2026 Estilo Apple SJ. Todos los derechos reservados. Apple, iPhone y sus logotipos son marcas registradas de Apple Inc.</div>
+          <div>Diseñado con tecnología Grow Labs</div>
+        </div>
+      </div>
+    </footer>
+
+  </main> <!-- End .main-content-flow -->
+
+  <!-- Floating WhatsApp Widget -->
+  <div class="floating-whatsapp">
+    <div class="floating-whatsapp-bubble">
+      💬 ¡Hola! ¿Buscás algún modelo en particular?
+    </div>
+    <a href="https://api.whatsapp.com/send/?phone=5492643229503&text=Hola!%20Vi%20la%20p%C3%A1gina%20web%20y%20quiero%20consultar%20por%20un%20iPhone&type=phone_number&app_absent=0" 
+       target="_blank" 
+       class="floating-whatsapp-btn" 
+       title="Chatear por WhatsApp">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- Main JavaScript App Logic -->
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

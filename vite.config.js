@@ -10,6 +10,7 @@ export default defineConfig({
                 canje: resolve(__dirname, 'lista-canje.html'),
                 chat: resolve(__dirname, 'chat.html'),
                 diagnostico: resolve(__dirname, 'diagnostico.html'),
+                paginaweb: resolve(__dirname, 'paginaweb/index.html'),
             },
         },
     },
