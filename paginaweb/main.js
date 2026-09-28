@@ -683,7 +683,7 @@ function setupNavigation() {
 
 // ==========================================================================
 // ==========================================================================
-// SCROLL-TRIGGERED KEYNOTE VIDEO EXPERIENCE (Mobile-First Apple Keynote Background)
+// SCROLL-TRIGGERED KEYNOTE VIDEO SCRUBBER (Mobile-First Apple Keynote Background)
 // ==========================================================================
 
 function setupScrollVideoKeynote() {
@@ -699,8 +699,9 @@ function setupScrollVideoKeynote() {
   if (!heroSection || !video1 || !video2 || !video3) return;
 
   const allVideos = [video1, video2, video3];
+  const knownDurations = [6.55, 6.55, 6.55];
 
-  // 1. Initial video setup - Configure inline mobile attributes
+  // 1. Initial video setup - Configure inline attributes and preload buffers
   allVideos.forEach(v => {
     v.muted = true;
     v.defaultMuted = true;
@@ -708,31 +709,28 @@ function setupScrollVideoKeynote() {
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
-    v.setAttribute('loop', '');
-    v.setAttribute('autoplay', '');
+    v.setAttribute('preload', 'auto');
+    v.currentTime = 0.01;
+    v.load();
   });
 
-  const playVideoSafe = (v) => {
-    if (!v) return;
-    const p = v.play();
-    if (p !== undefined) {
-      p.catch(() => {});
-    }
+  // Mobile media pipeline unlock: iOS Safari & Chrome Mobile require initial touch to unlock hardware seeking
+  let hasPrimed = false;
+  const primeMobile = () => {
+    if (hasPrimed) return;
+    hasPrimed = true;
+    allVideos.forEach(v => {
+      try {
+        const p = v.play();
+        if (p !== undefined) {
+          p.then(() => v.pause()).catch(() => {});
+        }
+      } catch (e) {}
+    });
   };
-
-  const startAll = () => {
-    allVideos.forEach(v => playVideoSafe(v));
-  };
-
-  startAll();
-
-  // Mobile gesture unlock (ensures instant playback even in Low Power Mode / iOS battery saver)
-  const unlockVideos = () => {
-    startAll();
-  };
-  window.addEventListener('touchstart', unlockVideos, { passive: true, once: true });
-  window.addEventListener('pointerdown', unlockVideos, { passive: true, once: true });
-  window.addEventListener('scroll', unlockVideos, { passive: true, once: true });
+  window.addEventListener('touchstart', primeMobile, { passive: true, once: true });
+  window.addEventListener('pointerdown', primeMobile, { passive: true, once: true });
+  window.addEventListener('scroll', primeMobile, { passive: true, once: true });
 
   let targetProgress = 0;
   let currentProgress = 0;
@@ -759,15 +757,25 @@ function setupScrollVideoKeynote() {
     { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
-  // Pause videos when switching tabs to preserve device performance
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      allVideos.forEach(v => { if (!v.paused) v.pause(); });
-    } else {
-      calculateProgress();
-      startAll();
+  function scrubVideo(v, targetTime, fallbackDuration) {
+    if (!v) return;
+    const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : fallbackDuration;
+    const safeTime = Math.max(0.01, Math.min(dur - 0.05, targetTime));
+
+    if (Math.abs(v.currentTime - safeTime) > 0.03) {
+      if (!v.seeking) {
+        if ('fastSeek' in v) {
+          try {
+            v.fastSeek(safeTime);
+          } catch (e) {
+            v.currentTime = safeTime;
+          }
+        } else {
+          v.currentTime = safeTime;
+        }
+      }
     }
-  });
+  }
 
   // 2. Main Animation loop
   function scrubLoop() {
@@ -778,45 +786,37 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // A. Crossfade Active Video Based on Phase
-    // Video 1 (0.00 - 0.49): Cámara Fusion & Titanio Aeroespacial (Slides 1 & 2)
-    // Video 2 (0.49 - 0.69): Display Super Retina XDR & Dynamic Island (Slide 3)
-    // Video 3 (0.69 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5)
-    let targetVideoIdx = 0;
-    if (currentProgress < 0.49) {
-      targetVideoIdx = 0;
-    } else if (currentProgress < 0.69) {
-      targetVideoIdx = 1;
-    } else {
-      targetVideoIdx = 2;
-    }
+    // A. Crossfade & Scrub Videos synchronized with scroll
+    // Phase 1 (0.00 - 0.49): Cámara Fusion & Titanio Aeroespacial (Slides 1 & 2)
+    // Phase 2 (0.49 - 0.69): Display Super Retina XDR & Dynamic Island (Slide 3)
+    // Phase 3 (0.69 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5)
+    const T1 = 0.49;
+    const T2 = 0.69;
 
-    allVideos.forEach((v, idx) => {
-      if (idx === targetVideoIdx) {
-        if (!v.classList.contains('active')) {
-          v.classList.add('active');
-        }
-        if (v.paused) {
-          playVideoSafe(v);
-        }
-      } else {
-        if (v.classList.contains('active')) {
-          v.classList.remove('active');
-        }
+    if (currentProgress < T1) {
+      if (!video1.classList.contains('active')) {
+        video1.classList.add('active');
+        video2.classList.remove('active');
+        video3.classList.remove('active');
       }
-    });
-
-    // Battery & performance safeguard: pause when hero section is fully scrolled off-screen
-    const rect = heroSection.getBoundingClientRect();
-    const isHeroInViewport = rect.bottom > 0 && rect.top < window.innerHeight;
-    if (!isHeroInViewport) {
-      allVideos.forEach(v => {
-        if (!v.paused) v.pause();
-      });
+      const p1 = Math.min(1, Math.max(0, currentProgress / T1));
+      scrubVideo(video1, p1 * (video1.duration || knownDurations[0]), knownDurations[0]);
+    } else if (currentProgress < T2) {
+      if (!video2.classList.contains('active')) {
+        video2.classList.add('active');
+        video1.classList.remove('active');
+        video3.classList.remove('active');
+      }
+      const p2 = Math.min(1, Math.max(0, (currentProgress - T1) / (T2 - T1)));
+      scrubVideo(video2, p2 * (video2.duration || knownDurations[1]), knownDurations[1]);
     } else {
-      if (allVideos[targetVideoIdx] && allVideos[targetVideoIdx].paused) {
-        playVideoSafe(allVideos[targetVideoIdx]);
+      if (!video3.classList.contains('active')) {
+        video3.classList.add('active');
+        video1.classList.remove('active');
+        video2.classList.remove('active');
       }
+      const p3 = Math.min(1, Math.max(0, (currentProgress - T2) / (1 - T2)));
+      scrubVideo(video3, p3 * (video3.duration || knownDurations[2]), knownDurations[2]);
     }
 
     // B. Hero Title Box Fade-out
@@ -833,7 +833,7 @@ function setupScrollVideoKeynote() {
       }
     }
 
-    // C. Scrollytelling Slides Crossfade
+    // C. Scrollytelling Slides Crossfade (Preserving unique spatial CSS positioning)
     slides.forEach(slide => {
       const start = parseFloat(slide.getAttribute('data-start') || '0');
       const end = parseFloat(slide.getAttribute('data-end') || '1');
@@ -851,11 +851,9 @@ function setupScrollVideoKeynote() {
         }
 
         slide.style.opacity = Math.max(0, Math.min(1, opacity)).toFixed(3);
-        slide.style.transform = `translateY(${(1 - opacity) * 18}px)`;
         slide.classList.add('active');
       } else {
         slide.style.opacity = '0';
-        slide.style.transform = 'translateY(24px)';
         slide.classList.remove('active');
       }
     });

@@ -4,37 +4,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Chat - Grow Labs</title>
+    <title>Contact Center CRM - Estilo Apple SJ</title>
     <link rel="icon" type="image/png" href="public/logogrow.png">
     <link rel="stylesheet" href="chat.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
-    <!-- Supabase SDK -->
+    <!-- Google Fonts: Inter & Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Emoji Picker Script -->
+    <!-- Emoji Picker Web Component -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
 </head>
 
 <body>
-    <div class="app-container">
-        <!-- Sidebar: Contact List -->
-        <aside class="sidebar">
-            <header class="sidebar-header">
-                <div class="user-avatar">
-                    <img src="public/logogrow.png" alt="Perfil" id="userAvatar">
+    <div class="crm-app-container">
+        <!-- ============================================================== -->
+        <!-- COLUMNA 1: SIDEBAR BANDEJAS & CHATS (360px)                     -->
+        <!-- ============================================================== -->
+        <aside class="crm-sidebar" id="crmSidebar">
+            <!-- Header con Selector de Operador Activo y Estado -->
+            <header class="crm-sidebar-header">
+                <div class="operator-profile">
+                    <div class="operator-avatar" id="operatorAvatarBadge">N</div>
+                    <div class="operator-meta">
+                        <span class="operator-label">Operador en línea</span>
+                        <select id="activeSellerSelect" class="operator-select" title="Cambiar operador activo">
+                            <option value="Nahuel">Nahuel (Ventas)</option>
+                            <option value="Cristofer">Cristofer (Plan Canje)</option>
+                            <option value="Lucas">Lucas (Admin/Supervisión)</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="header-actions">
-                    <button class="icon-btn" title="Nuevo Chat">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
+
+                <div class="header-tools">
+                    <button class="tool-btn" id="chimeToggleBtn" title="Sonido de nuevos mensajes (Activado)">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
                         </svg>
                     </button>
-                    <button class="icon-btn" title="Refrescar" onclick="location.reload()">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button class="tool-btn" id="refreshBtn" title="Refrescar lista de chats">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="23 4 23 10 17 10"></polyline>
                             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                         </svg>
@@ -42,194 +53,411 @@
                 </div>
             </header>
 
-            <div class="search-bar">
-                <div class="search-input-container">
-                    <svg viewBox="0 0 24 24" width="24" height="24" class="search-icon">
-                        <path fill="currentColor"
-                            d="M15.009 13.805h-.636l-.22-.219a5.184 5.184 0 0 0 1.256-3.386 5.207 5.207 0 1 0-5.207 5.208 5.183 5.183 0 0 0 3.385-1.254l.221.22v.635l4.004 3.999 1.194-1.195-3.997-4.008zm-4.814 0a3.606 3.606 0 1 1 0-7.212 3.606 3.606 0 0 1 0 7.212z">
-                        </path>
+            <!-- Buscador Rápido -->
+            <div class="crm-search-container">
+                <div class="crm-search-box">
+                    <svg viewBox="0 0 24 24" width="16" height="16" class="search-icon">
+                        <path fill="currentColor" d="M15.009 13.805h-.636l-.22-.219a5.184 5.184 0 0 0 1.256-3.386 5.207 5.207 0 1 0-5.207 5.208 5.183 5.183 0 0 0 3.385-1.254l.221.22v.635l4.004 3.999 1.194-1.195-3.997-4.008zm-4.814 0a3.606 3.606 0 1 1 0-7.212 3.606 3.606 0 0 1 0 7.212z"></path>
                     </svg>
-                    <input type="text" placeholder="Buscar cliente..." id="searchInput">
+                    <input type="text" id="crmSearchInput" placeholder="Buscar por cliente o teléfono... (Ctrl+K)">
+                    <button id="clearSearchBtn" class="clear-search-btn" style="display:none;" title="Limpiar">&times;</button>
                 </div>
             </div>
 
-            <div class="filter-tabs" id="filterTabs">
-                <button class="filter-tab active" data-filter="whatsapp">WhatsApp</button>
-                <button class="filter-tab" data-filter="instagram">Instagram</button>
+            <!-- 4 Bandejas Oficiales de Contact Center -->
+            <div class="crm-tabs-bar" id="crmTabsBar">
+                <button class="crm-tab active" data-tab="sin_asignar" id="tabSinAsignar">
+                    <span>Sin Asignar</span>
+                    <span class="tab-badge badge-warning" id="countSinAsignar">0</span>
+                </button>
+                <button class="crm-tab" data-tab="mis_chats" id="tabMisChats">
+                    <span>Mis Chats</span>
+                    <span class="tab-badge badge-primary" id="countMisChats">0</span>
+                </button>
+                <button class="crm-tab" data-tab="todos" id="tabTodos">
+                    <span>Todos</span>
+                    <span class="tab-badge badge-neutral" id="countTodos">0</span>
+                </button>
+                <button class="crm-tab" data-tab="cerrados" id="tabCerrados">
+                    <span>Cerrados</span>
+                    <span class="tab-badge badge-muted" id="countCerrados">0</span>
+                </button>
             </div>
 
-            <div class="contacts-list" id="contactsList">
-                <!-- Los contactos se cargarán aquí dinámicamente -->
-                <div class="loading-contacts">
-                    <div class="spinner"></div>
-                    <p>Iniciando sistema...</p>
+            <!-- Subfiltro opcional de plataforma -->
+            <div class="crm-subfilter-bar">
+                <span class="subfilter-label">Canal:</span>
+                <button class="subfilter-chip active" data-channel="all">Todos</button>
+                <button class="subfilter-chip" data-channel="whatsapp">WhatsApp</button>
+                <button class="subfilter-chip" data-channel="instagram">Instagram</button>
+            </div>
+
+            <!-- Lista de Contactos Scrollable -->
+            <div class="crm-contacts-list" id="crmContactsList">
+                <div class="loading-state">
+                    <div class="crm-spinner"></div>
+                    <p>Sincronizando bandejas de Estilo Apple SJ...</p>
                 </div>
             </div>
         </aside>
 
-        <!-- Main Chat Area -->
-        <main class="chat-area" id="chatArea">
-            <!-- Empty State (No chat selected) -->
-            <div class="empty-state" id="emptyState">
+        <!-- ============================================================== -->
+        <!-- COLUMNA 2: PANE DE CONVERSACIÓN ACTIVA (CENTRAL)                -->
+        <!-- ============================================================== -->
+        <main class="crm-chat-pane" id="crmChatPane">
+            <!-- Estado Inicial: Sin chat seleccionado -->
+            <div class="crm-empty-state" id="crmEmptyState">
                 <div class="empty-welcome-card">
-                    <div class="empty-logo"></div>
-                    <h2>Grow Labs Live</h2>
-                    <p>Gestión de mensajes en tiempo real.<br>Responde a tus clientes con la velocidad del neón.</p>
-                    <div class="encrypted-msg">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="var(--primary-green)">
-                            <path
-                                d="M18 8H6V7c0-2.8 2.2-5 5-5s5 2.2 5 5v1h2V7c0-3.9-3.1-7-7-7S4 3.1 4 7v1H2v14h20V8h-2zM6 7c0-2.8 2.2-5 5-5s5 2.2 5 5v1H6V7z">
-                            </path>
-                        </svg>
-                        Conexión segura y encriptada
+                    <div class="apple-store-badge">
+                        <img src="public/logogrow.png" alt="Estilo Apple SJ" class="empty-logo-img">
+                    </div>
+                    <h2>Centro de Contacto & CRM</h2>
+                    <p class="empty-desc">
+                        Gestión comercial omnicanal en tiempo real para <strong>Estilo Apple SJ</strong>.
+                        Selecciona una conversación para responder a clientes, gestionar presupuestos y registrar Plan Canje.
+                    </p>
+                    <div class="empty-hints">
+                        <div class="hint-item">
+                            <span class="hint-icon">⚡</span>
+                            <span>Usa <strong>/</strong> en el chat para respuestas rápidas</span>
+                        </div>
+                        <div class="hint-item">
+                            <span class="hint-icon">🔒</span>
+                            <span>Agrega notas privadas internas invisibles para el cliente</span>
+                        </div>
+                        <div class="hint-item">
+                            <span class="hint-icon">📋</span>
+                            <span>Actualiza la ficha de interés de iPhone al instante</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Chat View (Hidden by default) -->
-            <div class="active-chat" id="activeChat" style="display: none;">
-                <header class="chat-header">
-                    <div class="chat-info">
-                        <div class="chat-avatar" id="chatHeaderAvatar"></div>
-                        <div class="chat-details">
-                            <h3 id="chatHeaderName">Nombre Cliente</h3>
-                            <span id="chatHeaderStatus">en línea</span>
+            <!-- Vista del Chat Activo -->
+            <div class="crm-active-chat" id="crmActiveChat" style="display: none;">
+                <!-- Header del Chat con Operaciones -->
+                <header class="crm-chat-header">
+                    <div class="client-header-info">
+                        <button class="mobile-back-btn" id="mobileBackBtn" title="Volver a lista">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <div class="client-header-avatar" id="activeChatAvatar">?</div>
+                        <div class="client-header-text">
+                            <div class="client-name-row">
+                                <h3 id="activeChatName">Nombre Cliente</h3>
+                                <span class="client-phone" id="activeChatPhone">---</span>
+                                <span class="client-status-dot" id="activeChatStatusDot" title="En línea"></span>
+                            </div>
+                            <div class="client-meta-row">
+                                <span class="seller-assignment-chip" id="activeChatSellerChip">
+                                    <span class="chip-dot"></span>
+                                    <span id="activeChatSellerText">Sin Asignar</span>
+                                </span>
+                                <span class="status-badge" id="activeChatStatusBadge">Abierto</span>
+                                <span class="device-badge" id="activeChatDeviceBadge" style="display:none;"></span>
+                            </div>
                         </div>
                     </div>
 
-                    <button id="botStatusBtn" class="bot-status-btn" title="Alternar Bot">
-                        Bot: <span>ON</span>
-                    </button>
-
-                    <div class="header-actions">
-                        <button class="icon-btn" title="Buscar">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                <path fill="currentColor"
-                                    d="M15.009 13.805h-.636l-.22-.219a5.184 5.184 0 0 0 1.256-3.386 5.207 5.207 0 1 0-5.207 5.208 5.183 5.183 0 0 0 3.385-1.254l.221.22v.635l4.004 3.999 1.194-1.195-3.997-4.008zm-4.814 0a3.606 3.606 0 1 1 0-7.212 3.606 3.606 0 0 1 0 7.212z">
-                                </path>
-                            </svg>
+                    <!-- Botones de Acción Operativa (Tal cual ADM-QUI) -->
+                    <div class="header-action-group">
+                        <button class="btn-action btn-claim" id="btnClaimChat" title="Tomar este chat para mí">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span>Tomar Chat</span>
                         </button>
-                        <button class="icon-btn" title="Opciones" onclick="openEditModal('${phone}')">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                <path
-                                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
-                            </svg>
+
+                        <button class="btn-action btn-secondary" id="btnTransferChat" title="Transferir conversación a otro vendedor">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                            <span>Transferir</span>
+                        </button>
+
+                        <button class="btn-action btn-danger-subtle" id="btnCloseChat" title="Finalizar conversación con motivo comercial">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span id="btnCloseChatLabel">Cerrar Chat</span>
+                        </button>
+
+                        <button class="btn-action btn-crm-toggle" id="btnToggleCrmCard" title="Ver / Ocultar Ficha Comercial">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            <span>Ficha CRM</span>
                         </button>
                     </div>
                 </header>
 
-                <div class="messages-container" id="messagesContainer">
-                    <!-- Los mensajes se cargarán aquí -->
+                <!-- Área Central de Mensajes con Scroll -->
+                <div class="crm-messages-container" id="crmMessagesContainer">
+                    <!-- Los mensajes se inyectan dinámicamente aquí -->
                 </div>
 
-                <footer class="chat-input-area">
+                <!-- Menú Flotante de Respuestas Rápidas (/atajo) -->
+                <div class="quick-replies-flyout" id="quickRepliesFlyout" style="display: none;">
+                    <div class="flyout-header">
+                        <span>⚡ Respuestas Rápidas (Presiona Enter o clic)</span>
+                        <span class="flyout-hint">Escribe / para filtrar</span>
+                    </div>
+                    <div class="flyout-items" id="quickRepliesList">
+                        <!-- Ítems inyectados por JS -->
+                    </div>
+                </div>
+
+                <!-- Footer de Entrada de Mensajes y Notas -->
+                <footer class="crm-input-footer">
+                    <!-- Banner de Aviso cuando el modo NOTA PRIVADA está activo -->
+                    <div class="private-note-banner" id="privateNoteBanner" style="display: none;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                        <span><strong>MODO NOTA PRIVADA ACTIVO:</strong> Este texto será visible SOLO para el equipo interno de Estilo Apple SJ. No se enviará a WhatsApp.</span>
+                    </div>
+
+                    <!-- Picker de Emojis flotante -->
                     <div id="emojiPickerContainer" class="emoji-picker-container" style="display: none;">
                         <emoji-picker class="dark-emoji-picker"></emoji-picker>
                     </div>
-                    <button class="icon-btn" title="Emojis" id="emojiBtn">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path
-                                d="M9.153 11.603c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962zm-3.204 1.362c-.026-.307-.131 5.218 6.063 5.551 6.066-.25 6.066-5.551 6.066-5.551-6.078 1.416-12.129 0-12.129 0zm11.363 1.108s-.669 1.959-5.051 1.959c-3.505 0-5.388-1.164-5.607-1.959 0 0 5.912 1.055 10.658 0zM11.804 1.011C5.609 1.011.978 6.033.978 12.228s4.826 10.761 11.021 10.761S23.02 18.423 23.02 12.228c.001-6.195-5.021-11.217-11.216-11.217zM12 21.354c-5.273 0-9.381-3.886-9.381-9.159s3.942-9.548 9.215-9.548 9.548 4.275 9.548 9.548c-.001 5.272-4.109 9.159-9.382 9.159zm3.108-9.751c.795 0 1.439-.879 1.439-1.962s-.644-1.962-1.439-1.962-1.439.879-1.439 1.962.644 1.962 1.439 1.962z">
-                            </path>
-                        </svg>
-                    </button>
-                    <button class="icon-btn" title="Adjuntar">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path
-                                d="M1.816 15.556v.002c0 1.502.584 2.912 1.646 3.972s2.472 1.647 3.974 1.647a5.58 5.58 0 0 0 3.972-1.645l9.547-9.548c.769-.768 1.147-1.767 1.058-2.817-.079-.968-.548-1.927-1.319-2.698-1.594-1.592-4.068-1.711-5.517-.262l-7.916 7.915c-.881.881-.792 2.25.214 3.261.959.958 2.423 1.053 3.263.215l5.511-5.512c.28-.28.267-.722.053-.936l-.244-.244c-.191-.191-.567-.349-.957.04l-5.506 5.506c-.18.18-.635.127-.976-.214-.098-.097-.613-.213-.973l7.915-7.917c.818-.817 2.267-.699 3.23.262.5.501.802 1.1.849 1.685.051.573-.156 1.111-.589 1.543l-9.547 9.549a3.97 3.97 0 0 1-2.829 1.171 3.975 3.975 0 0 1-2.83-1.173 3.973 3.973 0 0 1-1.172-2.828c0-1.071.415-2.076 1.172-2.83l7.209-7.211c.157-.157.264-.579.028-.814L11.5 4.36a.572.572 0 0 0-.834.018l-7.205 7.207a5.577 5.577 0 0 0-1.645 3.971z">
-                            </path>
-                        </svg>
-                    </button>
-                    <div class="input-wrapper">
-                        <input type="text" placeholder="Escribe un mensaje aquí" id="messageInput">
+
+                    <!-- Barra de herramientas de input -->
+                    <div class="input-toolbar-row">
+                        <div class="toolbar-left">
+                            <button class="tool-chip-btn" id="btnTogglePrivateNote" title="Alternar entre Mensaje para el cliente y Nota Interna">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                <span id="privateNoteToggleLabel">Nota Interna</span>
+                            </button>
+
+                            <button class="tool-chip-btn" id="btnQuickRepliesTrigger" title="Ver catálogo de respuestas rápidas">
+                                <span class="shortcut-symbol">/</span>
+                                <span>Atajos</span>
+                            </button>
+
+                            <button class="tool-chip-btn" id="btnAttachMedia" title="Adjuntar imagen / archivo">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                                <span>Adjuntar</span>
+                            </button>
+                            <input type="file" id="mediaFileInput" accept="image/*,application/pdf" style="display: none;">
+
+                            <button class="icon-tool-btn" id="emojiBtn" title="Insertar Emoji">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                            </button>
+                        </div>
                     </div>
-                    <button class="btn-send" id="btnSend" title="Enviar Mensaje">
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                            <path
-                                d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z">
-                            </path>
-                        </svg>
-                    </button>
+
+                    <!-- Caja de Texto y Botón de Envío -->
+                    <div class="input-compose-row">
+                        <div class="textarea-wrapper">
+                            <textarea id="messageTextInput" placeholder="Escribe un mensaje aquí... (o presiona / para atajos)" rows="1"></textarea>
+                        </div>
+                        <button class="send-message-btn" id="btnSendMessage" title="Enviar Mensaje (Enter)">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </footer>
             </div>
-            <!-- Edit Client Modal -->
-            <div class="modal-overlay" id="editClientModal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Editar Cliente</h2>
-                        <button class="close-modal" onclick="closeEditModal()">&times;</button>
+        </main>
+
+        <!-- ============================================================== -->
+        <!-- COLUMNA 3: FICHA COMERCIAL CRM DEL CLIENTE (350px)              -->
+        <!-- ============================================================== -->
+        <aside class="crm-details-sidebar" id="crmDetailsSidebar">
+            <header class="details-header">
+                <div class="details-title-row">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <h4>Ficha del Cliente</h4>
+                </div>
+                <button class="close-details-btn" id="btnCloseDetailsSidebar" title="Cerrar panel">&times;</button>
+            </header>
+
+            <div class="details-scrollable-content">
+                <!-- Tarjeta Principal del Contacto -->
+                <div class="details-section">
+                    <div class="section-title">Datos Personales</div>
+                    <div class="field-group">
+                        <label for="cardClientName">Nombre y Apellido</label>
+                        <input type="text" id="cardClientName" placeholder="Ej: Lucas Molina">
                     </div>
-                    <div class="modal-body">
-                        <form id="editClientForm">
-                            <input type="hidden" id="editPhone">
 
-                            <div class="form-group">
-                                <label>Nombre</label>
-                                <input type="text" id="editName" placeholder="Ej: Juan Pérez">
-                            </div>
+                    <div class="field-group">
+                        <label>Teléfono (WhatsApp)</label>
+                        <div class="phone-link-box">
+                            <input type="text" id="cardClientPhone" readonly class="readonly-input">
+                            <a id="cardWhatsAppDirect" href="#" target="_blank" class="phone-wa-link" title="Abrir en WhatsApp Web">
+                                ↗ WA
+                            </a>
+                        </div>
+                    </div>
 
-                            <div class="form-group">
-                                <label>Teléfono (ID)</label>
-                                <input type="text" id="editPhoneDisplay" readonly
-                                    style="opacity: 0.6; cursor: not-allowed; background: rgba(255,255,255,0.02);">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="editEmail" placeholder="cliente@email.com">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Dispositivo</label>
-                                <input type="text" id="editDevice" placeholder="Ej: iPhone 14 Pro Max">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Vendedor Asignado</label>
-                                <div class="seller-selector" id="sellerSelector">
-                                    <button type="button" class="seller-btn" data-seller="Nahuel">Nahuel</button>
-                                    <button type="button" class="seller-btn" data-seller="Cristofer">Cristofer</button>
-                                    <button type="button" class="seller-btn" data-seller="Sin Asignar">Sin
-                                        Asignar</button>
-                                    <input type="hidden" id="editSeller">
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Avatar (URL de Imagen)</label>
-                                <input type="text" id="editAvatar" placeholder="https://ejemplo.com/imagen.jpg">
-                            </div>
-
-                            <div class="form-group">
-                                <label>Categoría / Interés</label>
-                                <select id="editInterest">
-                                    <option value="">Seleccionar...</option>
-                                    <option value="Comprar">Comprar</option>
-                                    <option value="Averiguar">Averiguar</option>
-                                    <option value="Reparar">Reparar</option>
-                                    <option value="Canjear">Canjear</option>
-                                    <option value="Servicio Técnico">Servicio Técnico</option>
-                                    <option value="Consulta General">Consulta General</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Notas</label>
-                                <textarea id="editNotes" rows="3"
-                                    placeholder="Detalles importantes del cliente..."></textarea>
-                            </div>
-
-                            <div class="modal-actions">
-                                <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancelar</button>
-                                <button type="submit" class="btn-save">Guardar Cambios</button>
-                            </div>
-                        </form>
+                    <div class="field-group">
+                        <label for="cardClientEmail">Correo Electrónico</label>
+                        <input type="email" id="cardClientEmail" placeholder="cliente@correo.com">
                     </div>
                 </div>
+
+                <!-- Datos Comerciales Estilo Apple SJ (iPhone & Canje) -->
+                <div class="details-section section-highlight">
+                    <div class="section-title">
+                        <span>Negociación Apple SJ</span>
+                        <span class="apple-tag"> Store</span>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="cardDeviceInterest">Dispositivo de Interés (Deseado)</label>
+                        <input type="text" id="cardDeviceInterest" list="appleDevicesList" placeholder="Ej: iPhone 15 Pro 128GB Black Titanium">
+                        <datalist id="appleDevicesList">
+                            <option value="iPhone 16 Pro Max 256GB">
+                            <option value="iPhone 16 Pro 128GB">
+                            <option value="iPhone 16 128GB">
+                            <option value="iPhone 15 Pro Max 256GB">
+                            <option value="iPhone 15 Pro 128GB">
+                            <option value="iPhone 15 Plus 128GB">
+                            <option value="iPhone 15 128GB">
+                            <option value="iPhone 14 Pro Max 128GB">
+                            <option value="iPhone 14 Pro 128GB">
+                            <option value="iPhone 14 128GB">
+                            <option value="iPhone 13 128GB Midnight">
+                            <option value="iPhone 12 64GB">
+                            <option value="iPhone 11 64GB">
+                            <option value="Apple Watch Ultra 2">
+                            <option value="AirPods Pro 2 USB-C">
+                            <option value="MacBook Air M2 256GB">
+                        </datalist>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="cardDeviceCanje">Dispositivo para Plan Canje (Usado)</label>
+                        <input type="text" id="cardDeviceCanje" placeholder="Ej: iPhone 13 128GB - Bat 87% - Con caja">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="cardCotizacion">Cotización / Diferencia Estimada</label>
+                        <input type="text" id="cardCotizacion" placeholder="Ej: USD 650 / $ 820.000">
+                    </div>
+                </div>
+
+                <!-- Etiquetas Rápidas (Tags) -->
+                <div class="details-section">
+                    <div class="section-title">Etiquetas Comerciales</div>
+                    <div class="tags-selector-grid" id="tagsSelectorGrid">
+                        <!-- Chips inyectados por JS: #PlanCanje, #VIP, etc. -->
+                    </div>
+                </div>
+
+                <!-- Notas Internas del Cliente -->
+                <div class="details-section">
+                    <div class="section-title">Notas de Seguimiento</div>
+                    <div class="field-group">
+                        <textarea id="cardNotes" rows="4" placeholder="Anotaciones sobre preferencias, horarios de visita al local, etc..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Botón de Guardado Manual con Feedback -->
+                <div class="details-footer">
+                    <button class="btn-save-crm" id="btnSaveCrmCard">
+                        <span>Guardar Cambios</span>
+                    </button>
+                    <span class="save-status-msg" id="crmSaveStatusMsg"></span>
+                </div>
             </div>
-        </main>
+        </aside>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- MODALES OPERATIVOS                                             -->
+    <!-- ============================================================== -->
+
+    <!-- Modal 1: Transferir Chat a Vendedor -->
+    <div class="crm-modal-backdrop" id="transferModal" style="display: none;">
+        <div class="crm-modal-box">
+            <div class="crm-modal-header">
+                <h3>Transferir Conversación</h3>
+                <button class="modal-close-x" id="btnCloseTransferModal">&times;</button>
+            </div>
+            <div class="crm-modal-body">
+                <p class="modal-intro">Selecciona el vendedor al que derivarás la atención de este cliente:</p>
+
+                <div class="seller-pick-options" id="sellerPickOptions">
+                    <label class="seller-radio-card">
+                        <input type="radio" name="targetSellerRadio" value="Nahuel" checked>
+                        <div class="radio-content">
+                            <span class="seller-badge-letter" style="background:#5C2E2E;">N</span>
+                            <div>
+                                <strong>Nahuel</strong>
+                                <small>Ventas y Atención Comercial</small>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="seller-radio-card">
+                        <input type="radio" name="targetSellerRadio" value="Cristofer">
+                        <div class="radio-content">
+                            <span class="seller-badge-letter" style="background:#1E3A5F;">C</span>
+                            <div>
+                                <strong>Cristofer</strong>
+                                <small>Plan Canje y Cotizaciones</small>
+                            </div>
+                        </div>
+                    </label>
+
+                    <label class="seller-radio-card">
+                        <input type="radio" name="targetSellerRadio" value="Lucas">
+                        <div class="radio-content">
+                            <span class="seller-badge-letter" style="background:#0F766E;">L</span>
+                            <div>
+                                <strong>Lucas</strong>
+                                <small>Gerencia y Servicio Técnico</small>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="field-group" style="margin-top:15px;">
+                    <label for="transferNoteInput">Nota de pase para tu compañero (opcional):</label>
+                    <textarea id="transferNoteInput" rows="2" placeholder="Ej: Cliente interesado en permutar su iPhone 12, quiere pasar esta tarde por el local..."></textarea>
+                </div>
+            </div>
+            <div class="crm-modal-actions">
+                <button class="btn-modal-cancel" id="btnCancelTransfer">Cancelar</button>
+                <button class="btn-modal-confirm" id="btnConfirmTransfer">Confirmar Transferencia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Cerrar / Resolver Conversación con Motivo -->
+    <div class="crm-modal-backdrop" id="closeChatModal" style="display: none;">
+        <div class="crm-modal-box">
+            <div class="crm-modal-header">
+                <h3>Cerrar Conversación</h3>
+                <button class="modal-close-x" id="btnCloseCloseModal">&times;</button>
+            </div>
+            <div class="crm-modal-body">
+                <p class="modal-intro">Indica el motivo de resolución comercial para archivar este chat en la bandeja de Cerrados:</p>
+
+                <div class="field-group">
+                    <label for="closeReasonSelect">Motivo de Resolución:</label>
+                    <select id="closeReasonSelect" class="crm-select">
+                        <option value="Venta Concretada">🏆 Venta Concretada</option>
+                        <option value="Plan Canje Acordado">🔄 Plan Canje Acordado</option>
+                        <option value="Presupuesto Enviado">📄 Presupuesto Enviado</option>
+                        <option value="Equipo Ingresado a Servicio Técnico">🛠️ Ingresado a Servicio Técnico</option>
+                        <option value="Consulta Respondida">💬 Consulta Respondida</option>
+                        <option value="Sin Interés / Fuera de Presupuesto">❌ Sin Interés / Fuera de Presupuesto</option>
+                        <option value="Cliente No Responde">⏱️ Cliente No Responde</option>
+                        <option value="Otro Motivo">📌 Otro Motivo</option>
+                    </select>
+                </div>
+            </div>
+            <div class="crm-modal-actions">
+                <button class="btn-modal-cancel" id="btnCancelCloseModal">Cancelar</button>
+                <button class="btn-modal-confirm btn-danger" id="btnConfirmCloseChat">Finalizar Conversación</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Visor de Imagen Lightbox -->
+    <div class="crm-modal-backdrop" id="imageLightboxModal" style="display: none;">
+        <div class="lightbox-content">
+            <button class="lightbox-close" id="btnCloseLightbox">&times;</button>
+            <img src="" id="lightboxImg" alt="Vista previa">
+        </div>
+    </div>
+
+    <!-- Script Principal Modular -->
     <script type="module" src="chat-client.js"></script>
 </body>
 

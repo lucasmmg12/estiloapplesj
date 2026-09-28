@@ -1,837 +1,1275 @@
-import CONFIG from './config.js';
-import { enviarMensaje, manageBlacklist } from './services/builderbot-api.js';
+/**
+ * chat-client.js
+ * Consola Operativa de Contact Center y CRM para Estilo Apple SJ
+ * 
+ * Basado en la arquitectura de Sistema ADM-QUI (Sanatorio Argentino / Grow Labs)
+ * Adaptado 100% para Estilo Apple SJ (Venta, Plan Canje, Cotizaciones y Servicio Técnico)
+ */
 
-// ============================================
-// INITIALIZATION
-// ============================================
+import {
+    fetchCrmConversations,
+    fetchChatMessages,
+    sendCrmMessage,
+    assignSellerToChat,
+    unassignSellerFromChat,
+    transferChat,
+    closeConversationWithReason,
+    reopenConversation,
+    saveCustomerCard,
+    fetchQuickReplies,
+    subscribeToCrmRealtime,
+    playCrmChime,
+    SELLERS,
+    RESOLUTION_REASONS,
+    DEFAULT_TAGS
+} from './services/crm-service.js';
 
-// Initialize Supabase from global window object (loaded via CDN)
-const supabase = window.supabase.createClient(
-    CONFIG.supabase.url,
-    CONFIG.supabase.anonKey
-);
+// ============================================================================
+// 1. ESTADO GLOBAL DE LA CONSOLA
+// ============================================================================
 
-// State
+let activeSeller = localStorage.getItem('estilo_crm_active_seller') || 'Nahuel';
+let activeTab = 'sin_asignar'; // 'sin_asignar' | 'mis_chats' | 'todos' | 'cerrados'
+let activeChannel = 'all';     // 'all' | 'whatsapp' | 'instagram'
+let searchQuery = '';
 let activeChatPhone = null;
-let activeFilter = 'whatsapp';
-let contactsMap = new Map(); // phone -> { lastMessage, timestamp, unreadCount, avatar, name, isFavorite, platform }
+let activeContact = null;
+let isPrivateNoteMode = false;
+let isSoundEnabled = localStorage.getItem('estilo_crm_sound') !== 'false';
 
-// DOM Elements
-const contactsListEl = document.getElementById('contactsList');
-const chatAreaEl = document.getElementById('chatArea');
-const emptyStateEl = document.getElementById('emptyState');
-const activeChatEl = document.getElementById('activeChat');
-const messagesContainerEl = document.getElementById('messagesContainer');
-const chatHeaderNameEl = document.getElementById('chatHeaderName');
-const chatHeaderStatusEl = document.getElementById('chatHeaderStatus');
-const chatHeaderAvatarEl = document.getElementById('chatHeaderAvatar');
-const messageInputEl = document.getElementById('messageInput');
-const btnSendEl = document.getElementById('btnSend');
-const searchInputEl = document.getElementById('searchInput');
+// Mapa de conversaciones indexado por teléfono: phone -> convObject
+const conversationsMap = new Map();
+
+// Catálogo de respuestas rápidas cargadas desde Supabase
+let quickRepliesCatalog = [];
+
+// ============================================================================
+// 2. REFERENCIAS AL DOM
+// ============================================================================
+
+// Header & Operador
+const activeSellerSelect = document.getElementById('activeSellerSelect');
+const operatorAvatarBadge = document.getElementById('operatorAvatarBadge');
+const chimeToggleBtn = document.getElementById('chimeToggleBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+
+// Buscador & Filtros
+const crmSearchInput = document.getElementById('crmSearchInput');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
+const crmTabsBar = document.getElementById('crmTabsBar');
+const crmContactsList = document.getElementById('crmContactsList');
+const countSinAsignarEl = document.getElementById('countSinAsignar');
+const countMisChatsEl = document.getElementById('countMisChats');
+const countTodosEl = document.getElementById('countTodos');
+const countCerradosEl = document.getElementById('countCerrados');
+
+// Área de Chat
+const crmEmptyState = document.getElementById('crmEmptyState');
+const crmActiveChat = document.getElementById('crmActiveChat');
+const crmMessagesContainer = document.getElementById('crmMessagesContainer');
+const mobileBackBtn = document.getElementById('mobileBackBtn');
+const activeChatAvatar = document.getElementById('activeChatAvatar');
+const activeChatName = document.getElementById('activeChatName');
+const activeChatPhoneEl = document.getElementById('activeChatPhone');
+const activeChatSellerChip = document.getElementById('activeChatSellerChip');
+const activeChatSellerText = document.getElementById('activeChatSellerText');
+const activeChatStatusBadge = document.getElementById('activeChatStatusBadge');
+const activeChatDeviceBadge = document.getElementById('activeChatDeviceBadge');
+
+// Botones de Acción de Cabecera
+const btnClaimChat = document.getElementById('btnClaimChat');
+const btnTransferChat = document.getElementById('btnTransferChat');
+const btnCloseChat = document.getElementById('btnCloseChat');
+const btnCloseChatLabel = document.getElementById('btnCloseChatLabel');
+const btnToggleCrmCard = document.getElementById('btnToggleCrmCard');
+
+// Entrada de Mensajes
+const messageTextInput = document.getElementById('messageTextInput');
+const btnSendMessage = document.getElementById('btnSendMessage');
+const btnTogglePrivateNote = document.getElementById('btnTogglePrivateNote');
+const privateNoteToggleLabel = document.getElementById('privateNoteToggleLabel');
+const privateNoteBanner = document.getElementById('privateNoteBanner');
+const textareaWrapper = document.querySelector('.textarea-wrapper');
+const btnQuickRepliesTrigger = document.getElementById('btnQuickRepliesTrigger');
+const quickRepliesFlyout = document.getElementById('quickRepliesFlyout');
+const quickRepliesList = document.getElementById('quickRepliesList');
+const btnAttachMedia = document.getElementById('btnAttachMedia');
+const mediaFileInput = document.getElementById('mediaFileInput');
 const emojiBtn = document.getElementById('emojiBtn');
 const emojiPickerContainer = document.getElementById('emojiPickerContainer');
 const emojiPicker = document.querySelector('emoji-picker');
 
-// ============================================
-// MAIN LOGIC
-// ============================================
+// Ficha Comercial (Sidebar Derecha)
+const crmDetailsSidebar = document.getElementById('crmDetailsSidebar');
+const btnCloseDetailsSidebar = document.getElementById('btnCloseDetailsSidebar');
+const cardClientName = document.getElementById('cardClientName');
+const cardClientPhone = document.getElementById('cardClientPhone');
+const cardWhatsAppDirect = document.getElementById('cardWhatsAppDirect');
+const cardClientEmail = document.getElementById('cardClientEmail');
+const cardDeviceInterest = document.getElementById('cardDeviceInterest');
+const cardDeviceCanje = document.getElementById('cardDeviceCanje');
+const cardCotizacion = document.getElementById('cardCotizacion');
+const tagsSelectorGrid = document.getElementById('tagsSelectorGrid');
+const cardNotes = document.getElementById('cardNotes');
+const btnSaveCrmCard = document.getElementById('btnSaveCrmCard');
+const crmSaveStatusMsg = document.getElementById('crmSaveStatusMsg');
 
-async function init() {
-    console.log('🚀 Iniciando Live Chat...');
-    // 1. Initial Load
-    await loadContacts();
-    // 3. Realtime Subscription
-    subscribeToMessages();
-    // 4. Event Listeners
+// Modales
+const transferModal = document.getElementById('transferModal');
+const btnCloseTransferModal = document.getElementById('btnCloseTransferModal');
+const btnCancelTransfer = document.getElementById('btnCancelTransfer');
+const btnConfirmTransfer = document.getElementById('btnConfirmTransfer');
+const transferNoteInput = document.getElementById('transferNoteInput');
+
+const closeChatModal = document.getElementById('closeChatModal');
+const btnCloseCloseModal = document.getElementById('btnCloseCloseModal');
+const btnCancelCloseModal = document.getElementById('btnCancelCloseModal');
+const btnConfirmCloseChat = document.getElementById('btnConfirmCloseChat');
+const closeReasonSelect = document.getElementById('closeReasonSelect');
+
+const imageLightboxModal = document.getElementById('imageLightboxModal');
+const lightboxImg = document.getElementById('lightboxImg');
+const btnCloseLightbox = document.getElementById('btnCloseLightbox');
+
+// ============================================================================
+// 3. INICIALIZACIÓN
+// ============================================================================
+
+async function initConsole() {
+    console.log('🚀 Iniciando Consola CRM Estilo Apple SJ...');
+
+    // 1. Configurar Operador Activo
+    setupOperatorProfile();
+
+    // 2. Renderizar Etiquetas en Ficha CRM
+    renderAvailableTags();
+
+    // 3. Cargar Respuestas Rápidas
+    loadQuickReplies();
+
+    // 4. Configurar Listeners de UI
     setupEventListeners();
+
+    // 5. Cargar Conversaciones
+    await loadConversations();
+
+    // 6. Activar Suscripción en Tiempo Real
+    subscribeToCrmRealtime({
+        onNewMessage: handleRealtimeNewMessage,
+        onContactUpdate: handleRealtimeContactUpdate
+    });
 }
 
-// ============================================
-// DATA LOADING & RENDERING
-// ============================================
+// ============================================================================
+// 4. GESTIÓN DEL OPERADOR ACTIVO Y SONIDO
+// ============================================================================
 
-async function loadContacts() {
-    contactsListEl.innerHTML = `
-        <div class="loading-contacts">
-            <div class="spinner"></div>
-            <p style="color:var(--text-dim); margin-top:10px;">Cargando chats recientes...</p>
+function setupOperatorProfile() {
+    activeSellerSelect.value = activeSeller;
+    operatorAvatarBadge.innerText = activeSeller.charAt(0).toUpperCase();
+
+    // Color del avatar según operador
+    const sellerObj = SELLERS.find(s => s.id === activeSeller);
+    if (sellerObj) {
+        operatorAvatarBadge.style.background = sellerObj.color;
+    }
+
+    // Toggle de sonido
+    updateSoundButtonUI();
+}
+
+function updateSoundButtonUI() {
+    if (isSoundEnabled) {
+        chimeToggleBtn.classList.add('active');
+        chimeToggleBtn.title = 'Sonido de nuevos mensajes (Activado)';
+    } else {
+        chimeToggleBtn.classList.remove('active');
+        chimeToggleBtn.title = 'Sonido de nuevos mensajes (Silenciado)';
+    }
+}
+
+// ============================================================================
+// 5. CARGA Y PROCESAMIENTO DE CONVERSACIONES
+// ============================================================================
+
+async function loadConversations() {
+    crmContactsList.innerHTML = `
+        <div class="loading-state">
+            <div class="crm-spinner"></div>
+            <p>Sincronizando bandejas de Estilo Apple SJ...</p>
         </div>
     `;
 
     try {
-        // INTENTO 1: Usar RPC optimizado (Backend)
-        const { data: rpcData, error: rpcError } = await supabase
-            .rpc('get_last_conversations', { limit_count: 10000 });
+        const conversations = await fetchCrmConversations(200);
+        console.log(`✅ ${conversations.length} conversaciones recuperadas`);
 
-        if (!rpcError && rpcData) {
-            console.log('✅ Contactos cargados vía RPC:', rpcData.length);
+        conversationsMap.clear();
+        conversations.forEach(c => {
+            conversationsMap.set(c.phone, c);
+        });
 
-            contactsMap.clear();
-            rpcData.forEach(c => {
-                contactsMap.set(c.phone, {
-                    phone: c.phone,
-                    lastMessage: (c.last_message_is_mine ? 'Tú: ' : '') + (c.last_message || 'Archivo multimedia'),
-                    timestamp: new Date(c.last_message_time),
-                    unreadCount: c.unread_count || 0,
-                    avatar: c.contact_avatar || 'public/logogrow.png',
-                    name: c.contact_name,
-                    isFavorite: c.is_favorite,
-                    seller: c.contact_seller,
-                    platform: c.platform || 'whatsapp',
-                    bot_paused_at: c.bot_paused_at,
-                    // Estos campos podrían no venir en el RPC simple, pero son secundarios para la lista
-                    email: null,
-                    device: null,
-                    interest: null,
-                    notes: null
-                });
-            });
+        updateTabBadges();
+        renderContactsList();
 
-            renderContacts();
+        // Si había un chat abierto, refrescar su cabecera si sigue en lista
+        if (activeChatPhone && conversationsMap.has(activeChatPhone)) {
+            activeContact = conversationsMap.get(activeChatPhone);
+            updateChatHeader(activeContact);
+        }
+    } catch (err) {
+        console.error('Error cargando conversaciones:', err);
+        crmContactsList.innerHTML = `
+            <div class="loading-state" style="color:#E11D48;">
+                <p>⚠️ Error al sincronizar conversaciones.</p>
+                <button onclick="location.reload()" style="margin-top:10px; padding:6px 12px; border-radius:6px; cursor:pointer;">Reintentar</button>
+            </div>
+        `;
+    }
+}
+
+// Actualizar contadores de las 4 bandejas
+function updateTabBadges() {
+    let sinAsignar = 0;
+    let misChats = 0;
+    let todos = 0;
+    let cerrados = 0;
+
+    conversationsMap.forEach(c => {
+        const isClosed = c.contact_status === 'cerrado';
+        const seller = c.contact_seller;
+
+        if (isClosed) {
+            cerrados++;
+        } else {
+            todos++;
+            if (!seller || seller === 'Sin Asignar' || c.contact_status === 'sin_asignar') {
+                sinAsignar++;
+            }
+            if (seller === activeSeller) {
+                misChats++;
+            }
+        }
+    });
+
+    countSinAsignarEl.innerText = sinAsignar;
+    countMisChatsEl.innerText = misChats;
+    countTodosEl.innerText = todos;
+    countCerradosEl.innerText = cerrados;
+}
+
+// Renderizado de la lista según bandeja y búsqueda
+function renderContactsList() {
+    const list = Array.from(conversationsMap.values());
+
+    // 1. Filtrar por Bandeja
+    let filtered = list.filter(c => {
+        const isClosed = c.contact_status === 'cerrado';
+        const seller = c.contact_seller;
+
+        if (activeTab === 'sin_asignar') {
+            return !isClosed && (!seller || seller === 'Sin Asignar' || c.contact_status === 'sin_asignar');
+        } else if (activeTab === 'mis_chats') {
+            return !isClosed && seller === activeSeller;
+        } else if (activeTab === 'todos') {
+            return !isClosed;
+        } else if (activeTab === 'cerrados') {
+            return isClosed;
+        }
+        return true;
+    });
+
+    // 2. Filtrar por Canal / Plataforma
+    if (activeChannel !== 'all') {
+        filtered = filtered.filter(c => (c.platform || 'whatsapp') === activeChannel);
+    }
+
+    // 3. Filtrar por Búsqueda
+    if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter(c => {
+            const nameMatch = c.contact_name && c.contact_name.toLowerCase().includes(q);
+            const phoneMatch = c.phone && c.phone.includes(q);
+            const msgMatch = c.last_message && c.last_message.toLowerCase().includes(q);
+            const deviceMatch = c.modelo_dispositivo && c.modelo_dispositivo.toLowerCase().includes(q);
+            return nameMatch || phoneMatch || msgMatch || deviceMatch;
+        });
+    }
+
+    // 4. Ordenar: los más recientes arriba
+    filtered.sort((a, b) => new Date(b.last_message_time) - new Date(a.last_message_time));
+
+    crmContactsList.innerHTML = '';
+
+    if (filtered.length === 0) {
+        crmContactsList.innerHTML = `
+            <div style="padding: 30px 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                No hay conversaciones en esta bandeja.
+            </div>
+        `;
+        return;
+    }
+
+    filtered.forEach(c => {
+        const isActive = activeChatPhone === c.phone ? 'active' : '';
+        const timeStr = formatRelativeTime(c.last_message_time);
+        const displayName = c.contact_name || formatPhoneNumber(c.phone);
+        const initial = (displayName.charAt(0) || '?').toUpperCase();
+        const avatarBg = getAvatarColor(c.phone);
+
+        // Chip de vendedor
+        let sellerBadgeHtml = '';
+        if (c.contact_seller === 'Nahuel') {
+            sellerBadgeHtml = `<span class="seller-pill-badge seller-pill-nahuel">Nahuel</span>`;
+        } else if (c.contact_seller === 'Cristofer') {
+            sellerBadgeHtml = `<span class="seller-pill-badge seller-pill-cristofer">Cristofer</span>`;
+        } else if (c.contact_seller === 'Lucas') {
+            sellerBadgeHtml = `<span class="seller-pill-badge seller-pill-lucas">Lucas</span>`;
+        } else {
+            sellerBadgeHtml = `<span class="seller-pill-badge seller-pill-none">Sin Asignar</span>`;
+        }
+
+        const unreadHtml = c.unread_count > 0 
+            ? `<span class="card-unread-badge">${c.unread_count}</span>` 
+            : '';
+
+        const itemHtml = `
+            <div class="contact-card-item ${isActive}" data-phone="${c.phone}">
+                <div class="card-avatar-wrap">
+                    <div class="card-avatar" style="background:${avatarBg};">
+                        ${c.contact_avatar && c.contact_avatar.startsWith('http') 
+                            ? `<img src="${c.contact_avatar}" alt="${displayName}">` 
+                            : initial}
+                    </div>
+                    <div class="channel-icon-badge" title="${c.platform || 'whatsapp'}">
+                        <svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2Z"/></svg>
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-top-line">
+                        <span class="card-client-title" title="${displayName}">
+                            ${displayName}
+                        </span>
+                        <span class="card-time">${timeStr}</span>
+                    </div>
+
+                    <div class="card-meta-line">
+                        ${sellerBadgeHtml}
+                        ${c.modelo_dispositivo ? `<span class="status-chip">📱 ${c.modelo_dispositivo}</span>` : ''}
+                    </div>
+
+                    <div class="card-message-snippet">
+                        ${c.last_message_is_mine ? '<strong>Tú: </strong>' : ''}${escapeHtml(c.last_message || 'Archivo multimedia')}
+                    </div>
+                </div>
+
+                ${unreadHtml}
+            </div>
+        `;
+
+        crmContactsList.insertAdjacentHTML('beforeend', itemHtml);
+    });
+
+    // Agregar eventos de clic a cada tarjeta
+    document.querySelectorAll('.contact-card-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const phone = el.getAttribute('data-phone');
+            openChat(phone);
+        });
+    });
+}
+
+// ============================================================================
+// 6. ABRIR Y GESTIONAR CHAT ACTIVO
+// ============================================================================
+
+export async function openChat(phone) {
+    if (!phone) return;
+    activeChatPhone = phone;
+
+    // Actualizar selección activa en sidebar
+    document.querySelectorAll('.contact-card-item').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('data-phone') === phone);
+    });
+
+    // Cambiar vista de empty a active
+    crmEmptyState.style.display = 'none';
+    crmActiveChat.style.display = 'flex';
+    document.getElementById('crmChatPane').classList.add('mobile-open');
+
+    // Obtener objeto del contacto
+    activeContact = conversationsMap.get(phone) || {
+        phone: phone,
+        contact_name: phone,
+        contact_status: 'abierto',
+        contact_seller: null
+    };
+
+    // Actualizar Header
+    updateChatHeader(activeContact);
+
+    // Poblar Ficha Comercial (Sidebar derecha)
+    populateCustomerCard(activeContact);
+
+    // Cargar historial de mensajes
+    await loadChatMessages(phone);
+
+    // Marcar como leído localmente
+    if (activeContact && activeContact.unread_count > 0) {
+        activeContact.unread_count = 0;
+        updateTabBadges();
+        renderContactsList();
+    }
+
+    // Enfocar input
+    messageTextInput.focus();
+}
+
+function updateChatHeader(contact) {
+    const displayName = contact.contact_name || formatPhoneNumber(contact.phone);
+    const initial = (displayName.charAt(0) || '?').toUpperCase();
+    const avatarBg = getAvatarColor(contact.phone);
+
+    activeChatAvatar.style.background = avatarBg;
+    if (contact.contact_avatar && contact.contact_avatar.startsWith('http')) {
+        activeChatAvatar.innerHTML = `<img src="${contact.contact_avatar}" alt="${displayName}">`;
+    } else {
+        activeChatAvatar.innerText = initial;
+    }
+
+    activeChatName.innerText = displayName;
+    activeChatPhoneEl.innerText = '+' + contact.phone;
+
+    // Estado del chat
+    const isClosed = contact.contact_status === 'cerrado';
+    if (isClosed) {
+        activeChatStatusBadge.className = 'status-badge closed';
+        activeChatStatusBadge.innerText = `Cerrado (${contact.motivo_cierre || 'Resuelto'})`;
+        btnCloseChatLabel.innerText = 'Reabrir Chat';
+        btnCloseChat.className = 'btn-action btn-secondary';
+    } else {
+        activeChatStatusBadge.className = 'status-badge';
+        activeChatStatusBadge.innerText = 'Abierto';
+        btnCloseChatLabel.innerText = 'Cerrar Chat';
+        btnCloseChat.className = 'btn-action btn-danger-subtle';
+    }
+
+    // Vendedor Asignado
+    const seller = contact.contact_seller;
+    if (seller && seller !== 'Sin Asignar') {
+        activeChatSellerText.innerText = seller;
+        activeChatSellerChip.style.background = '#EFF6FF';
+        activeChatSellerChip.style.color = '#1E3A5F';
+        activeChatSellerChip.style.borderColor = '#BFDBFE';
+        
+        // Si está asignado a mí
+        if (seller === activeSeller) {
+            btnClaimChat.style.display = 'none';
+        } else {
+            btnClaimChat.style.display = 'inline-flex';
+            btnClaimChat.querySelector('span').innerText = 'Tomar para mí';
+        }
+    } else {
+        activeChatSellerText.innerText = 'Sin Asignar';
+        activeChatSellerChip.style.background = '#FEF3C7';
+        activeChatSellerChip.style.color = '#92400E';
+        activeChatSellerChip.style.borderColor = '#FDE68A';
+        btnClaimChat.style.display = 'inline-flex';
+        btnClaimChat.querySelector('span').innerText = 'Tomar Chat';
+    }
+
+    // Dispositivo Badge en cabecera
+    if (contact.modelo_dispositivo) {
+        activeChatDeviceBadge.style.display = 'inline-block';
+        activeChatDeviceBadge.innerText = `📱 ${contact.modelo_dispositivo}`;
+    } else {
+        activeChatDeviceBadge.style.display = 'none';
+    }
+}
+
+// Cargar y pintar mensajes de la conversación
+async function loadChatMessages(phone) {
+    crmMessagesContainer.innerHTML = `
+        <div style="text-align:center; padding:30px; color:var(--text-muted); font-size:13px;">
+            <div class="crm-spinner"></div>
+            Sincronizando mensajes cifrados...
+        </div>
+    `;
+
+    try {
+        const messages = await fetchChatMessages(phone);
+        crmMessagesContainer.innerHTML = `
+            <div class="date-divider-row">
+                <span class="date-divider-pill">Historial Oficial Estilo Apple SJ</span>
+            </div>
+        `;
+
+        if (messages.length === 0) {
+            crmMessagesContainer.insertAdjacentHTML('beforeend', `
+                <div style="text-align:center; padding:20px; color:var(--text-muted); font-size:13px;">
+                    No hay mensajes en este chat. Envía un saludo o nota interna.
+                </div>
+            `);
             return;
         }
 
-        console.warn('⚠️ RPC falló o no existe, usando método legacy:', rpcError);
-
-        // FALLBACK: Método antiguo (Lento pero seguro si no corrieron el SQL)
-        // 1. Obtener mensajes recientes
-        const { data: messages, error: msgError } = await supabase
-            .from('mensajes')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10000); // Límite aumentado para intentar ver más
-
-        if (msgError) throw msgError;
-
-        // 2. Obtener metadatos de contactos
-        const { data: contactsData, error: contactsError } = await supabase
-            .from('contactos')
-            .select('*');
-
-        const savedContacts = contactsData || [];
-
-        contactsMap.clear();
-
-        // Agrupar por teléfono
-        messages.forEach(msg => {
-            if (!contactsMap.has(msg.cliente_telefono)) {
-                const saved = savedContacts.find(c => c.telefono === msg.cliente_telefono);
-
-                contactsMap.set(msg.cliente_telefono, {
-                    phone: msg.cliente_telefono,
-                    lastMessage: (msg.es_mio ? 'Tú: ' : '') + (msg.contenido || 'Archivo multimedia'),
-                    timestamp: new Date(msg.created_at),
-                    unreadCount: 0,
-                    avatar: saved ? (saved.avatar_url || 'public/logogrow.png') : 'public/logogrow.png',
-                    name: saved ? saved.nombre : null,
-                    isFavorite: saved ? saved.es_favorito : false,
-                    email: saved ? saved.email : null,
-                    device: saved ? saved.modelo_dispositivo : null,
-                    interest: saved ? saved.interes : null,
-                    notes: saved ? saved.notes : null,
-                    seller: saved ? saved.vendedor_asignado : null,
-                    platform: saved ? (saved.plataforma || 'whatsapp') : 'whatsapp',
-                    bot_paused_at: saved ? saved.bot_paused_at : null
-                });
-            }
-        });
-
-        renderContacts();
-
+        messages.forEach(msg => appendMessageBubble(msg));
+        scrollToBottom();
     } catch (err) {
-        console.error('Error cargando contactos:', err);
-        contactsListEl.innerHTML = `<p style="padding:20px; color:red; text-align:center;">Error al cargar. Revisa la consola.</p>`;
-    }
-}
-
-function renderContacts() {
-    let filteredContacts = Array.from(contactsMap.values());
-
-    // Filter Logic
-    if (activeFilter === 'unread') {
-        filteredContacts = filteredContacts.filter(c => c.unreadCount > 0);
-    } else if (activeFilter === 'favorites') {
-        filteredContacts = filteredContacts.filter(c => c.isFavorite);
-    } else if (activeFilter === 'whatsapp') {
-        filteredContacts = filteredContacts.filter(c => c.platform === 'whatsapp');
-    } else if (activeFilter === 'instagram') {
-        filteredContacts = filteredContacts.filter(c => c.platform === 'instagram');
-    }
-
-    const sortedContacts = filteredContacts.sort((a, b) => b.timestamp - a.timestamp);
-    // Prioridad: Favoritos primero, luego fecha descendente
-    sortedContacts.sort((a, b) => {
-        if (a.isFavorite && !b.isFavorite) return -1;
-        if (!a.isFavorite && b.isFavorite) return 1;
-        return b.timestamp - a.timestamp;
-    });
-
-    contactsListEl.innerHTML = '';
-
-    if (sortedContacts.length === 0) {
-        contactsListEl.innerHTML = `<p style="padding:20px; color:var(--text-secondary); text-align:center;">No hay mensajes aún.</p>`;
-        return;
-    }
-
-    sortedContacts.forEach(contact => {
-        const isActive = activeChatPhone === contact.phone ? 'active' : '';
-        const timeStr = formatTime(contact.timestamp);
-        const displayName = contact.name || contact.phone;
-
-        // Determinar qué avatar mostrar
-        const avatarHtml = getAvatarHtml(contact);
-
-        const html = `
-            <div class="contact-item ${isActive}" onclick="window.openChat('${contact.phone}')">
-                <div class="contact-avatar">
-                   ${avatarHtml}
-                </div>
-                <div class="contact-info">
-                    <div class="contact-top-row">
-                        <span class="contact-name">
-                            ${displayName} 
-                            <span class="contact-badges">
-                                ${contact.seller ? `<span class="seller-name-badge">${contact.seller}</span>` : ''}
-                                ${contact.unreadCount > 0 ? `<span class="unread-badge">${contact.unreadCount}</span>` : ''}
-                            </span>
-                        </span>
-                        <span class="contact-time">${timeStr}</span>
-                    </div>
-                    <div class="contact-bottom-row">
-                        <span class="last-message">${contact.lastMessage}</span>
-                    </div>
-                </div>
+        console.error('Error cargando mensajes:', err);
+        crmMessagesContainer.innerHTML = `
+            <div style="text-align:center; padding:20px; color:#E11D48; font-size:13px;">
+                Error al cargar el historial.
             </div>
         `;
-        contactsListEl.insertAdjacentHTML('beforeend', html);
-    });
-}
-
-function getAvatarHtml(contact) {
-    if (contact.avatar && contact.avatar !== 'public/logogrow.png' && contact.avatar.startsWith('http')) {
-        return `<img src="${contact.avatar}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">`;
-    }
-
-    // Generar avatar por iniciales
-    const name = contact.name || contact.phone || '?';
-    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    const bgColor = getRandomColor(contact.phone || 'root');
-
-    return `
-        <div style="
-            width: 100%; 
-            height: 100%; 
-            background: ${bgColor}; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: #1D1D1F; 
-            font-family: 'Montserrat', sans-serif; 
-            font-size: 14px; 
-            font-weight: 700;
-            letter-spacing: -0.5px;
-        ">
-            ${initials}
-        </div>
-    `;
-}
-
-// Function attached to window for HTML access
-window.openChat = async (phone) => {
-    activeChatPhone = phone;
-
-    // Update UI active state
-    document.querySelectorAll('.contact-item').forEach(el => el.classList.remove('active'));
-    renderContacts();
-
-    // Show Chat Area
-    emptyStateEl.style.display = 'none';
-    activeChatEl.style.display = 'flex';
-
-    const contact = contactsMap.get(phone);
-    const displayName = contact ? (contact.name || contact.phone) : phone;
-
-    // Header Info
-    chatHeaderNameEl.innerText = displayName;
-    chatHeaderStatusEl.innerText = 'en línea';
-
-    // Avatar Dinámico
-    chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
-
-    // --- BOT STATUS LOGIC ---
-    updateBotStatusUI(contact);
-    // ------------------------
-
-    // Header Actions Update (Sellers + Options)
-    const actionsContainer = document.querySelector('.chat-header .header-actions');
-
-    actionsContainer.innerHTML = `
-        <div class="header-seller-quick-actions">
-            <button class="header-seller-btn ${contact && contact.seller === 'Nahuel' ? 'active' : ''}" 
-                    title="Asignar a Nahuel" 
-                    onclick="window.confirmAndAssignSeller('${phone}', 'Nahuel')">
-                N
-            </button>
-            <button class="header-seller-btn ${contact && contact.seller === 'Cristofer' ? 'active' : ''}" 
-                    title="Asignar a Cristofer" 
-                    onclick="window.confirmAndAssignSeller('${phone}', 'Cristofer')">
-                C
-            </button>
-            <div id="vendorHint" class="vendor-selection-hint ${!contact || !contact.seller ? 'visible' : ''}">Seleccionar<br>Vendedor</div>
-        </div>
-        <button class="icon-btn" title="Analizar Historial (IA)" onclick="window.analizarHistorial('${phone}')">
-             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                <path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19c.7 0 1.38-.09 2.03-.25l3.47 3.47c.39.39 1.02.39 1.41 0l.59-.59c.39-.39.39-1.02 0-1.41l-3.47-3.47c1.47-1.46 2.47-3.46 2.47-5.75C18 6.31 15.69 2 11.5 2zm0 15c-3.59 0-6.5-2.91-6.5-6.5S7.91 4 11.5 4 18 6.91 18 10.5 15.09 17 11.5 17zM11.5 6c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5S10.12 8 11.5 8 14 9.12 14 10.5 12.88 13 11.5 13z"/>
-            </svg>
-        </button>
-        <button class="icon-btn" title="Opciones" onclick="openEditModal('${phone}')">
-             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-            </svg>
-        </button>
-    `;
-
-    // Load Messages
-    messagesContainerEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-dim);">Sincronizando mensajes...</div>';
-
-    try {
-        const { data, error } = await supabase
-            .from('mensajes')
-            .select('*')
-            .eq('cliente_telefono', phone)
-            .order('created_at', { ascending: true })
-            .limit(5000); // Límite aumentado para ver historial completo
-
-        if (error) throw error;
-
-        messagesContainerEl.innerHTML = '<div class="date-divider"><span>Historial Completo</span></div>';
-
-        data.forEach(msg => appendMessageToUI(msg));
-        scrollToBottom();
-
-        // Mark as read locally
-        if (contactsMap.has(phone)) {
-            contactsMap.get(phone).unreadCount = 0;
-            renderContacts();
-        }
-
-    } catch (err) {
-        console.error('Error cargando chat:', err);
     }
 }
 
-// --- BOT STATUS HELPERS ---
-const botStatusBtn = document.getElementById('botStatusBtn');
-const botStatusSpan = botStatusBtn.querySelector('span');
-
-function updateBotStatusUI(contact) {
-    if (!contact) {
-        setBotUI('active');
-        return;
-    }
-    const isPaused = contact.bot_paused_at !== null;
-    setBotUI(isPaused ? 'paused' : 'active');
-}
-
-function setBotUI(state) {
-    botStatusBtn.classList.remove('active', 'paused');
-    if (state === 'active') {
-        botStatusBtn.classList.add('active');
-        botStatusSpan.innerText = 'BOT ACTIVO';
-    } else {
-        botStatusBtn.classList.add('paused');
-        botStatusSpan.innerText = 'BOT PAUSADO';
-    }
-}
-
-botStatusBtn.addEventListener('click', async () => {
-    if (!activeChatPhone) return;
-    const contact = contactsMap.get(activeChatPhone);
-    if (!contact) return;
-
-    const platform = contact.platform || 'whatsapp';
-    const isCurrentlyPaused = contact.bot_paused_at !== null;
-    const newStatus = isCurrentlyPaused ? 'active' : 'paused';
-
-    if (newStatus === 'active') {
-        // REACTIVAR BOT (Individual)
-        setBotUI('active'); // Optimistic
-        try {
-            await manageBlacklist(activeChatPhone, 'remove', platform);
-
-            // Guardar en Supabase para este contacto específico
-            await supabase
-                .from('contactos')
-                .update({ bot_paused_at: null })
-                .eq('telefono', activeChatPhone);
-
-            contact.bot_paused_at = null;
-            console.log(`✅ Bot reactivado INDIVIDUALMENTE para ${activeChatPhone}`);
-        } catch (e) {
-            console.error('❌ Error reactivando bot:', e);
-            alert('Error reactivando bot');
-            setBotUI('paused'); // Revertir UI
-        }
-    } else {
-        // PAUSAR BOT (Individual)
-        setBotUI('paused'); // Optimistic
-        try {
-            await manageBlacklist(activeChatPhone, 'add', platform);
-
-            const now = new Date().toISOString();
-            // Guardar en Supabase para este contacto específico
-            await supabase
-                .from('contactos')
-                .update({ bot_paused_at: now })
-                .eq('telefono', activeChatPhone);
-
-            contact.bot_paused_at = now;
-            console.log(`⏸️ Bot pausado INDIVIDUALMENTE para ${activeChatPhone}`);
-        } catch (e) {
-            console.error('❌ Error pausando bot:', e);
-            alert('Error pausando bot');
-            setBotUI('active'); // Revertir UI
-        }
-    }
-});
-// ------------------------
-
-// ============================================
-// CONTACT ACTIONS (Edit Name, Favorite)
-// ============================================
-
-window.openEditModal = (phone) => {
-    const contact = contactsMap.get(phone);
-    if (!contact) return;
-
-    // Populate Form
-    document.getElementById('editPhone').value = phone;
-    document.getElementById('editPhoneDisplay').value = '+' + phone;
-    document.getElementById('editName').value = contact.name || '';
-
-    // Si tenemos datos extra guardados en la map (implementar esto en loadContacts si es necesario), los cargamos.
-    // Como loadContacts hace select * deberiamos tenerlos si existen en el objeto contact.
-    // Vamos a asegurar que loadContacts mapee estos campos nuevos.
-    document.getElementById('editEmail').value = contact.email || '';
-    document.getElementById('editDevice').value = contact.device || '';
-    document.getElementById('editInterest').value = contact.interest || '';
-    document.getElementById('editNotes').value = contact.notes || '';
-    const seller = contact.seller || 'Sin Asignar';
-    document.getElementById('editSeller').value = seller;
-
-    // Highlight active seller button
-    document.querySelectorAll('.seller-btn').forEach(btn => {
-        if (btn.dataset.seller === seller) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-
-    document.getElementById('editAvatar').value = contact.avatar && contact.avatar !== 'public/logogrow.png' ? contact.avatar : '';
-
-    // Show Modal
-    document.getElementById('editClientModal').style.display = 'flex';
-};
-
-window.closeEditModal = () => {
-    document.getElementById('editClientModal').style.display = 'none';
-};
-
-// Handle Form Submit
-const editClientForm = document.getElementById('editClientForm');
-if (editClientForm) { // Check if exists (it should now)
-    editClientForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const phone = document.getElementById('editPhone').value;
-        const name = document.getElementById('editName').value;
-        const email = document.getElementById('editEmail').value;
-        const device = document.getElementById('editDevice').value;
-        const interest = document.getElementById('editInterest').value;
-        const notes = document.getElementById('editNotes').value;
-        const seller = document.getElementById('editSeller').value;
-        const avatar = document.getElementById('editAvatar').value;
-
-        // 1. Update Map (Optimistic)
-        const contact = contactsMap.get(phone);
-        if (contact) {
-            contact.name = name;
-            contact.email = email;
-            contact.device = device;
-            contact.interest = interest;
-            contact.notes = notes;
-            contact.seller = seller;
-            contact.avatar = avatar || 'public/logogrow.png';
-        }
-
-        renderContacts();
-        if (activeChatPhone === phone) {
-            chatHeaderNameEl.innerText = name || phone;
-            chatHeaderAvatarEl.innerHTML = getAvatarHtml(contact);
-        }
-
-        closeEditModal();
-
-        // 2. Save to Supabase
-        await saveContactMetadata(phone, {
-            nombre: name,
-            email: email,
-            modelo_dispositivo: device,
-            interes: interest,
-            notas: notes,
-            vendedor_asignado: seller,
-            avatar_url: avatar
-        });
-    });
-}
-
-window.toggleFavorite = async (phone) => {
-    const contact = contactsMap.get(phone);
-    if (!contact) return;
-
-    // Optimistic
-    contact.isFavorite = !contact.isFavorite;
-    renderContacts(); // Re-sorts list automatically
-
-    // Update active chat header icon
-    if (activeChatPhone === phone) {
-        window.openChat(phone); // Reload header mainly
-    }
-
-    // Save
-    await saveContactMetadata(phone, { es_favorito: contact.isFavorite });
-};
-
-async function saveContactMetadata(phone, updates) {
-    try {
-        console.log('Intentando guardar metadatos para:', phone, updates);
-
-        const { error } = await supabase
-            .from('contactos')
-            .upsert({
-                telefono: phone,
-                ...updates
-            }, { onConflict: 'telefono' });
-
-        if (error) {
-            console.error('Error detallado de Supabase:', error);
-            throw error;
-        }
-
-        console.log('Contacto actualizado exitosamente:', phone);
-
-    } catch (err) {
-        console.error('Error excepcional guardando contacto:', err);
-        alert('Error al guardar en base de datos: ' + (err.message || 'Error desconocido') + '. Revisa si las columnas nuevas existen en Supabase.');
-    }
-}
-
-function subscribeToMessages() {
-    supabase
-        .channel('live-chat-channel')
-        .on(
-            'postgres_changes',
-            { event: 'INSERT', schema: 'public', table: 'mensajes' },
-            (payload) => {
-                const newMsg = payload.new;
-                handleIncomingMessage(newMsg);
-            }
-        )
-        .subscribe((status) => {
-            console.log('Estado Realtime:', status);
-        });
-}
-
-function handleIncomingMessage(msg) {
-    // 1. Update Contact List
-    let contact = contactsMap.get(msg.cliente_telefono);
-    if (!contact) {
-        contact = {
-            phone: msg.cliente_telefono,
-            avatar: getRandomColor(msg.cliente_telefono),
-            unreadCount: 0
-        };
-        contactsMap.set(msg.cliente_telefono, contact);
-    }
-
-    contact.lastMessage = msg.contenido;
-    contact.timestamp = new Date(msg.created_at);
-
-    // If chat is NOT open, increment unread
-    if (activeChatPhone !== msg.cliente_telefono) {
-        contact.unreadCount++;
-        playSoundNotification();
-    } else {
-        // Chat IS open, append directly
-        appendMessageToUI(msg);
-        scrollToBottom();
-    }
-
-    // Refresh Sidebar
-    renderContacts();
-}
-
-// ============================================
-// MESSAGING LOGIC
-// ============================================
-
-async function sendMessage() {
-    const text = messageInputEl.value.trim();
-    if (!text || !activeChatPhone) return;
-
-    messageInputEl.value = '';
-
-    // 1. Optimistic UI removed to prevent duplication. Relying on Realtime.
-    // const optimisticMsg = { ... };
-    // appendMessageToUI(optimisticMsg);
-
-    try {
-        const contact = contactsMap.get(activeChatPhone);
-        const platform = contact ? (contact.platform || 'whatsapp') : 'whatsapp';
-
-        // 2. Send via Builderbot API (Generic)
-        await enviarMensaje(platform, activeChatPhone, text);
-
-        // Default behavior: Do NOT auto-pause bot on manual message.
-        // User must use the toggle button explicitly.
-        // (Logic removed)
-
-        // 3. Save to Supabase (Database)
-        const { error } = await supabase
-            .from('mensajes')
-            .insert({
-                cliente_telefono: activeChatPhone,
-                contenido: text,
-                es_mio: true,
-                estado: 'enviado',
-                plataforma: platform
-            });
-
-        if (error) throw error;
-
-        // Note: We might get a duplicate bubble because of Optimistic + Realtime.
-        // A simple fix for now is: Don't do optimistic UI if reliance on Realtime is fast enough (<500ms).
-        // OR: remove the temp bubble when realtime arrives.
-        // OR: Make handleIncomingMessage smart enough to skip if ID exists.
-
-        // Optimistic cleanup removed as optimistic UI is disabled.
-        // const tempBubble = document.getElementById(optimisticMsg.id);
-        // if (tempBubble) tempBubble.remove();
-
-    } catch (err) {
-        console.error('Error enviando mensaje:', err);
-        alert('Error enviando mensaje. Revisa la consola.');
-    }
-}
-
-// ============================================
-// HELPERS & UTILS
-// ============================================
-
-function appendMessageToUI(msg) {
-    // Prevent rendering if not active chat
-    // (This function is called by openChat and handleIncomingMessage, guarded there)
-
-    // Check duplication (simple) - if ID exists, don't add.
-    if (document.getElementById(msg.id)) return;
-
-    const isMine = msg.es_mio;
+// Dibujar una burbuja de mensaje individual
+function appendMessageBubble(msg) {
+    const isMine = !!msg.es_mio;
+    const isNote = !!msg.es_nota_privada;
     const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const div = document.createElement('div');
-    div.id = msg.id; // Set ID to prevent duplicates
-    div.className = `message ${isMine ? 'sent' : 'received'}`;
+    const bubble = document.createElement('div');
+    bubble.id = `msg_${msg.id || Date.now()}`;
 
-    const checkIcon = isMine ? `
-        <span class="msg-ticks ${msg.estado === 'leido' ? 'ticks-blue' : 'ticks-grey'}">
-            <svg viewBox="0 0 16 15" width="16" height="15"><path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 0 0-.51.063L8.666 9.879a.32.32 0 0 1-.484.033l-.358-.325a.319.319 0 0 0-.484.032l-.378.483a.418.418 0 0 0 .036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-7.674a.418.418 0 0 0-.056-.586zm-4.74 3.398l-.478-.372a.365.365 0 0 0-.51.063L4.566 12.35a.32.32 0 0 1-.484.033L1.891 7.769a.366.366 0 0 0-.515.006l-.423.433a.418.418 0 0 0 .006.586l2.885 5.186c.143.14.361.125.484-.033l2.844-4.24a.418.418 0 0 0-.062-.575z"></path></svg>
-        </span>
-    ` : '';
+    if (isNote) {
+        bubble.className = 'msg-bubble private-note';
+        bubble.innerHTML = `
+            <div class="private-note-header">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                <span>NOTA INTERNA DE ${escapeHtml(msg.remitente_nombre || 'OPERADOR')}</span>
+            </div>
+            <div class="msg-body">${formatMessageText(msg.contenido)}</div>
+            <div class="msg-meta-row" style="color:#B45309;">
+                <span>${time} (Solo visible internamente)</span>
+            </div>
+        `;
+    } else {
+        bubble.className = `msg-bubble ${isMine ? 'sent' : 'received'}`;
+        
+        let mediaHtml = '';
+        if (msg.media_url) {
+            mediaHtml = renderMediaContent(msg.media_url, msg.media_type);
+        }
 
-    div.innerHTML = `
-        <div class="msg-content">
-            ${msg.media_url ? renderMedia(msg.media_url) : ''}
-            ${msg.contenido && !msg.contenido.startsWith('_event_') ? `<span>${msg.contenido.replace(/\n/g, '<br>').replace(/\*(.*?)\*/g, '<strong>$1</strong>')}</span>` : ''}
-        </div>
-        <div class="msg-meta">
-            ${time}
-            ${checkIcon}
-        </div>
-    `;
+        const senderTag = isMine && msg.remitente_nombre 
+            ? `<div class="msg-sender-tag">${escapeHtml(msg.remitente_nombre)}</div>` 
+            : '';
 
-    messagesContainerEl.appendChild(div);
+        bubble.innerHTML = `
+            ${senderTag}
+            ${mediaHtml}
+            ${msg.contenido ? `<div class="msg-body">${formatMessageText(msg.contenido)}</div>` : ''}
+            <div class="msg-meta-row">
+                <span>${time}</span>
+                ${isMine ? renderTicks(msg.estado) : ''}
+            </div>
+        `;
+    }
+
+    crmMessagesContainer.appendChild(bubble);
 }
 
-function renderMedia(url) {
-    // Detectar si es imagen
-    const isImage = url.match(/\.(jpeg|jpg|gif|png|webp|bmp)$/i) != null;
-    // Detectar si es audio
-    const isAudio = url.match(/\.(oga|ogg|mp3|wav)$/i) != null;
+function renderMediaContent(url, type) {
+    if (!url) return '';
+    const isImage = (type === 'image') || url.match(/\.(jpeg|jpg|gif|png|webp|bmp)$/i);
+    const isAudio = (type === 'audio') || url.match(/\.(oga|ogg|mp3|wav|m4a)$/i);
 
     if (isImage) {
-        return `<a href="${url}" target="_blank" style="display:block; margin-bottom:5px;">
-                  <img src="${url}" alt="Imagen recibida" style="max-width: 200px; border-radius: 8px; cursor: pointer;">
-                </a>`;
+        return `
+            <img src="${url}" class="msg-image-thumb" alt="Foto adjunta" onclick="window.crmShowLightbox('${url}')">
+        `;
     } else if (isAudio) {
-        return `<audio controls style="max-width: 220px; height: 40px; margin-bottom: 5px;">
-                    <source src="${url}" type="audio/ogg">
-                    <source src="${url}" type="audio/mpeg">
-                    Tu navegador no soporta el elemento de audio.
-                </audio>`;
+        return `
+            <div class="msg-audio-player">
+                <audio controls style="height: 36px; max-width: 220px;">
+                    <source src="${url}">
+                </audio>
+                <button type="button" class="audio-speed-btn" onclick="window.crmToggleAudioSpeed(this)">1x</button>
+            </div>
+        `;
     } else {
-        return `<a href="${url}" target="_blank" style="display:flex; align-items:center; gap:5px; margin-bottom:5px; color:inherit; text-decoration:none; background: rgba(0,0,0,0.1); padding:5px 10px; border-radius:5px;">
-                  <span>📎</span> <span>Ver Archivo Adjunto</span>
-                </a>`;
+        return `
+            <a href="${url}" target="_blank" style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.06); padding:6px 10px; border-radius:6px; color:inherit; text-decoration:none; margin-bottom:6px; font-size:12px;">
+                📎 <span>Ver Archivo Adjunto</span>
+            </a>
+        `;
     }
+}
+
+function renderTicks(estado) {
+    const isRead = estado === 'leido';
+    return `
+        <span style="display:inline-flex; margin-left:3px; color:${isRead ? '#38BDF8' : 'inherit'};">
+            ✓✓
+        </span>
+    `;
 }
 
 function scrollToBottom() {
-    messagesContainerEl.scrollTop = messagesContainerEl.scrollHeight;
+    crmMessagesContainer.scrollTop = crmMessagesContainer.scrollHeight;
 }
 
-function setupEventListeners() {
-    // Search
-    searchInputEl.addEventListener('input', (e) => {
-        const val = e.target.value.toLowerCase();
-        // Simple filtering (Visual only for now)
-        document.querySelectorAll('.contact-item').forEach(el => {
-            const name = el.querySelector('.contact-name').textContent.toLowerCase();
-            el.style.display = name.includes(val) ? 'flex' : 'none';
-        });
-    });
+// ============================================================================
+// 7. ENVÍO DE MENSAJES & NOTAS PRIVADAS
+// ============================================================================
 
-    // Send Input Keys
-    messageInputEl.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
+async function handleSendMessage() {
+    const text = messageTextInput.value.trim();
+    if (!text || !activeChatPhone) return;
 
-    btnSendEl.addEventListener('click', sendMessage);
+    const isNote = isPrivateNoteMode;
+    messageTextInput.value = '';
+    messageTextInput.style.height = 'auto';
 
-    // Emoji Picker Logic
-    if (emojiBtn && emojiPickerContainer) {
-        emojiBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isHidden = emojiPickerContainer.style.display === 'none';
-            emojiPickerContainer.style.display = isHidden ? 'block' : 'none';
+    try {
+        // Enviar vía CRM service
+        const sentRecord = await sendCrmMessage({
+            phone: activeChatPhone,
+            content: text,
+            senderName: activeSeller,
+            isNote: isNote,
+            platform: activeContact ? (activeContact.platform || 'whatsapp') : 'whatsapp'
         });
 
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!emojiPickerContainer.contains(e.target) && e.target !== emojiBtn) {
-                emojiPickerContainer.style.display = 'none';
+        // Pintar en UI de inmediato
+        appendMessageBubble(sentRecord || {
+            cliente_telefono: activeChatPhone,
+            contenido: text,
+            es_mio: true,
+            es_nota_privada: isNote,
+            remitente_nombre: activeSeller,
+            created_at: new Date().toISOString(),
+            estado: 'enviado'
+        });
+        scrollToBottom();
+
+        // Actualizar último mensaje en mapa
+        if (activeContact) {
+            activeContact.last_message = (isNote ? '🔒 Nota: ' : '') + text;
+            activeContact.last_message_time = new Date().toISOString();
+            activeContact.last_message_is_mine = true;
+            if (activeContact.contact_status === 'cerrado') {
+                activeContact.contact_status = 'abierto';
+                updateChatHeader(activeContact);
             }
+            updateTabBadges();
+            renderContactsList();
+        }
+
+        // Si era nota privada, desactivar el modo nota para el próximo mensaje
+        if (isNote) {
+            setPrivateNoteMode(false);
+        }
+    } catch (err) {
+        console.error('Error enviando mensaje:', err);
+        alert('Error al enviar mensaje: ' + err.message);
+    }
+}
+
+function setPrivateNoteMode(enable) {
+    isPrivateNoteMode = enable;
+    if (isPrivateNoteMode) {
+        btnTogglePrivateNote.classList.add('active-note');
+        privateNoteToggleLabel.innerText = 'Modo Nota: ON';
+        privateNoteBanner.style.display = 'flex';
+        textareaWrapper.classList.add('note-mode');
+        btnSendMessage.classList.add('note-send');
+        messageTextInput.placeholder = 'Escribe aquí la nota interna privada (invisible para el cliente)...';
+    } else {
+        btnTogglePrivateNote.classList.remove('active-note');
+        privateNoteToggleLabel.innerText = 'Nota Interna';
+        privateNoteBanner.style.display = 'none';
+        textareaWrapper.classList.remove('note-mode');
+        btnSendMessage.classList.remove('note-send');
+        messageTextInput.placeholder = 'Escribe un mensaje aquí... (o presiona / para atajos)';
+    }
+}
+
+// ============================================================================
+// 8. RESPUESTAS RÁPIDAS (/atajo)
+// ============================================================================
+
+async function loadQuickReplies() {
+    quickRepliesCatalog = await fetchQuickReplies();
+}
+
+function handleInputKeyupForQuickReplies(e) {
+    const val = messageTextInput.value;
+    if (val.startsWith('/')) {
+        showQuickRepliesFlyout(val);
+    } else {
+        hideQuickRepliesFlyout();
+    }
+}
+
+function showQuickRepliesFlyout(filter = '/') {
+    const query = filter.replace('/', '').toLowerCase().trim();
+    const matches = quickRepliesCatalog.filter(qr => 
+        qr.shortcut.toLowerCase().includes(query) ||
+        qr.title.toLowerCase().includes(query) ||
+        qr.content.toLowerCase().includes(query)
+    );
+
+    if (matches.length === 0) {
+        quickRepliesList.innerHTML = `<div style="padding:12px; font-size:11.5px; color:var(--text-muted); text-align:center;">No hay atajos con "${query}"</div>`;
+    } else {
+        quickRepliesList.innerHTML = matches.map((qr, idx) => `
+            <div class="flyout-item ${idx === 0 ? 'selected' : ''}" data-content="${encodeURIComponent(qr.content)}">
+                <span class="flyout-shortcut">${qr.shortcut}</span>
+                <span class="flyout-title">${escapeHtml(qr.title)}</span>
+                <span class="flyout-preview">${escapeHtml(qr.content)}</span>
+            </div>
+        `).join('');
+
+        quickRepliesList.querySelectorAll('.flyout-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const content = decodeURIComponent(item.getAttribute('data-content'));
+                applyQuickReply(content);
+            });
         });
     }
+
+    quickRepliesFlyout.style.display = 'flex';
+}
+
+function hideQuickRepliesFlyout() {
+    quickRepliesFlyout.style.display = 'none';
+}
+
+function applyQuickReply(content) {
+    // Reemplazar variables dinámicas si existen
+    const clientName = activeContact ? (activeContact.contact_name || '') : '';
+    const sellerName = activeSeller;
+
+    let parsed = content
+        .replace(/\{nombre\}/gi, clientName)
+        .replace(/\{vendedor\}/gi, sellerName);
+
+    messageTextInput.value = parsed;
+    messageTextInput.focus();
+    hideQuickRepliesFlyout();
+}
+
+// ============================================================================
+// 9. FICHA COMERCIAL CRM (COLUMNA 3)
+// ============================================================================
+
+function renderAvailableTags() {
+    tagsSelectorGrid.innerHTML = DEFAULT_TAGS.map(tag => `
+        <button type="button" class="tag-chip" data-tag="${tag}">
+            #${tag}
+        </button>
+    `).join('');
+
+    tagsSelectorGrid.querySelectorAll('.tag-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.toggle('active');
+        });
+    });
+}
+
+function populateCustomerCard(contact) {
+    if (!contact) return;
+
+    cardClientName.value = contact.contact_name || '';
+    cardClientPhone.value = '+' + contact.phone;
+    cardWhatsAppDirect.href = `https://wa.me/${contact.phone}`;
+    cardClientEmail.value = contact.email || '';
+
+    cardDeviceInterest.value = contact.modelo_dispositivo || contact.dispositivo_interes || '';
+    cardDeviceCanje.value = contact.dispositivo_canje || '';
+    cardCotizacion.value = contact.cotizacion_estimada || '';
+    cardNotes.value = contact.notas || '';
+
+    // Marcar tags seleccionados
+    const selectedTags = Array.isArray(contact.etiquetas) ? contact.etiquetas : [];
+    tagsSelectorGrid.querySelectorAll('.tag-chip').forEach(btn => {
+        const tag = btn.getAttribute('data-tag');
+        btn.classList.toggle('active', selectedTags.includes(tag));
+    });
+}
+
+async function handleSaveCustomerCard() {
+    if (!activeChatPhone) return;
+
+    btnSaveCrmCard.disabled = true;
+    crmSaveStatusMsg.innerText = 'Guardando...';
+
+    // Obtener tags seleccionados
+    const selectedTags = [];
+    tagsSelectorGrid.querySelectorAll('.tag-chip.active').forEach(btn => {
+        selectedTags.push(btn.getAttribute('data-tag'));
+    });
+
+    const cardData = {
+        nombre: cardClientName.value.trim(),
+        email: cardClientEmail.value.trim(),
+        modelo_dispositivo: cardDeviceInterest.value.trim(),
+        dispositivo_interes: cardDeviceInterest.value.trim(),
+        dispositivo_canje: cardDeviceCanje.value.trim(),
+        cotizacion_estimada: cardCotizacion.value.trim(),
+        notas: cardNotes.value.trim(),
+        etiquetas: selectedTags
+    };
+
+    try {
+        await saveCustomerCard(activeChatPhone, cardData);
+
+        // Actualizar en mapa local
+        if (activeContact) {
+            Object.assign(activeContact, cardData);
+            activeContact.contact_name = cardData.nombre || activeContact.contact_name;
+            updateChatHeader(activeContact);
+            renderContactsList();
+        }
+
+        crmSaveStatusMsg.innerText = '✓ Guardado exitosamente';
+        setTimeout(() => { crmSaveStatusMsg.innerText = ''; }, 3000);
+    } catch (err) {
+        console.error('Error guardando ficha CRM:', err);
+        crmSaveStatusMsg.innerText = '❌ Error al guardar';
+    } finally {
+        btnSaveCrmCard.disabled = false;
+    }
+}
+
+// ============================================================================
+// 10. TRANSFERENCIAS Y CIERRE DE CONVERSACIÓN
+// ============================================================================
+
+function openTransferModal() {
+    transferNoteInput.value = '';
+    transferModal.style.display = 'flex';
+}
+
+function closeTransferModal() {
+    transferModal.style.display = 'none';
+}
+
+async function handleConfirmTransfer() {
+    const selectedRadio = document.querySelector('input[name="targetSellerRadio"]:checked');
+    if (!selectedRadio || !activeChatPhone) return;
+
+    const targetSeller = selectedRadio.value;
+    const note = transferNoteInput.value.trim();
+
+    try {
+        await transferChat({
+            phone: activeChatPhone,
+            targetSeller: targetSeller,
+            note: note,
+            currentSeller: activeSeller
+        });
+
+        if (activeContact) {
+            activeContact.contact_seller = targetSeller;
+            activeContact.contact_status = 'abierto';
+            updateChatHeader(activeContact);
+            updateTabBadges();
+            renderContactsList();
+        }
+
+        // Recargar mensajes para mostrar la nota de transferencia
+        await loadChatMessages(activeChatPhone);
+        closeTransferModal();
+    } catch (err) {
+        alert('Error al transferir: ' + err.message);
+    }
+}
+
+function openCloseModal() {
+    // Si ya está cerrado, reabrirlo directamente
+    if (activeContact && activeContact.contact_status === 'cerrado') {
+        handleReopenChat();
+        return;
+    }
+    closeChatModal.style.display = 'flex';
+}
+
+function closeCloseModal() {
+    closeChatModal.style.display = 'none';
+}
+
+async function handleConfirmCloseChat() {
+    if (!activeChatPhone) return;
+    const reason = closeReasonSelect.value;
+
+    try {
+        await closeConversationWithReason({
+            phone: activeChatPhone,
+            reason: reason,
+            currentSeller: activeSeller
+        });
+
+        if (activeContact) {
+            activeContact.contact_status = 'cerrado';
+            activeContact.motivo_cierre = reason;
+            updateChatHeader(activeContact);
+            updateTabBadges();
+            renderContactsList();
+        }
+
+        await loadChatMessages(activeChatPhone);
+        closeCloseModal();
+    } catch (err) {
+        alert('Error al cerrar chat: ' + err.message);
+    }
+}
+
+async function handleReopenChat() {
+    if (!activeChatPhone) return;
+    try {
+        await reopenConversation(activeChatPhone);
+        if (activeContact) {
+            activeContact.contact_status = 'abierto';
+            activeContact.motivo_cierre = null;
+            updateChatHeader(activeContact);
+            updateTabBadges();
+            renderContactsList();
+        }
+    } catch (err) {
+        alert('Error al reabrir chat: ' + err.message);
+    }
+}
+
+async function handleClaimChat() {
+    if (!activeChatPhone) return;
+    try {
+        await assignSellerToChat(activeChatPhone, activeSeller);
+        if (activeContact) {
+            activeContact.contact_seller = activeSeller;
+            activeContact.contact_status = 'abierto';
+            updateChatHeader(activeContact);
+            updateTabBadges();
+            renderContactsList();
+        }
+    } catch (err) {
+        alert('Error al asignar chat: ' + err.message);
+    }
+}
+
+// ============================================================================
+// 11. MANEJO DE EVENTOS EN TIEMPO REAL (REALTIME)
+// ============================================================================
+
+function handleRealtimeNewMessage(msg) {
+    const phone = msg.cliente_telefono;
+    if (!phone) return;
+
+    // 1. Tocar campanilla sonora si es un mensaje de cliente y el sonido está activo
+    if (!msg.es_mio && isSoundEnabled) {
+        playCrmChime();
+    }
+
+    // 2. Actualizar conversación en el mapa
+    let conv = conversationsMap.get(phone);
+    if (!conv) {
+        conv = {
+            phone: phone,
+            contact_name: msg.cliente_nombre || phone,
+            last_message: msg.contenido,
+            last_message_time: msg.created_at,
+            last_message_is_mine: !!msg.es_mio,
+            unread_count: (activeChatPhone === phone) ? 0 : 1,
+            contact_status: 'abierto',
+            contact_seller: null
+        };
+        conversationsMap.set(phone, conv);
+    } else {
+        conv.last_message = msg.contenido;
+        conv.last_message_time = msg.created_at;
+        conv.last_message_is_mine = !!msg.es_mio;
+        if (activeChatPhone !== phone && !msg.es_mio) {
+            conv.unread_count = (conv.unread_count || 0) + 1;
+        }
+        if (conv.contact_status === 'cerrado') {
+            conv.contact_status = 'abierto';
+        }
+    }
+
+    // 3. Si el chat está abierto en pantalla, pintar la burbuja
+    if (activeChatPhone === phone) {
+        appendMessageBubble(msg);
+        scrollToBottom();
+    }
+
+    // 4. Refrescar contadores y lista lateral
+    updateTabBadges();
+    renderContactsList();
+}
+
+function handleRealtimeContactUpdate(contactRecord) {
+    const phone = contactRecord.telefono;
+    if (!phone || !conversationsMap.has(phone)) return;
+
+    const conv = conversationsMap.get(phone);
+    conv.contact_name = contactRecord.nombre || conv.contact_name;
+    conv.contact_seller = contactRecord.vendedor_asignado;
+    conv.contact_status = contactRecord.estado;
+    conv.motivo_cierre = contactRecord.motivo_cierre;
+    conv.modelo_dispositivo = contactRecord.modelo_dispositivo;
+
+    if (activeChatPhone === phone) {
+        updateChatHeader(conv);
+    }
+
+    updateTabBadges();
+    renderContactsList();
+}
+
+// ============================================================================
+// 12. LISTENERS Y ENLACE DE EVENTOS DOM
+// ============================================================================
+
+function setupEventListeners() {
+    // 1. Selector de Operador
+    activeSellerSelect.addEventListener('change', (e) => {
+        activeSeller = e.target.value;
+        localStorage.setItem('estilo_crm_active_seller', activeSeller);
+        setupOperatorProfile();
+        updateTabBadges();
+        renderContactsList();
+        if (activeContact) updateChatHeader(activeContact);
+    });
+
+    // 2. Botón de Sonido
+    chimeToggleBtn.addEventListener('click', () => {
+        isSoundEnabled = !isSoundEnabled;
+        localStorage.setItem('estilo_crm_sound', isSoundEnabled ? 'true' : 'false');
+        updateSoundButtonUI();
+        if (isSoundEnabled) playCrmChime();
+    });
+
+    // 3. Botón Refrescar
+    refreshBtn.addEventListener('click', () => {
+        loadConversations();
+    });
+
+    // 4. Buscador
+    crmSearchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        clearSearchBtn.style.display = searchQuery ? 'block' : 'none';
+        renderContactsList();
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+        crmSearchInput.value = '';
+        searchQuery = '';
+        clearSearchBtn.style.display = 'none';
+        renderContactsList();
+    });
+
+    // Atajo de teclado global Ctrl+K para buscar
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            crmSearchInput.focus();
+        }
+    });
+
+    // 5. Pestañas de Bandejas
+    crmTabsBar.querySelectorAll('.crm-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            crmTabsBar.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            activeTab = tab.getAttribute('data-tab');
+            renderContactsList();
+        });
+    });
+
+    // 6. Subfiltros de Canal
+    document.querySelectorAll('.subfilter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.subfilter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            activeChannel = chip.getAttribute('data-channel');
+            renderContactsList();
+        });
+    });
+
+    // 7. Acciones de Cabecera del Chat
+    btnClaimChat.addEventListener('click', handleClaimChat);
+    btnTransferChat.addEventListener('click', openTransferModal);
+    btnCloseChat.addEventListener('click', openCloseModal);
+    btnToggleCrmCard.addEventListener('click', () => {
+        crmDetailsSidebar.classList.toggle('collapsed');
+        btnToggleCrmCard.classList.toggle('active', !crmDetailsSidebar.classList.contains('collapsed'));
+    });
+    btnCloseDetailsSidebar.addEventListener('click', () => {
+        crmDetailsSidebar.classList.add('collapsed');
+        btnToggleCrmCard.classList.remove('active');
+    });
+
+    // Botón Volver Móvil
+    mobileBackBtn.addEventListener('click', () => {
+        document.getElementById('crmChatPane').classList.remove('mobile-open');
+    });
+
+    // 8. Mensajería e Input
+    btnSendMessage.addEventListener('click', handleSendMessage);
+
+    messageTextInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            // Si el flyout de atajos está abierto y hay un seleccionado
+            if (quickRepliesFlyout.style.display === 'flex') {
+                const selected = quickRepliesList.querySelector('.flyout-item.selected') || quickRepliesList.querySelector('.flyout-item');
+                if (selected) {
+                    const content = decodeURIComponent(selected.getAttribute('data-content'));
+                    applyQuickReply(content);
+                    return;
+                }
+            }
+            handleSendMessage();
+        }
+    });
+
+    messageTextInput.addEventListener('keyup', handleInputKeyupForQuickReplies);
+
+    // Auto-expandir textarea
+    messageTextInput.addEventListener('input', () => {
+        messageTextInput.style.height = 'auto';
+        messageTextInput.style.height = Math.min(messageTextInput.scrollHeight, 120) + 'px';
+    });
+
+    // Alternar Nota Interna Privada
+    btnTogglePrivateNote.addEventListener('click', () => {
+        setPrivateNoteMode(!isPrivateNoteMode);
+    });
+
+    // Desplegar atajos manualmente
+    btnQuickRepliesTrigger.addEventListener('click', () => {
+        if (quickRepliesFlyout.style.display === 'none') {
+            showQuickRepliesFlyout('/');
+        } else {
+            hideQuickRepliesFlyout();
+        }
+    });
+
+    // Emoji Picker
+    emojiBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emojiPickerContainer.style.display = emojiPickerContainer.style.display === 'none' ? 'block' : 'none';
+    });
 
     if (emojiPicker) {
         emojiPicker.addEventListener('emoji-click', (event) => {
-            const emoji = event.detail.unicode;
-            messageInputEl.value += emoji;
-            messageInputEl.focus();
+            messageTextInput.value += event.detail.unicode;
+            messageTextInput.focus();
         });
     }
 
-    // Seller Buttons Logic
-    document.querySelectorAll('.seller-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.seller-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById('editSeller').value = btn.dataset.seller;
-        });
+    document.addEventListener('click', (e) => {
+        if (!quickRepliesFlyout.contains(e.target) && e.target !== btnQuickRepliesTrigger) {
+            hideQuickRepliesFlyout();
+        }
+        if (emojiPickerContainer && !emojiPickerContainer.contains(e.target) && e.target !== emojiBtn) {
+            emojiPickerContainer.style.display = 'none';
+        }
     });
 
-    window.confirmAndAssignSeller = async (phone, sellerName) => {
-        const confirmMsg = `¿Deseas asignar este chat a ${sellerName}?`;
-        if (confirm(confirmMsg)) {
-            const contact = contactsMap.get(phone);
-            if (contact) {
-                contact.seller = sellerName;
-            }
+    // 9. Guardar Ficha CRM
+    btnSaveCrmCard.addEventListener('click', handleSaveCustomerCard);
 
-            // UI Update
-            renderContacts();
-            if (activeChatPhone === phone) {
-                // If we reload openChat, it might reshow hint if logic isn't perfect, but seller is now set so it won't.
-                // However, openChat re-renders the whole DOM.
-                // Let's just reload openChat which now has the updated 'contact' with seller set.
-                window.openChat(phone);
+    // 10. Modales
+    btnCloseTransferModal.addEventListener('click', closeTransferModal);
+    btnCancelTransfer.addEventListener('click', closeTransferModal);
+    btnConfirmTransfer.addEventListener('click', handleConfirmTransfer);
 
-                // (Alternative: manually update buttons and hide hint without reload)
-                // But reloading is safer to ensure state consistency.
-            }
+    btnCloseCloseModal.addEventListener('click', closeCloseModal);
+    btnCancelCloseModal.addEventListener('click', closeCloseModal);
+    btnConfirmCloseChat.addEventListener('click', handleConfirmCloseChat);
 
-            // Save
-            await saveContactMetadata(phone, { vendedor_asignado: sellerName });
-        }
-    };
-
-    window.analizarHistorial = async (phone) => {
-        mostrarToast('Analizando historial con IA...', 'info');
-
-        try {
-            const { data: mensajes, error } = await supabase
-                .from('mensajes')
-                .select('contenido, es_mio, created_at')
-                .eq('cliente_telefono', phone)
-                .order('created_at', { ascending: true });
-
-            if (error) throw error;
-
-            if (!mensajes || mensajes.length === 0) {
-                mostrarToast('No hay mensajes para analizar', 'warning');
-                return;
-            }
-
-            const chatLog = mensajes.map(m => `${m.es_mio ? 'Vendedor' : 'Cliente'}: ${m.contenido}`).join('\n');
-
-            const { data, error: aiError } = await supabase.functions.invoke('analizar-historial', {
-                body: { chatLog, phone }
-            });
-
-            if (aiError) throw aiError;
-
-            // Mostrar el resultado en un modal de confirmación simple o un nuevo modal
-            window.mostrarConfirmacion(`Resumen del historial:\n\n${data.resumen}`, () => { });
-
-        } catch (err) {
-            console.error('Error analizando historial:', err);
-            mostrarToast('Error al analizar historial', 'error');
-        }
-    };
-
-    // Filter Tabs Logic
-    document.querySelectorAll('.filter-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            activeFilter = tab.dataset.filter;
-            renderContacts();
-        });
+    btnCloseLightbox.addEventListener('click', () => {
+        imageLightboxModal.style.display = 'none';
     });
 }
 
-function formatTime(date) {
-    // If today, show time. If yesterday, show 'Ayer'. Else date.
-    const now = new Date();
-    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+// Helpers globales para llamadas inline en HTML generado
+window.crmShowLightbox = (imgUrl) => {
+    lightboxImg.src = imgUrl;
+    imageLightboxModal.style.display = 'flex';
+};
 
+window.crmToggleAudioSpeed = (btn) => {
+    const audio = btn.parentElement.querySelector('audio');
+    if (!audio) return;
+    if (audio.playbackRate === 1) {
+        audio.playbackRate = 1.5;
+        btn.innerText = '1.5x';
+    } else if (audio.playbackRate === 1.5) {
+        audio.playbackRate = 2;
+        btn.innerText = '2x';
+    } else {
+        audio.playbackRate = 1;
+        btn.innerText = '1x';
+    }
+};
+
+// ============================================================================
+// 13. HELPERS DE FORMATO
+// ============================================================================
+
+function formatRelativeTime(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+
+    const isToday = date.getDate() === now.getDate() && 
+                    date.getMonth() === now.getMonth() && 
+                    date.getFullYear() === now.getFullYear();
+
+    if (diffMins < 1) return 'Ahora';
+    if (diffMins < 60) return `${diffMins}m`;
     if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (diffHours < 48) return 'Ayer';
     return date.toLocaleDateString([], { day: '2-digit', month: '2-digit' });
 }
 
-function getRandomColor(str) {
-    const list = ['#00a884', '#1f7aec', '#d4493a', '#792e86', '#cc9c00', '#007a5a'];
+function formatPhoneNumber(phone) {
+    if (!phone) return '';
+    const p = phone.toString();
+    if (p.startsWith('549')) {
+        return `+54 9 ${p.slice(3, 6)} ${p.slice(6)}`;
+    }
+    return '+' + p;
+}
+
+function getAvatarColor(str = '') {
+    const colors = ['#5C2E2E', '#1E3A5F', '#0F766E', '#B45309', '#4338CA', '#701A75'];
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return list[Math.abs(hash) % list.length];
+    return colors[Math.abs(hash) % colors.length];
 }
 
-function playSoundNotification() {
-    // Optional: Add a simple beep
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
-// Start
-init();
+function formatMessageText(text) {
+    if (!text) return '';
+    let escaped = escapeHtml(text);
+    // Negrita tipo WhatsApp *texto*
+    escaped = escaped.replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+    return escaped;
+}
+
+// Iniciar aplicación
+document.addEventListener('DOMContentLoaded', () => {
+    initConsole();
+});

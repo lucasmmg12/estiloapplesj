@@ -526,6 +526,50 @@ img {
   flex-wrap: wrap;
 }
 
+/* Unique Desktop Spatial Positioning for Keynote Scrollytelling */
+.slide-camaras {
+  top: 15%;
+  left: 6%;
+  max-width: 440px;
+}
+
+.slide-materiales {
+  top: 15%;
+  right: 6%;
+  max-width: 440px;
+  text-align: right;
+}
+.slide-materiales .joby-slide-desc {
+  margin-left: auto;
+}
+
+.slide-display {
+  top: 28%;
+  left: 6%;
+  max-width: 440px;
+}
+
+.slide-laboratorio {
+  top: 22%;
+  right: 6%;
+  max-width: 440px;
+  text-align: right;
+}
+.slide-laboratorio .joby-slide-desc {
+  margin-left: auto;
+}
+
+.slide-respaldo {
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px) scale(0.96);
+  max-width: 660px;
+  text-align: center;
+}
+.slide-respaldo.active {
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
 /* Minimalist HUD Bottom Bar */
 .joby-bottom-bar {
   position: absolute;
@@ -612,24 +656,89 @@ img {
   }
 
   .joby-slide-item {
-    top: auto !important;
-    left: 14px !important;
-    right: 14px !important;
-    bottom: 84px !important;
-    transform: translateY(16px) !important;
-    max-width: calc(100% - 28px);
-    padding: 16px 18px;
-    border-radius: 18px;
-    background: rgba(14, 14, 18, 0.92);
+    position: absolute;
+    padding: 13px 16px;
+    border-radius: 16px;
+    background: rgba(14, 14, 18, 0.90);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.14);
     box-shadow: 0 10px 32px rgba(0, 0, 0, 0.7);
     z-index: 15;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
   }
 
   .joby-slide-item.active {
-    transform: translateY(0) !important;
+    pointer-events: auto;
+  }
+
+  /* UNIQUE MOBILE POSITIONS SYNCHRONIZED WITH VIDEO CONTENT */
+  /* Slide 1: Arriba a la izquierda (enfoque en lentes de cámara) */
+  .slide-camaras {
+    top: 8% !important;
+    left: 14px !important;
+    right: auto !important;
+    bottom: auto !important;
+    max-width: 280px;
+    width: calc(100% - 28px);
+    text-align: left;
+    transform: none !important;
+  }
+
+  /* Slide 2: Arriba a la derecha (enfoque en chasis de titanio) */
+  .slide-materiales {
+    top: 8% !important;
+    right: 14px !important;
+    left: auto !important;
+    bottom: auto !important;
+    max-width: 280px;
+    width: calc(100% - 28px);
+    text-align: right;
+    transform: none !important;
+  }
+  .slide-materiales .joby-slide-desc {
+    margin-left: auto;
+  }
+
+  /* Slide 3: Centro a la izquierda (enfoque en pantalla y Dynamic Island) */
+  .slide-display {
+    top: 20% !important;
+    left: 14px !important;
+    right: auto !important;
+    bottom: auto !important;
+    max-width: 275px;
+    width: calc(100% - 28px);
+    text-align: left;
+    transform: none !important;
+  }
+
+  /* Slide 4: Arriba a la derecha (enfoque en manos del técnico y microscopio) */
+  .slide-laboratorio {
+    top: 12% !important;
+    right: 14px !important;
+    left: auto !important;
+    bottom: auto !important;
+    max-width: 290px;
+    width: calc(100% - 28px);
+    text-align: right;
+    transform: none !important;
+  }
+  .slide-laboratorio .joby-slide-desc {
+    margin-left: auto;
+  }
+
+  /* Slide 5: Abajo centrado con CTAs de acción */
+  .slide-respaldo {
+    bottom: 74px !important;
+    left: 14px !important;
+    right: 14px !important;
+    top: auto !important;
+    max-width: calc(100% - 28px);
+    width: calc(100% - 28px);
+    text-align: center;
+    transform: none !important;
   }
 
   .joby-slide-number {
