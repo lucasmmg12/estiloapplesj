@@ -258,8 +258,18 @@ export async function saveCustomerCard(phone, cardData = {}) {
     if (cardData.nombre !== undefined) payload.nombre = cardData.nombre;
     if (cardData.email !== undefined) payload.email = cardData.email;
     if (cardData.modelo_dispositivo !== undefined) payload.modelo_dispositivo = cardData.modelo_dispositivo;
+    if (cardData.dispositivo_interes !== undefined) payload.dispositivo_interes = cardData.dispositivo_interes;
     if (cardData.dispositivo_canje !== undefined) payload.dispositivo_canje = cardData.dispositivo_canje;
-    if (cardData.cotizacion_estimada !== undefined) payload.cotizacion_estimada = cardData.cotizacion_estimada;
+    if (cardData.cotizacion_estimada !== undefined) {
+        if (cardData.cotizacion_estimada === '' || cardData.cotizacion_estimada === null) {
+            payload.cotizacion_estimada = null;
+        } else if (typeof cardData.cotizacion_estimada === 'number') {
+            payload.cotizacion_estimada = cardData.cotizacion_estimada;
+        } else {
+            const digits = cardData.cotizacion_estimada.toString().replace(/[^0-9]/g, '');
+            payload.cotizacion_estimada = digits ? parseFloat(digits) : null;
+        }
+    }
     if (cardData.notas !== undefined) payload.notas = cardData.notas;
     if (cardData.etiquetas !== undefined) payload.etiquetas = cardData.etiquetas;
     if (cardData.es_favorito !== undefined) payload.es_favorito = cardData.es_favorito;

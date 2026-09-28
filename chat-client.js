@@ -460,15 +460,8 @@ export async function openChat(phone) {
     // Cargar historial de mensajes
     await loadChatMessages(phone);
 
-    // Si la ficha está incompleta o vacía y hay mensajes, autocompletar automáticamente con IA
-    const isCardIncomplete = !activeContact.modelo_dispositivo || !activeContact.cotizacion_estimada || !activeContact.notas || (!activeContact.etiquetas || activeContact.etiquetas.length === 0);
-    if (isCardIncomplete) {
-        setTimeout(() => {
-            if (activeChatPhone === phone) {
-                analyzeChatAndPopulateCard(phone, false);
-            }
-        }, 500);
-    }
+    // Auto-analizar el chat con IA para completar la Ficha del Cliente y el sidebar
+    scheduleAutoAnalysis(phone);
 
     // Marcar como leído localmente
     if (activeContact && activeContact.unread_count > 0) {
@@ -719,6 +712,9 @@ async function handleSendMessage() {
         if (isNote) {
             setPrivateNoteMode(false);
         }
+
+        // Actualizar entendimiento del chat con IA automáticamente
+        scheduleAutoAnalysis(activeChatPhone);
     } catch (err) {
         console.error('Error enviando mensaje:', err);
         alert('Error al enviar mensaje: ' + err.message);
@@ -897,6 +893,17 @@ async function handleSaveCustomerCard() {
 // ============================================================================
 
 let isAnalyzingChat = false;
+let autoAnalyzeTimeout = null;
+
+export function scheduleAutoAnalysis(phone) {
+    if (!phone) return;
+    if (autoAnalyzeTimeout) clearTimeout(autoAnalyzeTimeout);
+    autoAnalyzeTimeout = setTimeout(() => {
+        if (activeChatPhone === phone) {
+            analyzeChatAndPopulateCard(phone, false);
+        }
+    }, 600);
+}
 
 export async function analyzeChatAndPopulateCard(phone, force = false) {
     if (!phone || isAnalyzingChat) return;
@@ -1243,10 +1250,11 @@ function handleRealtimeNewMessage(msg) {
         }
     }
 
-    // 3. Si el chat está abierto en pantalla, pintar la burbuja
+    // 3. Si el chat está abierto en pantalla, pintar la burbuja y auto-analizar
     if (activeChatPhone === phone) {
         appendMessageBubble(msg);
         scrollToBottom();
+        scheduleAutoAnalysis(phone);
     }
 
     // 4. Refrescar contadores y lista lateral

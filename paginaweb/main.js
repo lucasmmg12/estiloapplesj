@@ -660,25 +660,24 @@ function setupFaq() {
   });
 }
 
-// Navigation & Smooth Scroll
+// Navigation & Smooth Scroll for Bottom WebApp Bar
 function setupNavigation() {
-  const menuToggle = document.querySelector('.menu-toggle');
-  const navLinks = document.querySelector('.nav-links');
-
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
-      const isVisible = window.getComputedStyle(navLinks).display !== 'none';
-      navLinks.style.display = isVisible ? 'none' : 'flex';
-      navLinks.style.flexDirection = 'column';
-      navLinks.style.position = 'absolute';
-      navLinks.style.top = '64px';
-      navLinks.style.left = '0';
-      navLinks.style.right = '0';
-      navLinks.style.background = 'var(--bg-glass-nav)';
-      navLinks.style.padding = '24px';
-      navLinks.style.borderBottom = '1px solid var(--border-subtle)';
+  document.querySelectorAll('.dock-link, .tabbar-tab, .dock-brand-item').forEach(link => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        e.preventDefault();
+        const target = document.querySelector(href);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+          document.querySelectorAll('.tabbar-tab').forEach(t => t.classList.remove('active'));
+          if (link.classList.contains('tabbar-tab')) {
+            link.classList.add('active');
+          }
+        }
+      }
     });
-  }
+  });
 }
 
 // ==========================================================================
