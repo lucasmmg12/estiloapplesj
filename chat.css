@@ -1162,38 +1162,101 @@ body {
 }
 
 /* ==========================================================================
-   COLUMNA 3: FICHA COMERCIAL CRM DEL CLIENTE (DERECHA)
+   COLUMNA 1: FICHA COMERCIAL CRM DEL CLIENTE (A LA IZQUIERDA DE TODO)
+   Desplegable y colapsable con transición suave 60fps
    ========================================================================== */
 .crm-details-sidebar {
     width: var(--sidebar-right-width);
     min-width: 320px;
+    max-width: 360px;
     height: 100%;
     background: #FFFFFF;
-    border-left: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
+    border-left: none;
     display: flex;
     flex-direction: column;
-    z-index: 20;
-    transition: width 0.2s ease;
+    z-index: 25;
+    flex-shrink: 0;
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.2s ease,
+                transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateX(0);
+    overflow: hidden;
 }
 
 .crm-details-sidebar.collapsed {
-    display: none;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-right: none !important;
+    border-left: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    transform: translateX(-100%);
 }
 
-/* Docking position: Left or Right */
-.crm-app-container.dock-left .crm-details-sidebar {
-    order: -1;
-    border-right: 1px solid var(--border-light);
-    border-left: none;
+.sidebar-header-lead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
 }
 
-.crm-app-container.dock-left .crm-sidebar {
-    order: -2;
+.btn-toggle-ficha-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 9px;
+    background: #F8FAFC;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.crm-app-container.dock-left .crm-chat-pane {
-    order: 0;
+.btn-toggle-ficha-left:hover {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+    color: var(--brand-primary);
 }
+
+.btn-toggle-ficha-left.active {
+    background: var(--brand-primary-light);
+    border-color: var(--brand-primary-border);
+    color: var(--brand-primary);
+}
+
+.btn-fold-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-fold-toggle:hover {
+    background: #E2E8F0;
+    color: var(--text-main);
+}
+
 
 .details-header {
     height: 64px;
@@ -1636,10 +1699,11 @@ body {
 @media (max-width: 1024px) {
     .crm-details-sidebar {
         position: absolute;
-        right: 0;
+        left: 0;
         top: 0;
         bottom: 0;
-        box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+        z-index: 60;
     }
 }
 

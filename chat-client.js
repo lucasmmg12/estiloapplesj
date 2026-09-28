@@ -100,9 +100,11 @@ const emojiBtn = document.getElementById('emojiBtn');
 const emojiPickerContainer = document.getElementById('emojiPickerContainer');
 const emojiPicker = document.querySelector('emoji-picker');
 
-// Ficha Comercial (Sidebar Derecha)
+// Ficha Comercial (Sidebar Izquierda de todo - Desplegable)
 const crmDetailsSidebar = document.getElementById('crmDetailsSidebar');
 const btnCloseDetailsSidebar = document.getElementById('btnCloseDetailsSidebar');
+const btnFoldDetailsSidebar = document.getElementById('btnFoldDetailsSidebar');
+const btnToggleFichaSidebar = document.getElementById('btnToggleFichaSidebar');
 const cardClientName = document.getElementById('cardClientName');
 const cardClientPhone = document.getElementById('cardClientPhone');
 const cardWhatsAppDirect = document.getElementById('cardWhatsAppDirect');
@@ -178,8 +180,8 @@ async function initConsole() {
     // 1. Configurar Operador Activo
     setupOperatorProfile();
 
-    // 1b. Configurar posición del dock de la Ficha (Izquierda / Derecha)
-    initSidebarDock();
+    // 1b. Inicializar estado desplegable de la Ficha del Cliente (A la izquierda de todo)
+    initFichaState();
 
     // 2. Renderizar Etiquetas en Ficha CRM
     renderAvailableTags();
@@ -1060,39 +1062,37 @@ async function applyAiExtractedData(data, phone) {
 }
 
 // ============================================================================
-// 9c. POSICIONAMIENTO DEL DOCK (IZQUIERDA / DERECHA)
+// 9c. CONTROL DESPLEGABLE DE LA FICHA DEL CLIENTE (A LA IZQUIERDA DE TODO)
 // ============================================================================
 
-let detailsDockPosition = localStorage.getItem('estilo_crm_dock_position') || 'left';
+function setFichaCollapsedState(collapsed) {
+    if (!crmDetailsSidebar) return;
+    crmDetailsSidebar.classList.toggle('collapsed', collapsed);
+    localStorage.setItem('estilo_crm_ficha_collapsed', collapsed ? 'true' : 'false');
 
-function initSidebarDock() {
-    const container = document.querySelector('.crm-app-container');
-    if (!container) return;
-    if (detailsDockPosition === 'left') {
-        container.classList.add('dock-left');
+    // Sincronizar estados visuales de los botones de apertura/pliegue
+    if (btnToggleCrmCard) {
+        btnToggleCrmCard.classList.toggle('active', !collapsed);
+    }
+    if (btnToggleFichaSidebar) {
+        btnToggleFichaSidebar.classList.toggle('active', !collapsed);
+        btnToggleFichaSidebar.title = collapsed ? 'Desplegar Ficha del Cliente (Ctrl+B)' : 'Plegar Ficha del Cliente (Ctrl+B)';
+    }
+}
+
+function toggleFichaCollapsed() {
+    if (!crmDetailsSidebar) return;
+    const isCurrentlyCollapsed = crmDetailsSidebar.classList.contains('collapsed');
+    setFichaCollapsedState(!isCurrentlyCollapsed);
+}
+
+function initFichaState() {
+    const savedState = localStorage.getItem('estilo_crm_ficha_collapsed');
+    // Por defecto visible (desplegada); si el usuario la plegó expresamente, respetar su preferencia
+    if (savedState === 'true') {
+        setFichaCollapsedState(true);
     } else {
-        container.classList.remove('dock-left');
-    }
-    updateDockButtonUI();
-}
-
-function toggleSidebarDock() {
-    const container = document.querySelector('.crm-app-container');
-    if (!container) return;
-    const isNowLeft = container.classList.toggle('dock-left');
-    detailsDockPosition = isNowLeft ? 'left' : 'right';
-    localStorage.setItem('estilo_crm_dock_position', detailsDockPosition);
-    updateDockButtonUI();
-}
-
-function updateDockButtonUI() {
-    const container = document.querySelector('.crm-app-container');
-    const isLeft = container && container.classList.contains('dock-left');
-    if (dockPosLabel) {
-        dockPosLabel.innerText = isLeft ? '⇥ Der' : '⇤ Izq';
-    }
-    if (btnToggleSidebarDock) {
-        btnToggleSidebarDock.title = isLeft ? 'Mover panel a la derecha del chat' : 'Mover panel a la izquierda del chat';
+        setFichaCollapsedState(false);
     }
 }
 
@@ -1351,20 +1351,41 @@ function setupEventListeners() {
         });
     });
 
-    // 7. Acciones de Cabecera del Chat
+    // 7. Acciones de Cabecera del Chat y Ficha Desplegable
     btnClaimChat.addEventListener('click', handleClaimChat);
     btnTransferChat.addEventListener('click', openTransferModal);
     btnCloseChat.addEventListener('click', openCloseModal);
-    btnToggleCrmCard.addEventListener('click', () => {
-        crmDetailsSidebar.classList.toggle('collapsed');
-        btnToggleCrmCard.classList.toggle('active', !crmDetailsSidebar.classList.contains('collapsed'));
-    });
-    btnCloseDetailsSidebar.addEventListener('click', () => {
-        crmDetailsSidebar.classList.add('collapsed');
-        btnToggleCrmCard.classList.remove('active');
+
+    // Desplegar / Plegar Ficha desde botón en la cabecera del Chat
+    if (btnToggleCrmCard) {
+        btnToggleCrmCard.addEventListener('click', toggleFichaCollapsed);
+    }
+
+    // Desplegar / Plegar Ficha desde botón en la cabecera de la Bandeja de Chats
+    if (btnToggleFichaSidebar) {
+        btnToggleFichaSidebar.addEventListener('click', toggleFichaCollapsed);
+    }
+
+    // Botón Plegar dentro de la propia Ficha
+    if (btnFoldDetailsSidebar) {
+        btnFoldDetailsSidebar.addEventListener('click', () => setFichaCollapsedState(true));
+    }
+
+    // Botón Cerrar (x) dentro de la Ficha
+    if (btnCloseDetailsSidebar) {
+        btnCloseDetailsSidebar.addEventListener('click', () => setFichaCollapsedState(true));
+    }
+
+    // Atajo de teclado global Ctrl+B / Cmd+B para desplegar/plegar la Ficha del Cliente
+    window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+            if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+            e.preventDefault();
+            toggleFichaCollapsed();
+        }
     });
 
-    // 7b. Botón Autocompletar con IA y Toggle Dock
+    // 7b. Botón Autocompletar con IA
     if (btnAiAutoFillCard) {
         btnAiAutoFillCard.addEventListener('click', () => {
             if (activeChatPhone) {
@@ -1374,9 +1395,7 @@ function setupEventListeners() {
     }
 
     if (btnToggleSidebarDock) {
-        btnToggleSidebarDock.addEventListener('click', () => {
-            toggleSidebarDock();
-        });
+        btnToggleSidebarDock.addEventListener('click', toggleFichaCollapsed);
     }
 
     // Botón Volver Móvil
