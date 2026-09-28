@@ -23,6 +23,7 @@ import {
     RESOLUTION_REASONS,
     DEFAULT_TAGS
 } from './services/crm-service.js';
+import { fetchMonthlyMetrics, COST_PER_SENT_MESSAGE_USD } from './services/metrics-service.js';
 
 // ============================================================================
 // 1. ESTADO GLOBAL DE LA CONSOLA
@@ -135,6 +136,38 @@ const imageLightboxModal = document.getElementById('imageLightboxModal');
 const lightboxImg = document.getElementById('lightboxImg');
 const btnCloseLightbox = document.getElementById('btnCloseLightbox');
 
+// Métricas & Auditoría Meta
+const btnMetricsModal = document.getElementById('btnMetricsModal');
+const btnOpenMetricsFromChat = document.getElementById('btnOpenMetricsFromChat');
+const metricsModal = document.getElementById('metricsModal');
+const btnCloseMetricsModal = document.getElementById('btnCloseMetricsModal');
+const btnCloseMetricsFooter = document.getElementById('btnCloseMetricsFooter');
+const btnRefreshMetrics = document.getElementById('btnRefreshMetrics');
+const metricsMonthSelect = document.getElementById('metricsMonthSelect');
+const metricsLoadingState = document.getElementById('metricsLoadingState');
+const metricsMainContent = document.getElementById('metricsMainContent');
+
+const metricTotalMessages = document.getElementById('metricTotalMessages');
+const metricTotalSent = document.getElementById('metricTotalSent');
+const metricSentPercent = document.getElementById('metricSentPercent');
+const metricTotalReceived = document.getElementById('metricTotalReceived');
+const metricReceivedPercent = document.getElementById('metricReceivedPercent');
+const ratioBarSent = document.getElementById('ratioBarSent');
+const ratioBarReceived = document.getElementById('ratioBarReceived');
+
+const metricBusinessInitiated = document.getElementById('metricBusinessInitiated');
+const metricBusinessPercent = document.getElementById('metricBusinessPercent');
+const metricUserInitiated = document.getElementById('metricUserInitiated');
+const metricUserPercent = document.getElementById('metricUserPercent');
+
+const metricProjectedCostUsd = document.getElementById('metricProjectedCostUsd');
+const metricProjectedCostArs = document.getElementById('metricProjectedCostArs');
+const metricActualCostUsd = document.getElementById('metricActualCostUsd');
+const metricActualCostArs = document.getElementById('metricActualCostArs');
+const metricProjectedSent = document.getElementById('metricProjectedSent');
+const metricCardPeriod1 = document.getElementById('metricCardPeriod1');
+const dailyBarsContainer = document.getElementById('dailyBarsContainer');
+
 // ============================================================================
 // 3. INICIALIZACIÓN
 // ============================================================================
@@ -156,6 +189,9 @@ async function initConsole() {
 
     // 4. Configurar Listeners de UI
     setupEventListeners();
+
+    // 4b. Configurar Modal de Métricas Mensuales & Costos Meta
+    setupMetricsModal();
 
     // 5. Cargar Conversaciones
     await loadConversations();
@@ -1440,6 +1476,197 @@ window.crmToggleAudioSpeed = (btn) => {
         btn.innerText = '1x';
     }
 };
+
+// ============================================================================
+// 12. GESTIÓN DE AUDITORÍA, MÉTRICAS MENSUALES & COSTOS META
+// ============================================================================
+
+const MONTH_NAMES = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+function setupMetricsModal() {
+    populateMonthSelector();
+
+    if (btnMetricsModal) {
+        btnMetricsModal.addEventListener('click', openMetricsModal);
+    }
+    if (btnOpenMetricsFromChat) {
+        btnOpenMetricsFromChat.addEventListener('click', openMetricsModal);
+    }
+    if (btnCloseMetricsModal) {
+        btnCloseMetricsModal.addEventListener('click', closeMetricsModal);
+    }
+    if (btnCloseMetricsFooter) {
+        btnCloseMetricsFooter.addEventListener('click', closeMetricsModal);
+    }
+    if (btnRefreshMetrics) {
+        btnRefreshMetrics.addEventListener('click', () => {
+            const [y, m] = (metricsMonthSelect?.value || '').split('-').map(Number);
+            if (y && m) loadAndRenderMetrics(y, m);
+        });
+    }
+    if (metricsMonthSelect) {
+        metricsMonthSelect.addEventListener('change', () => {
+            const [y, m] = metricsMonthSelect.value.split('-').map(Number);
+            if (y && m) loadAndRenderMetrics(y, m);
+        });
+    }
+
+    // Cerrar al clickear el backdrop
+    if (metricsModal) {
+        metricsModal.addEventListener('click', (e) => {
+            if (e.target === metricsModal) closeMetricsModal();
+        });
+    }
+}
+
+function populateMonthSelector() {
+    if (!metricsMonthSelect) return;
+    metricsMonthSelect.innerHTML = '';
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth() + 1; // 1-12
+
+    // Generar opciones para los últimos 6 meses
+    for (let i = 0; i < 6; i++) {
+        let y = curYear;
+        let m = curMonth - i;
+        while (m <= 0) {
+            m += 12;
+            y -= 1;
+        }
+        const opt = document.createElement('option');
+        opt.value = `${y}-${m}`;
+        opt.textContent = `${MONTH_NAMES[m - 1]} ${y}`;
+        if (i === 0) opt.selected = true;
+        metricsMonthSelect.appendChild(opt);
+    }
+}
+
+function openMetricsModal() {
+    if (!metricsModal) return;
+    metricsModal.style.display = 'flex';
+    const [y, m] = (metricsMonthSelect?.value || '').split('-').map(Number);
+    loadAndRenderMetrics(y || new Date().getFullYear(), m || (new Date().getMonth() + 1));
+}
+
+function closeMetricsModal() {
+    if (metricsModal) {
+        metricsModal.style.display = 'none';
+    }
+}
+
+async function loadAndRenderMetrics(year, month) {
+    if (!metricsLoadingState || !metricsMainContent) return;
+
+    metricsLoadingState.style.display = 'flex';
+    metricsMainContent.style.display = 'none';
+
+    try {
+        const metrics = await fetchMonthlyMetrics(year, month);
+        renderMetricsData(metrics);
+        metricsLoadingState.style.display = 'none';
+        metricsMainContent.style.display = 'block';
+    } catch (err) {
+        console.error('Error cargando métricas mensuales:', err);
+        metricsLoadingState.innerHTML = `
+            <div style="color:#E11D48; font-weight:700;">❌ Error al calcular métricas</div>
+            <p style="font-size:12px; color:#64748B;">${err.message || 'Verifica la conexión con Supabase'}</p>
+            <button class="btn-modal-cancel" id="btnRetryMetrics" style="margin-top:10px;">Reintentar</button>
+        `;
+        document.getElementById('btnRetryMetrics')?.addEventListener('click', () => {
+            loadAndRenderMetrics(year, month);
+        });
+    }
+}
+
+function renderMetricsData(m) {
+    const monthName = MONTH_NAMES[m.month - 1];
+    if (metricCardPeriod1) {
+        metricCardPeriod1.textContent = m.isCurrentMonth ? `${monthName} (en curso)` : monthName;
+    }
+
+    // Mensajes Totales
+    if (metricTotalMessages) metricTotalMessages.textContent = m.totalMessages.toLocaleString('es-AR');
+    if (metricTotalSent) metricTotalSent.textContent = m.totalSent.toLocaleString('es-AR');
+    if (metricSentPercent) metricSentPercent.textContent = `${m.sentPercentage}%`;
+    if (metricTotalReceived) metricTotalReceived.textContent = m.totalReceived.toLocaleString('es-AR');
+    if (metricReceivedPercent) metricReceivedPercent.textContent = `${m.receivedPercentage}%`;
+
+    // Ratio Bar
+    if (ratioBarSent) ratioBarSent.style.width = `${m.sentPercentage}%`;
+    if (ratioBarReceived) ratioBarReceived.style.width = `${m.receivedPercentage}%`;
+
+    // Sesiones 24hs Meta
+    if (metricBusinessInitiated) metricBusinessInitiated.textContent = m.businessInitiated.toLocaleString('es-AR');
+    if (metricBusinessPercent) metricBusinessPercent.textContent = `${m.businessPercentage}%`;
+    if (metricUserInitiated) metricUserInitiated.textContent = m.userInitiated.toLocaleString('es-AR');
+    if (metricUserPercent) metricUserPercent.textContent = `${m.userPercentage}%`;
+
+    // Costos Proyectados
+    if (metricProjectedCostUsd) metricProjectedCostUsd.textContent = `$${m.projectedCostUsd.toFixed(2)} USD`;
+    if (metricProjectedCostArs) metricProjectedCostArs.textContent = `≈ $${m.projectedCostArs.toLocaleString('es-AR')} ARS`;
+    if (metricActualCostUsd) metricActualCostUsd.textContent = `$${m.actualCostUsd.toFixed(2)} USD`;
+    if (metricActualCostArs) metricActualCostArs.textContent = `≈ $${m.actualCostArs.toLocaleString('es-AR')} ARS`;
+    if (metricProjectedSent) metricProjectedSent.textContent = `${m.projectedSentMessages.toLocaleString('es-AR')} mensajes`;
+
+    // Gráfico de Barras Diarias
+    renderDailyBars(m.dailyStats, m.currentDay, m.daysInMonth);
+}
+
+function renderDailyBars(dailyStats, currentDay, daysInMonth) {
+    if (!dailyBarsContainer) return;
+    dailyBarsContainer.innerHTML = '';
+
+    const maxDayTotal = Math.max(...dailyStats.map(d => d.sent + d.received), 1);
+
+    dailyStats.forEach(ds => {
+        const total = ds.sent + ds.received;
+        const col = document.createElement('div');
+        col.className = 'daily-bar-column';
+
+        const heightPercent = total > 0 ? Math.max(8, Math.round((total / maxDayTotal) * 100)) : 0;
+        const sentHeightPercent = total > 0 ? Math.round((ds.sent / total) * 100) : 0;
+        const receivedHeightPercent = 100 - sentHeightPercent;
+
+        col.setAttribute('data-tooltip', `Día ${ds.day}\nEnviados: ${ds.sent.toLocaleString('es-AR')}\nRecibidos: ${ds.received.toLocaleString('es-AR')}\nCosto: $${ds.costUsd.toFixed(2)} USD`);
+
+        const track = document.createElement('div');
+        track.className = 'daily-bar-track';
+        track.style.height = `${heightPercent}%`;
+
+        if (total > 0) {
+            const sentFill = document.createElement('div');
+            sentFill.className = 'bar-sent-fill';
+            sentFill.style.height = `${sentHeightPercent}%`;
+
+            const recvFill = document.createElement('div');
+            recvFill.className = 'bar-received-fill';
+            recvFill.style.height = `${receivedHeightPercent}%`;
+
+            track.appendChild(sentFill);
+            track.appendChild(recvFill);
+        } else {
+            track.style.background = '#E2E8F0';
+            track.style.height = '4px';
+            track.style.borderRadius = '2px';
+        }
+
+        const label = document.createElement('span');
+        label.className = 'daily-bar-label';
+        label.textContent = ds.day;
+        if (ds.day === currentDay) {
+            label.style.color = 'var(--brand-primary)';
+            label.style.fontWeight = '800';
+        }
+
+        col.appendChild(track);
+        col.appendChild(label);
+        dailyBarsContainer.appendChild(col);
+    });
+}
 
 // ============================================================================
 // 13. HELPERS DE FORMATO

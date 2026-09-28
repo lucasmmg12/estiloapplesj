@@ -38,6 +38,13 @@
                 </div>
 
                 <div class="header-tools">
+                    <button class="tool-btn" id="btnMetricsModal" title="Métricas Mensuales y Costos Meta">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </button>
                     <button class="tool-btn" id="chimeToggleBtn" title="Sonido de nuevos mensajes (Activado)">
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -161,6 +168,11 @@
 
                     <!-- Botones de Acción Operativa (Tal cual ADM-QUI) -->
                     <div class="header-action-group">
+                        <button class="btn-action btn-secondary" id="btnOpenMetricsFromChat" title="Ver Métricas y Costos de WhatsApp Meta">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            <span>Métricas</span>
+                        </button>
+
                         <button class="btn-action btn-claim" id="btnClaimChat" title="Tomar este chat para mí">
                             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             <span>Tomar Chat</span>
@@ -463,6 +475,195 @@
         <div class="lightbox-content">
             <button class="lightbox-close" id="btnCloseLightbox">&times;</button>
             <img src="" id="lightboxImg" alt="Vista previa">
+        </div>
+    </div>
+
+    <!-- Modal 4: Métricas Mensuales, Sesiones 24hs Meta & Costos Proyectados -->
+    <div class="crm-modal-backdrop" id="metricsModal" style="display: none;">
+        <div class="crm-modal-box crm-metrics-modal-box">
+            <div class="crm-modal-header">
+                <div class="metrics-modal-title-wrap">
+                    <div class="metrics-modal-icon">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3>Auditoría de Métricas & Consumo Meta</h3>
+                        <p class="metrics-modal-subtitle">Estadísticas mensuales, ventana de 24hs de Meta y proyección de costo de mensajería</p>
+                    </div>
+                </div>
+                <div class="metrics-header-controls">
+                    <div class="metrics-month-selector-wrap">
+                        <label for="metricsMonthSelect">Mes:</label>
+                        <select id="metricsMonthSelect" class="crm-select-sm"></select>
+                    </div>
+                    <button class="tool-btn" id="btnRefreshMetrics" title="Actualizar Métricas">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                    <button class="modal-close-x" id="btnCloseMetricsModal">&times;</button>
+                </div>
+            </div>
+
+            <div class="crm-modal-body metrics-modal-body" id="metricsModalBody">
+                <!-- Loading State -->
+                <div class="metrics-loading-state" id="metricsLoadingState" style="display: none;">
+                    <div class="crm-spinner"></div>
+                    <p>Calculando sesiones y proyectando costos de WhatsApp API...</p>
+                </div>
+
+                <!-- Main Content -->
+                <div id="metricsMainContent">
+                    <!-- Grid de 4 KPIs Principales -->
+                    <div class="metrics-content-grid">
+                        <!-- Tarjeta 1: Mensajes Totales, Enviados y Recibidos -->
+                        <div class="metric-card metric-card-primary">
+                            <div class="metric-card-header">
+                                <span class="metric-kpi-badge">Mensajes del Mes</span>
+                                <span class="metric-period-label" id="metricCardPeriod1">Mes actual</span>
+                            </div>
+                            <div class="metric-main-value" id="metricTotalMessages">0</div>
+                            <div class="metric-subtext">mensajes procesados en total</div>
+
+                            <div class="metric-ratio-bar">
+                                <div class="ratio-sent" id="ratioBarSent" style="width: 50%;" title="Enviados"></div>
+                                <div class="ratio-received" id="ratioBarReceived" style="width: 50%;" title="Recibidos"></div>
+                            </div>
+
+                            <div class="metric-split-row">
+                                <div class="split-col">
+                                    <span class="split-dot dot-sent"></span>
+                                    <div>
+                                        <strong id="metricTotalSent">0</strong>
+                                        <small>Enviados (<span id="metricSentPercent">0%</span>)</small>
+                                    </div>
+                                </div>
+                                <div class="split-col">
+                                    <span class="split-dot dot-received"></span>
+                                    <div>
+                                        <strong id="metricTotalReceived">0</strong>
+                                        <small>Recibidos (<span id="metricReceivedPercent">0%</span>)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tarjeta 2: Iniciadas por Estilo Apple (Ventana 24hs Meta) -->
+                        <div class="metric-card metric-card-accent">
+                            <div class="metric-card-header">
+                                <span class="metric-kpi-badge badge-business">Business-Initiated</span>
+                                <span class="meta-tag">Meta 24hs</span>
+                            </div>
+                            <div class="metric-main-value" id="metricBusinessInitiated">0</div>
+                            <div class="metric-subtext">iniciadas por Estilo Apple</div>
+
+                            <div class="metric-detail-box">
+                                <div class="metric-detail-item">
+                                    <span class="detail-label">Participación:</span>
+                                    <strong id="metricBusinessPercent">0%</strong>
+                                </div>
+                                <div class="metric-detail-item">
+                                    <span class="detail-label">Condición:</span>
+                                    <span class="detail-val">Fuera de ventana 24hs</span>
+                                </div>
+                            </div>
+                            <p class="metric-footnote">Mensajes salientes enviados cuando no había una ventana abierta por el cliente.</p>
+                        </div>
+
+                        <!-- Tarjeta 3: Iniciadas por el Cliente (User-Initiated) -->
+                        <div class="metric-card metric-card-accent">
+                            <div class="metric-card-header">
+                                <span class="metric-kpi-badge badge-user">User-Initiated</span>
+                                <span class="meta-tag">Meta 24hs</span>
+                            </div>
+                            <div class="metric-main-value" id="metricUserInitiated">0</div>
+                            <div class="metric-subtext">iniciadas por Clientes</div>
+
+                            <div class="metric-detail-box">
+                                <div class="metric-detail-item">
+                                    <span class="detail-label">Participación:</span>
+                                    <strong id="metricUserPercent">0%</strong>
+                                </div>
+                                <div class="metric-detail-item">
+                                    <span class="detail-label">Ventana:</span>
+                                    <span class="detail-val">24hs activadas</span>
+                                </div>
+                            </div>
+                            <p class="metric-footnote">Consultas entrantes de clientes que habilitan la ventana de servicio de 24 horas.</p>
+                        </div>
+
+                        <!-- Tarjeta 4: Gasto Proyectado Mensual -->
+                        <div class="metric-card metric-card-cost">
+                            <div class="metric-card-header">
+                                <span class="metric-kpi-badge badge-cost">Gasto Proyectado</span>
+                                <span class="rate-badge">0.026 USD/msg</span>
+                            </div>
+                            <div class="cost-hero-wrapper">
+                                <div class="metric-main-value text-emerald" id="metricProjectedCostUsd">$0.00 USD</div>
+                                <div class="cost-ars-conversion" id="metricProjectedCostArs">≈ $0 ARS</div>
+                            </div>
+                            <div class="metric-subtext">proyección estimada a fin de mes</div>
+
+                            <div class="cost-accumulated-box">
+                                <div class="cost-row">
+                                    <span>Gasto real acumulado:</span>
+                                    <strong id="metricActualCostUsd">$0.00 USD</strong>
+                                </div>
+                                <div class="cost-row">
+                                    <span>En pesos argentinos:</span>
+                                    <span id="metricActualCostArs">≈ $0 ARS</span>
+                                </div>
+                                <div class="cost-row">
+                                    <span>Envíos proyectados:</span>
+                                    <span id="metricProjectedSent">0 mensajes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Explicación de la Ventana de 24hs de Meta -->
+                    <div class="meta-audit-explainer">
+                        <div class="explainer-icon">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <div class="explainer-body">
+                            <h4>Reglas de la Ventana de 24 Horas de Meta (WhatsApp Cloud API)</h4>
+                            <ul>
+                                <li><strong>Ventana de Servicio (24 Horas):</strong> Cuando un cliente envía un mensaje, se abre una ventana ininterrumpida de 24 horas donde Estilo Apple puede conversar y enviar mensajes de seguimiento de atención.</li>
+                                <li><strong>Conversación Iniciada por Estilo Apple:</strong> Todo mensaje saliente enviado fuera de esa ventana de 24hs computa como una nueva sesión comercial (Business-Initiated).</li>
+                                <li><strong>Cálculo de Costo:</strong> Cada mensaje enviado por la plataforma cuesta <strong>0.026 USD</strong>. La proyección mensual interpola el promedio diario acumulado hacia el total de días del mes calendario.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Desglose Gráfico Día por Día -->
+                    <div class="metrics-daily-section">
+                        <div class="daily-section-header">
+                            <h4>Distribución Diaria de Mensajes & Costo Estimado</h4>
+                            <span class="daily-legend">
+                                <span class="legend-box legend-sent"></span> Enviados ($0.026)
+                                <span class="legend-box legend-received"></span> Recibidos
+                            </span>
+                        </div>
+                        <div class="daily-bars-container" id="dailyBarsContainer">
+                            <!-- Barras generadas por JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crm-modal-actions">
+                <button class="btn-modal-cancel" id="btnCloseMetricsFooter">Cerrar</button>
+            </div>
         </div>
     </div>
 
