@@ -15,12 +15,7 @@
 import CONFIG from '../config.js';
 import { enviarMensaje } from './builderbot-api.js';
 
-import { createClient } from '@supabase/supabase-js';
-
-// Inicializar Supabase Client con soporte para Vite o CDN global
-const supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
-    ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
-    : createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+import { supabase } from './supabase-client.js';
 
 // Vendedores oficiales de Estilo Apple SJ
 export const SELLERS = [
@@ -257,6 +252,8 @@ export async function saveCustomerCard(phone, cardData = {}) {
     const payload = {};
     if (cardData.nombre !== undefined) payload.nombre = cardData.nombre;
     if (cardData.email !== undefined) payload.email = cardData.email;
+    if (cardData.interes !== undefined) payload.interes = cardData.interes;
+    if (cardData.necesidad_cliente !== undefined) payload.interes = cardData.necesidad_cliente;
     if (cardData.modelo_dispositivo !== undefined) payload.modelo_dispositivo = cardData.modelo_dispositivo;
     if (cardData.dispositivo_interes !== undefined) payload.dispositivo_interes = cardData.dispositivo_interes;
     if (cardData.dispositivo_canje !== undefined) payload.dispositivo_canje = cardData.dispositivo_canje;

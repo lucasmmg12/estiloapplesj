@@ -24,6 +24,8 @@ import {
     DEFAULT_TAGS
 } from './services/crm-service.js';
 import { fetchMonthlyMetrics, COST_PER_SENT_MESSAGE_USD } from './services/metrics-service.js';
+import { supabase } from './services/supabase-client.js';
+import CONFIG from './config.js';
 
 // ============================================================================
 // 1. ESTADO GLOBAL DE LA CONSOLA
@@ -100,11 +102,12 @@ const emojiBtn = document.getElementById('emojiBtn');
 const emojiPickerContainer = document.getElementById('emojiPickerContainer');
 const emojiPicker = document.querySelector('emoji-picker');
 
-// Ficha Comercial (Sidebar Izquierda de todo - Desplegable)
+// Ficha Comercial (Sidebar Derecha - Desplegable)
 const crmDetailsSidebar = document.getElementById('crmDetailsSidebar');
 const btnCloseDetailsSidebar = document.getElementById('btnCloseDetailsSidebar');
 const btnFoldDetailsSidebar = document.getElementById('btnFoldDetailsSidebar');
 const btnToggleFichaSidebar = document.getElementById('btnToggleFichaSidebar');
+const cardCustomerNeed = document.getElementById('cardCustomerNeed');
 const cardClientName = document.getElementById('cardClientName');
 const cardClientPhone = document.getElementById('cardClientPhone');
 const cardWhatsAppDirect = document.getElementById('cardWhatsAppDirect');
@@ -828,6 +831,9 @@ function renderAvailableTags() {
 function populateCustomerCard(contact) {
     if (!contact) return;
 
+    if (cardCustomerNeed) {
+        cardCustomerNeed.value = contact.interes || contact.necesidad_cliente || '';
+    }
     cardClientName.value = contact.contact_name || '';
     cardClientPhone.value = '+' + contact.phone;
     cardWhatsAppDirect.href = `https://wa.me/${contact.phone}`;
@@ -861,7 +867,9 @@ async function handleSaveCustomerCard() {
     const cardData = {
         nombre: cardClientName.value.trim(),
         email: cardClientEmail.value.trim(),
-        modelo_dispositivo: cardDeviceInterest.value.trim(),
+        interes: cardCustomerNeed ? cardCustomerNeed.value.trim() : '',
+        necesidad_cliente: cardCustomerNeed ? cardCustomerNeed.value.trim() : '',
+        modelo_dispositivo: cardDeviceInterest.value.trim() || cardDeviceCanje.value.trim(),
         dispositivo_interes: cardDeviceInterest.value.trim(),
         dispositivo_canje: cardDeviceCanje.value.trim(),
         cotizacion_estimada: cardCotizacion.value.trim(),
@@ -948,74 +956,83 @@ export async function analyzeChatAndPopulateCard(phone, force = false) {
 }
 
 async function extractCrmDataFromChat(messages) {
-    const recent = messages.slice(-16);
+    const recent = messages.slice(-20);
     const transcript = recent.map(m => {
         const sender = m.es_mio ? (m.remitente_nombre || 'Asesor Estilo Apple') : 'Cliente';
         const text = m.contenido || (m.media_type ? `[${m.media_type}]` : '[archivo]');
         return `${sender}: ${text}`;
     }).join('\n');
 
-    const systemPrompt = `Eres un asistente de inteligencia artificial para el CRM de Estilo Apple SJ (tienda y servicio técnico oficial Apple en San Juan, Argentina).
-Tu objetivo es analizar la conversación entre un cliente y el asesor comercial/técnico y extraer estructuradamente la información para completar la Ficha del Cliente.
+    const clientNameHint = activeContact?.contact_name || (cardClientName ? cardClientName.value : '');
 
-Debes responder ÚNICAMENTE un objeto JSON válido con los siguientes campos:
-{
-  "nombre": "Nombre del cliente si fue mencionado en el chat o en saludos (ej: 'Daiana')",
-  "dispositivo_interes": "Dispositivo o servicio buscado por el cliente (ej: 'Reparación iPhone 13 - Parlante Auricular' o 'iPhone 15 Pro')",
-  "dispositivo_canje": "Dispositivo actual que el cliente entrega para canje o para reparar en el laboratorio (ej: 'iPhone 13')",
-  "cotizacion_estimada": "Valor cotizado, presupuesto, diagnóstico o seña acordada (ej: 'Diagnóstico $20.000 bonificable')",
-  "etiquetas": ["Servicio Técnico", "Presupuestado", "Local Patio San Ignacio"], // Selecciona entre: "Plan Canje", "Venta Nueva", "Usado Seleccionado", "Servicio Técnico", "VIP", "Presupuestado", "Seña Recibida", "Local Patio San Ignacio"
-  "notas": "Resumen conciso y profesional de 1 a 2 oraciones con el contexto del cliente, falla o equipo buscado y próximos pasos acordados."
-}
-No agregues explicaciones fuera del bloque JSON.`;
+    try {
+        // Invocación oficial a la Edge Function de Supabase desplegada 'analizar-chat-crm'
+        const { data, error } = await supabase.functions.invoke('analizar-chat-crm', {
+            body: {
+                transcript: transcript,
+                phone: activeChatPhone,
+                cliente_nombre: clientNameHint
+            }
+        });
 
-    const payload = {
-        model: 'gpt-4o-mini',
-        messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Analiza esta conversación de WhatsApp y extrae los datos de la ficha comercial:\n\n${transcript}` }
-        ],
-        temperature: 0.1
-    };
+        if (error) {
+            console.warn('Advertencia invocando Edge Function analizar-chat-crm:', error);
+            throw error;
+        }
 
-    const res = await fetch('/api/growy-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
+        if (data && data.data) {
+            return data.data;
+        }
+        return data;
+    } catch (edgeErr) {
+        console.warn('Fallback directo a la URL de la Edge Function analizar-chat-crm...', edgeErr);
+        const fnUrl = `${CONFIG.supabase.url}/functions/v1/analizar-chat-crm`;
+        const res = await fetch(fnUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': CONFIG.supabase.anonKey,
+                'Authorization': `Bearer ${CONFIG.supabase.anonKey}`
+            },
+            body: JSON.stringify({
+                transcript: transcript,
+                phone: activeChatPhone,
+                cliente_nombre: clientNameHint
+            })
+        });
 
-    if (!res.ok) {
-        throw new Error(`Error en API: ${res.statusText}`);
+        if (!res.ok) {
+            throw new Error(`Error en Edge Function analizar-chat-crm: ${res.statusText}`);
+        }
+
+        const resData = await res.json();
+        return resData.data || resData;
     }
-
-    const data = await res.json();
-    const rawContent = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
-    if (!rawContent) return null;
-
-    const cleanJson = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
 }
 
 async function applyAiExtractedData(data, phone) {
     if (!data || !phone) return;
 
-    if (data.nombre) {
+    if (cardCustomerNeed && (data.necesidad_cliente || data.interes)) {
+        cardCustomerNeed.value = data.necesidad_cliente || data.interes;
+    }
+    if (data.nombre && cardClientName) {
         cardClientName.value = data.nombre;
     }
-    if (data.dispositivo_interes) {
+    if (data.dispositivo_interes && cardDeviceInterest) {
         cardDeviceInterest.value = data.dispositivo_interes;
     }
-    if (data.dispositivo_canje) {
+    if (data.dispositivo_canje && cardDeviceCanje) {
         cardDeviceCanje.value = data.dispositivo_canje;
     }
-    if (data.cotizacion_estimada) {
+    if (data.cotizacion_estimada && cardCotizacion) {
         cardCotizacion.value = data.cotizacion_estimada;
     }
-    if (data.notas) {
+    if (data.notas && cardNotes) {
         cardNotes.value = data.notas;
     }
 
-    if (Array.isArray(data.etiquetas)) {
+    if (Array.isArray(data.etiquetas) && tagsSelectorGrid) {
         tagsSelectorGrid.querySelectorAll('.tag-chip').forEach(btn => {
             const tag = btn.getAttribute('data-tag');
             const shouldBeActive = data.etiquetas.includes(tag);
@@ -1024,17 +1041,21 @@ async function applyAiExtractedData(data, phone) {
     }
 
     const selectedTags = [];
-    tagsSelectorGrid.querySelectorAll('.tag-chip.active').forEach(btn => {
-        selectedTags.push(btn.getAttribute('data-tag'));
-    });
+    if (tagsSelectorGrid) {
+        tagsSelectorGrid.querySelectorAll('.tag-chip.active').forEach(btn => {
+            selectedTags.push(btn.getAttribute('data-tag'));
+        });
+    }
 
     const cardData = {
-        nombre: cardClientName.value.trim(),
-        modelo_dispositivo: cardDeviceInterest.value.trim() || cardDeviceCanje.value.trim(),
-        dispositivo_interes: cardDeviceInterest.value.trim(),
-        dispositivo_canje: cardDeviceCanje.value.trim(),
-        cotizacion_estimada: cardCotizacion.value.trim(),
-        notas: cardNotes.value.trim(),
+        nombre: cardClientName ? cardClientName.value.trim() : (data.nombre || ''),
+        interes: cardCustomerNeed ? cardCustomerNeed.value.trim() : (data.necesidad_cliente || ''),
+        necesidad_cliente: cardCustomerNeed ? cardCustomerNeed.value.trim() : (data.necesidad_cliente || ''),
+        modelo_dispositivo: (cardDeviceInterest ? cardDeviceInterest.value.trim() : '') || (cardDeviceCanje ? cardDeviceCanje.value.trim() : ''),
+        dispositivo_interes: cardDeviceInterest ? cardDeviceInterest.value.trim() : '',
+        dispositivo_canje: cardDeviceCanje ? cardDeviceCanje.value.trim() : '',
+        cotizacion_estimada: cardCotizacion ? cardCotizacion.value.trim() : '',
+        notas: cardNotes ? cardNotes.value.trim() : '',
         etiquetas: selectedTags
     };
 

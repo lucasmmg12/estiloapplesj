@@ -6,10 +6,19 @@ import CONFIG from '../config.js';
 
 import { createClient } from '@supabase/supabase-js';
 
-// Inicializar cliente de Supabase con soporte para Vite o CDN global
-const supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
-    ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
-    : createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+// Inicializar cliente singleton de Supabase con soporte para Vite o CDN global
+let _supabase;
+if (typeof window !== 'undefined' && window.__estiloSupabaseSingleton) {
+    _supabase = window.__estiloSupabaseSingleton;
+} else {
+    _supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
+        ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
+        : createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+    if (typeof window !== 'undefined') {
+        window.__estiloSupabaseSingleton = _supabase;
+    }
+}
+const supabase = _supabase;
 
 // ============================================
 // Funciones de Clientes

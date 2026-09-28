@@ -1162,8 +1162,8 @@ body {
 }
 
 /* ==========================================================================
-   COLUMNA 1: FICHA COMERCIAL CRM DEL CLIENTE (A LA IZQUIERDA DE TODO)
-   Desplegable y colapsable con transición suave 60fps
+   COLUMNA 3: FICHA COMERCIAL CRM DEL CLIENTE (A LA DERECHA DE TODO)
+   Desplegable y colapsable hacia la derecha con animación 60fps
    ========================================================================== */
 .crm-details-sidebar {
     width: var(--sidebar-right-width);
@@ -1171,8 +1171,8 @@ body {
     max-width: 360px;
     height: 100%;
     background: #FFFFFF;
-    border-right: 1px solid var(--border-light);
-    border-left: none;
+    border-left: 1px solid var(--border-light);
+    border-right: none;
     display: flex;
     flex-direction: column;
     z-index: 25;
@@ -1197,7 +1197,7 @@ body {
     opacity: 0 !important;
     pointer-events: none !important;
     visibility: hidden !important;
-    transform: translateX(-100%);
+    transform: translateX(100%);
 }
 
 .sidebar-header-lead {
@@ -1369,6 +1369,44 @@ body {
 .details-section.section-highlight {
     background: #FFFDF9;
     border-color: #FDE68A;
+}
+
+.details-section.section-intent-highlight {
+    background: #F0FDF4;
+    border: 1.5px solid #86EFAC;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+}
+
+.details-section.section-intent-highlight:focus-within {
+    border-color: #10B981;
+    background: #FFFFFF;
+}
+
+.ai-badge-chip {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+#cardCustomerNeed {
+    font-weight: 500;
+    color: #064E3B;
+    background: #FFFFFF;
+    border: 1px solid #A7F3D0;
+    resize: vertical;
+    min-height: 48px;
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+#cardCustomerNeed:focus {
+    border-color: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .section-title {

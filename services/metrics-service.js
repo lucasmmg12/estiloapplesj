@@ -9,12 +9,7 @@
  * 4. Gasto acumulado y proyectado mensual a razón de $0.026 USD por mensaje enviado.
  */
 
-import { createClient } from '@supabase/supabase-js';
-import CONFIG from '../config.js';
-
-const supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
-    ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
-    : createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+import { supabase } from './supabase-client.js';
 
 export const COST_PER_SENT_MESSAGE_USD = 0.026;
 export const DEFAULT_USD_ARS_RATE = 1485;
