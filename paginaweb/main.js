@@ -682,7 +682,8 @@ function setupNavigation() {
 }
 
 // ==========================================================================
-// SCROLL-TRIGGERED KEYNOTE VIDEO SCRUBBER (Mobile-First Full Background Video)
+// ==========================================================================
+// SCROLL-TRIGGERED KEYNOTE VIDEO EXPERIENCE (Mobile-First Apple Keynote Background)
 // ==========================================================================
 
 function setupScrollVideoKeynote() {
@@ -697,40 +698,45 @@ function setupScrollVideoKeynote() {
 
   if (!heroSection || !video1 || !video2 || !video3) return;
 
-  // 1. Initial video setup - Prime all 3 videos for instant playback
-  [video1, video2, video3].forEach((v, idx) => {
+  const allVideos = [video1, video2, video3];
+
+  // 1. Initial video setup - Configure inline mobile attributes
+  allVideos.forEach(v => {
     v.muted = true;
+    v.defaultMuted = true;
     v.playsInline = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
-    v.currentTime = 0.05;
-    if (idx === 0) {
-      v.play().catch(() => {});
-    }
+    v.setAttribute('muted', '');
+    v.setAttribute('loop', '');
+    v.setAttribute('autoplay', '');
   });
 
-  // Mobile audio/interaction unlock
-  let hasPrimed = false;
-  const primeMobile = () => {
-    if (hasPrimed) return;
-    hasPrimed = true;
-    [video1, video2, video3].forEach(v => {
-      try {
-        const p = v.play();
-        if (p !== undefined) {
-          p.then(() => v.pause()).catch(() => {});
-        }
-      } catch (e) {}
-    });
-    window.removeEventListener('touchstart', primeMobile);
-    window.removeEventListener('scroll', primeMobile);
+  const playVideoSafe = (v) => {
+    if (!v) return;
+    const p = v.play();
+    if (p !== undefined) {
+      p.catch(() => {});
+    }
   };
-  window.addEventListener('touchstart', primeMobile, { passive: true });
-  window.addEventListener('scroll', primeMobile, { passive: true });
+
+  const startAll = () => {
+    allVideos.forEach(v => playVideoSafe(v));
+  };
+
+  startAll();
+
+  // Mobile gesture unlock (ensures instant playback even in Low Power Mode / iOS battery saver)
+  const unlockVideos = () => {
+    startAll();
+  };
+  window.addEventListener('touchstart', unlockVideos, { passive: true, once: true });
+  window.addEventListener('pointerdown', unlockVideos, { passive: true, once: true });
+  window.addEventListener('scroll', unlockVideos, { passive: true, once: true });
 
   let targetProgress = 0;
   let currentProgress = 0;
-  const LERP_FACTOR = 0.14; // Smooth fluid Joby easing
+  const LERP_FACTOR = 0.16; // Fluid Apple-style interpolation
 
   function calculateProgress() {
     const rect = heroSection.getBoundingClientRect();
@@ -748,12 +754,22 @@ function setupScrollVideoKeynote() {
   const PHASES = [
     { threshold: 0.30, label: '01 / CÁMARA FUSION 48MP & ZOOM 5X' },
     { threshold: 0.49, label: '02 / TITANIO GRADO 5 & USB-C 10 GB/S' },
-    { threshold: 0.68, label: '03 / PANTALLA SUPER RETINA XDR & PROMOTION' },
+    { threshold: 0.69, label: '03 / PANTALLA SUPER RETINA XDR & PROMOTION' },
     { threshold: 0.85, label: '04 / LABORATORIO TÉCNICO & MICROELECTRÓNICA' },
     { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
-  // 2. Animation loop
+  // Pause videos when switching tabs to preserve device performance
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      allVideos.forEach(v => { if (!v.paused) v.pause(); });
+    } else {
+      calculateProgress();
+      startAll();
+    }
+  });
+
+  // 2. Main Animation loop
   function scrubLoop() {
     const diff = targetProgress - currentProgress;
     if (Math.abs(diff) > 0.0002) {
@@ -762,55 +778,48 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // A. Crossfade & Scrub Videos (3 Videos sequence: 0-31% -> 31-68% -> 68-100%)
-    const T1 = 0.31;
-    const T2 = 0.68;
-
-    if (currentProgress < T1) {
-      if (!video1.classList.contains('active')) {
-        video1.classList.add('active');
-        video2.classList.remove('active');
-        video3.classList.remove('active');
-      }
-
-      const p1 = currentProgress / T1;
-      const duration1 = video1.duration || 9.0;
-      const targetTime1 = Math.min(duration1 - 0.05, Math.max(0.01, p1 * duration1));
-
-      if (Math.abs(video1.currentTime - targetTime1) > 0.03) {
-        video1.currentTime = targetTime1;
-      }
-    } else if (currentProgress < T2) {
-      if (!video2.classList.contains('active')) {
-        video2.classList.add('active');
-        video1.classList.remove('active');
-        video3.classList.remove('active');
-      }
-
-      const p2 = (currentProgress - T1) / (T2 - T1);
-      const duration2 = video2.duration || 9.0;
-      const targetTime2 = Math.min(duration2 - 0.05, Math.max(0.01, p2 * duration2));
-
-      if (Math.abs(video2.currentTime - targetTime2) > 0.03) {
-        video2.currentTime = targetTime2;
-      }
+    // A. Crossfade Active Video Based on Phase
+    // Video 1 (0.00 - 0.49): Cámara Fusion & Titanio Aeroespacial (Slides 1 & 2)
+    // Video 2 (0.49 - 0.69): Display Super Retina XDR & Dynamic Island (Slide 3)
+    // Video 3 (0.69 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5)
+    let targetVideoIdx = 0;
+    if (currentProgress < 0.49) {
+      targetVideoIdx = 0;
+    } else if (currentProgress < 0.69) {
+      targetVideoIdx = 1;
     } else {
-      if (!video3.classList.contains('active')) {
-        video3.classList.add('active');
-        video1.classList.remove('active');
-        video2.classList.remove('active');
+      targetVideoIdx = 2;
+    }
+
+    allVideos.forEach((v, idx) => {
+      if (idx === targetVideoIdx) {
+        if (!v.classList.contains('active')) {
+          v.classList.add('active');
+        }
+        if (v.paused) {
+          playVideoSafe(v);
+        }
+      } else {
+        if (v.classList.contains('active')) {
+          v.classList.remove('active');
+        }
       }
+    });
 
-      const p3 = (currentProgress - T2) / (1 - T2);
-      const duration3 = video3.duration || 10.0;
-      const targetTime3 = Math.min(duration3 - 0.05, Math.max(0.01, p3 * duration3));
-
-      if (Math.abs(video3.currentTime - targetTime3) > 0.03) {
-        video3.currentTime = targetTime3;
+    // Battery & performance safeguard: pause when hero section is fully scrolled off-screen
+    const rect = heroSection.getBoundingClientRect();
+    const isHeroInViewport = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (!isHeroInViewport) {
+      allVideos.forEach(v => {
+        if (!v.paused) v.pause();
+      });
+    } else {
+      if (allVideos[targetVideoIdx] && allVideos[targetVideoIdx].paused) {
+        playVideoSafe(allVideos[targetVideoIdx]);
       }
     }
 
-    // B. Hero Title Box Fade-out (Joby "Skip traffic" pattern)
+    // B. Hero Title Box Fade-out
     if (titleBox) {
       if (currentProgress < 0.10) {
         const titleOpacity = 1 - (currentProgress / 0.10);

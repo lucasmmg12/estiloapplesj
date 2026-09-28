@@ -360,9 +360,10 @@ img {
   height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   background: #000000;
   pointer-events: none;
+  will-change: opacity;
 }
 
 .joby-video.active {
@@ -567,7 +568,7 @@ img {
 /* Mobile Responsive Optimization for Joby Hero */
 @media (max-width: 768px) {
   .joby-hero-section {
-    height: 480vh;
+    height: 440vh;
   }
 
   .joby-media-wrapper {
@@ -580,31 +581,31 @@ img {
     object-fit: contain;
     width: 100%;
     height: 100%;
-    max-height: 68vh;
-    top: 40%;
+    max-height: 58vh;
+    top: 36%;
     left: 50%;
     transform: translate(-50%, -50%);
   }
 
   /* Cinematic mobile vignette to blend video edges smoothly into black */
   .joby-media-overlay {
-    background: radial-gradient(circle at 50% 40%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.4) 85%, #000000 100%),
+    background: radial-gradient(circle at 50% 36%, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.45) 85%, #000000 100%),
                 linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 0%, transparent 20%, transparent 65%, #000000 92%);
   }
 
   .joby-hero-title-box {
-    top: -10%;
+    top: -8%;
     padding: 0 18px;
   }
 
   .joby-hero-title {
-    font-size: 2.2rem;
-    line-height: 1.1;
+    font-size: 2.1rem;
+    line-height: 1.12;
     margin-bottom: 12px;
   }
 
   .joby-hero-subtitle {
-    font-size: 0.92rem;
+    font-size: 0.90rem;
     line-height: 1.45;
     margin-bottom: 22px;
     padding: 0 4px;
@@ -614,12 +615,12 @@ img {
     top: auto !important;
     left: 14px !important;
     right: 14px !important;
-    bottom: 92px !important;
+    bottom: 84px !important;
     transform: translateY(16px) !important;
     max-width: calc(100% - 28px);
     padding: 16px 18px;
     border-radius: 18px;
-    background: rgba(14, 14, 18, 0.88);
+    background: rgba(14, 14, 18, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.14);
@@ -649,9 +650,26 @@ img {
     color: rgba(255, 255, 255, 0.75);
   }
 
+  .joby-slide-cta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+  }
+
+  .joby-slide-cta-group .btn-primary,
+  .joby-slide-cta-group .btn-secondary {
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 0.85rem;
+    text-align: center;
+    justify-content: center;
+  }
+
   .joby-bottom-bar {
     bottom: 16px;
-    width: calc(100% - 100px);
+    width: calc(100% - 40px);
     left: 20px;
     transform: none;
     align-items: flex-start;
@@ -659,10 +677,11 @@ img {
 
   .joby-progress-track {
     height: 2.5px;
+    width: 100%;
   }
 
   .joby-current-phase {
-    font-size: 0.62rem;
+    font-size: 0.60rem;
   }
 }
 
