@@ -27,7 +27,13 @@
         <img src="/logoestilo.png" alt="Estilo Apple SJ" class="brand-logo-img">
         <div class="brand-text">
           <span class="brand-name">ESTILO APPLE SJ</span>
-          <span class="brand-badge">San Juan · Equipos Oficiales</span>
+          <button type="button" class="brand-advisor-btn" data-open-advisor title="Chatear con el Asesor Online de Estilo Apple">
+            <span class="advisor-mini-avatar-wrap">
+              <img src="/avatar-asesor.png" alt="Avatar Asesor" class="advisor-mini-avatar-img">
+              <span class="advisor-mini-dot"></span>
+            </span>
+            <span class="advisor-mini-label">Asesor Online</span>
+          </button>
         </div>
       </div>
 
@@ -48,7 +54,8 @@
           <strong id="navDollarRate">$1.485</strong>
         </div>
 
-        <button type="button" class="btn-nav-whatsapp" id="btnNavAdvisor" title="Chatear con el Asesor Online">
+        <button type="button" class="btn-nav-whatsapp nav-advisor-desktop-only" id="btnNavAdvisor" data-open-advisor title="Chatear con el Asesor Online">
+          <img src="/avatar-asesor.png" alt="Asesor" style="width:18px;height:18px;border-radius:50%;object-fit:cover;">
           <span style="width:7px;height:7px;border-radius:50%;background:#30d158;box-shadow:0 0 6px #30d158;display:inline-block;"></span>
           <span>Asesor Online</span>
         </button>
@@ -724,19 +731,18 @@
 
   </main> <!-- End .main-content-flow -->
 
-  <!-- Floating WhatsApp Widget -->
+  <!-- Floating Asesor Online Widget -->
   <div class="floating-whatsapp">
     <div class="floating-whatsapp-bubble" data-open-advisor style="cursor: pointer;" title="Chatear con el Asesor Online">
-      💬 ¡Hola! ¿Buscás algún modelo en particular? (Chatear en vivo)
+      💬 ¡Hola! ¿Buscás algún modelo en particular? (Chatear con Asesor)
     </div>
-    <a href="https://api.whatsapp.com/send/?phone=5492643229503&text=Hola!%20Vi%20la%20p%C3%A1gina%20web%20y%20quiero%20consultar%20por%20un%20iPhone&type=phone_number&app_absent=0" 
-       target="_blank" 
-       class="floating-whatsapp-btn" 
-       title="Chatear por WhatsApp">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
-      </svg>
-    </a>
+    <button type="button" 
+       class="floating-whatsapp-btn floating-advisor-btn" 
+       data-open-advisor 
+       title="Chatear con el Asesor Online">
+      <img src="/avatar-asesor.png" alt="Asesor Online" class="floating-advisor-avatar-img">
+      <span class="floating-advisor-dot"></span>
+    </button>
   </div>
 
   <!-- Main JavaScript App Logic -->

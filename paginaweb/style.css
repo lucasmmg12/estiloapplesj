@@ -205,15 +205,73 @@ img {
   background: linear-gradient(135deg, #ffffff 40%, #e2c5b3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+}
+
+.brand-advisor-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  padding: 2px 8px 2px 4px;
+  background: rgba(92, 46, 46, 0.45);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 20px;
+  cursor: pointer;
+  width: fit-content;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(92, 46, 46, 0.3);
+}
+
+.brand-advisor-btn:hover {
+  background: rgba(122, 69, 69, 0.7);
+  border-color: rgba(212, 175, 55, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(122, 69, 69, 0.5);
+}
+
+.advisor-mini-avatar-wrap {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.advisor-mini-avatar-img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: block;
+}
+
+.advisor-mini-dot {
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #30D158;
+  border: 1.5px solid #3D1F1F;
+  box-shadow: 0 0 5px #30D158;
+  animation: pulse-dot 2s infinite;
+}
+
+.advisor-mini-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #f5e6d8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .brand-badge {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--brand-burgundy-glow);
-  color: #c9a882;
+  display: none;
 }
 
 .nav-links {
@@ -2857,8 +2915,51 @@ img {
   text-align: center;
 }
 
-/* Mobile Layout for Advisor */
+.advisor-header-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.floating-advisor-btn {
+  background: linear-gradient(135deg, #7A4545 0%, #5C2E2E 100%) !important;
+  border: 1.5px solid rgba(212, 175, 55, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(92, 46, 46, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  overflow: visible !important;
+  cursor: pointer;
+}
+
+.floating-advisor-avatar-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.floating-advisor-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #30D158;
+  border: 2px solid #5C2E2E;
+  box-shadow: 0 0 8px #30D158;
+  animation: pulse-dot 2s infinite;
+}
+
+/* Mobile Layout for Advisor & Navigation */
 @media (max-width: 768px) {
+  .nav-advisor-desktop-only {
+    display: none !important;
+  }
+
   .advisor-window {
     width: 100%;
     max-width: 100%;
@@ -2869,6 +2970,7 @@ img {
     border-bottom: none;
   }
 }
+
 
 
 

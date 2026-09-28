@@ -29,7 +29,7 @@ export class AdvisorUI {
                 <header class="advisor-header">
                     <div class="advisor-header-brand">
                         <div class="advisor-avatar">
-                            <span class="advisor-avatar-ea">EA</span>
+                            <img src="/avatar-asesor.png" alt="Asesor Online" class="advisor-header-avatar-img">
                             <span class="advisor-live-dot"></span>
                         </div>
                         <div>
