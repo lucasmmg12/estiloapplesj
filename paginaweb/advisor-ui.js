@@ -159,14 +159,17 @@ export class AdvisorUI {
     open() {
         this.isOpen = true;
         document.getElementById('advisorModal')?.classList.add('active');
+        document.body.style.overflow = 'hidden';
         setTimeout(() => {
             document.getElementById('advisorInput')?.focus();
+            this.scrollToBottom();
         }, 200);
     }
 
     close() {
         this.isOpen = false;
         document.getElementById('advisorModal')?.classList.remove('active');
+        document.body.style.overflow = '';
     }
 
     async manejarEnvio() {
