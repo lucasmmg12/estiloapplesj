@@ -8,6 +8,7 @@ import * as builderbotAPI from './services/builderbot-api.js';
 import * as erpService from './services/admin-finance.js';
 import * as competitorService from './services/competitors.js';
 import { initErrorMonitoring } from './services/error-monitor.js';
+import { growyUI } from './services/growy-ui.js';
 
 // ============================================
 // ESTADO GLOBAL
@@ -55,6 +56,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Inicializar Inteligencia Competitiva
     await competitorService.initCompetitors();
+
+    // Inicializar Growy AI Copilot
+    growyUI.init();
+    window.growyUI = growyUI;
 
     // Configurar suscripciones en tiempo real
     configurarSuscripciones();

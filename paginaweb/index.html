@@ -48,14 +48,10 @@
           <strong id="navDollarRate">$1.485</strong>
         </div>
 
-        <a href="https://api.whatsapp.com/send/?phone=5492643229503&text=Hola!%20Quiero%20asesoramiento%20sobre%20un%20iPhone%20en%20Estilo%20Apple%20SJ&type=phone_number&app_absent=0" 
-           target="_blank" 
-           class="btn-nav-whatsapp">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/>
-          </svg>
+        <button type="button" class="btn-nav-whatsapp" id="btnNavAdvisor" title="Chatear con el Asesor Online">
+          <span style="width:7px;height:7px;border-radius:50%;background:#30d158;box-shadow:0 0 6px #30d158;display:inline-block;"></span>
           <span>Asesor Online</span>
-        </a>
+        </button>
 
         <button class="menu-toggle" aria-label="Abrir menú">
           <span></span>
@@ -82,7 +78,6 @@
 
       <!-- Main Initial Title (Centered, visible at top, fades out upwards on scroll) -->
       <div class="joby-hero-title-box" id="jobyHeroTitleBox">
-        <span class="joby-hero-eyebrow">NUEVA GENERACIÓN · TITANIO FORJADO</span>
         <h1 class="joby-hero-title">iPhone 16 Pro.<br>Poder en estado puro.</h1>
         <p class="joby-hero-subtitle">
           Diseñado con titanio de grado aeroespacial, chip A18 Pro y la cámara más avanzada de Apple. 
@@ -721,8 +716,8 @@
 
   <!-- Floating WhatsApp Widget -->
   <div class="floating-whatsapp">
-    <div class="floating-whatsapp-bubble">
-      💬 ¡Hola! ¿Buscás algún modelo en particular?
+    <div class="floating-whatsapp-bubble" data-open-advisor style="cursor: pointer;" title="Chatear con el Asesor Online">
+      💬 ¡Hola! ¿Buscás algún modelo en particular? (Chatear en vivo)
     </div>
     <a href="https://api.whatsapp.com/send/?phone=5492643229503&text=Hola!%20Vi%20la%20p%C3%A1gina%20web%20y%20quiero%20consultar%20por%20un%20iPhone&type=phone_number&app_absent=0" 
        target="_blank" 

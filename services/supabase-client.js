@@ -299,6 +299,8 @@ export async function eliminarMensajeProgramado(id) {
     if (error) throw error;
 }
 
+export const eliminarSeguimiento = eliminarMensajeProgramado;
+
 // ============================================
 // ============================================
 // Funciones de Productos
@@ -812,4 +814,5 @@ export async function analizarHistorialIA(mensajes) {
     }
 }
 
+export { supabase };
 export default supabase;

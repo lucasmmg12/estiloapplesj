@@ -7,6 +7,7 @@
     <title>Estilo Apple SJ - Gestión de Conversaciones</title>
     <link rel="icon" type="image/png" href="public/logogrow.png">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="growy.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -55,6 +56,14 @@
                     Buscar...
                     <kbd
                         style="background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:#AEAEB2;">Ctrl+K</kbd>
+                </button>
+                <button id="btnOpenGrowyHeader" onclick="window.growyUI?.toggle()"
+                    style="display:flex;align-items:center;gap:0.45rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid rgba(212,175,55,0.45);background:linear-gradient(135deg, #5C2E2E 0%, #3D1F1F 100%);color:#FFFFFF;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;margin-left:0.5rem;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(61,31,31,0.35)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+                    <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#30D158;box-shadow:0 0 6px #30D158;"></span>
+                    Growy IA
+                    <kbd style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:#E8D5C4;">Ctrl+G</kbd>
                 </button>
             </div>
         </div>
@@ -3213,6 +3222,7 @@
             let selectedIndex = 0;
 
             const commands = [
+                { icon: '🤖', label: 'Growy AI Copilot', desc: 'Asistente de IA, consultas de datos y reportes PDF (Ctrl+G)', action: () => { window.growyUI?.toggle(); } },
                 { icon: '👥', label: 'Clientes', desc: 'Ver lista de clientes', action: () => { cambiarTab('conversaciones'); navTo('clientes'); } },
                 { icon: '💰', label: 'Ventas Financieras', desc: 'Dashboard de ventas', action: () => { cambiarTab('ventas-financieras'); navTo('ventas'); } },
                 { icon: '📉', label: 'Gastos Financieros', desc: 'Dashboard de gastos', action: () => { cambiarTab('gastos-financieros'); navTo('ventas'); } },

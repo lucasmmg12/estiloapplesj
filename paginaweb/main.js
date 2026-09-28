@@ -4,6 +4,7 @@
  */
 
 import CONFIG from '../config.js';
+import { advisorUI } from './advisor-ui.js';
 
 // Global State
 let currentDollarRate = 1485.0; // Fallback or Supabase fetched
@@ -307,7 +308,11 @@ function initApp() {
   setupTradeInCalculator();
   setupFaq();
 
-  // 3. Try to sync with Supabase in the background without blocking UI
+  // 3. Inicializar Asesor Online IA
+  advisorUI.init();
+  window.advisorUI = advisorUI;
+
+  // 4. Try to sync with Supabase in the background without blocking UI
   fetchLiveContext();
 }
 
