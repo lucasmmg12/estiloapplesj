@@ -525,6 +525,10 @@ img {
   will-change: opacity;
 }
 
+.joby-video.active {
+  opacity: 1;
+}
+
 /* Soft cinematic gradient vignette around phone like Joby & Apple */
 .joby-media-overlay {
   position: absolute;

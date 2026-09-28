@@ -693,6 +693,7 @@ class VideoScrubberController {
     this.isSeeking = false;
     this.pendingTime = null;
     this.currentOpacity = -1;
+    this.lastSeekTime = -1;
     this.watchdogTimer = null;
 
     if (!this.video) return;
@@ -726,8 +727,8 @@ class VideoScrubberController {
     // Keep safe margin from exact end to prevent decoder end-of-stream freeze
     const safeTime = Math.max(0.01, Math.min(dur - 0.08, targetTime));
 
-    // Skip redundant microscopic seeks to protect frame rate
-    if (Math.abs(this.video.currentTime - safeTime) < 0.02) {
+    // Skip redundant microscopic seeks to protect frame rate (only after at least 1 seek has occurred)
+    if (this.lastSeekTime !== -1 && Math.abs(this.lastSeekTime - safeTime) < 0.015) {
       return;
     }
 
@@ -738,6 +739,7 @@ class VideoScrubberController {
     }
 
     this.isSeeking = true;
+    this.lastSeekTime = safeTime;
 
     // Watchdog: reset seeking flag if browser fails to trigger 'seeked' within 200ms
     if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
@@ -750,14 +752,10 @@ class VideoScrubberController {
       }
     }, 200);
 
-    if ('fastSeek' in this.video) {
-      try {
-        this.video.fastSeek(safeTime);
-      } catch (e) {
-        this.video.currentTime = safeTime;
-      }
-    } else {
+    try {
       this.video.currentTime = safeTime;
+    } catch (e) {
+      this.isSeeking = false;
     }
   }
 
@@ -768,15 +766,10 @@ class VideoScrubberController {
     this.currentOpacity = clamped;
 
     this.video.style.opacity = clamped.toFixed(3);
-    if (clamped > 0.001) {
-      if (this.video.style.visibility !== 'visible') {
-        this.video.style.visibility = 'visible';
-        this.video.style.display = 'block';
-      }
+    if (clamped > 0.01) {
+      this.video.classList.add('active');
     } else {
-      if (this.video.style.visibility !== 'hidden') {
-        this.video.style.visibility = 'hidden';
-      }
+      this.video.classList.remove('active');
     }
   }
 }
@@ -796,8 +789,8 @@ function setupScrollVideoKeynote() {
   const allVideos = [video1, video2, video3];
   const knownDurations = [6.55, 6.55, 6.55];
 
-  // 1. Initial video setup - Configure inline attributes and preload buffers
-  allVideos.forEach(v => {
+  // 1. Initial video setup - Configure inline attributes and prime hardware decoders
+  allVideos.forEach((v, index) => {
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
@@ -805,8 +798,19 @@ function setupScrollVideoKeynote() {
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
     v.setAttribute('preload', 'auto');
-    v.currentTime = 0.01;
-    v.load();
+
+    // Prime the video decoder so the first frame is painted immediately
+    const playPromise = v.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        v.pause();
+        v.currentTime = 0.01;
+      }).catch(() => {
+        v.currentTime = 0.01;
+      });
+    } else {
+      v.currentTime = 0.01;
+    }
   });
 
   const scrubber1 = new VideoScrubberController(video1, knownDurations[0]);
@@ -818,7 +822,10 @@ function setupScrollVideoKeynote() {
   scrubber2.setOpacity(0);
   scrubber3.setOpacity(0);
 
-  // Mobile media pipeline unlock: iOS Safari & Chrome Mobile require initial gesture to prime hardware decoder
+  // Initial seek on Video 1 to ensure frame is painted right now
+  scrubber1.seekTo(0.01);
+
+  // Mobile media pipeline unlock: touch/scroll gesture fallback
   let hasPrimed = false;
   const primeMobile = () => {
     if (hasPrimed) return;
@@ -882,10 +889,20 @@ function setupScrollVideoKeynote() {
     const dur2 = video2.duration || knownDurations[1];
     const dur3 = video3.duration || knownDurations[2];
 
+    // Smart Autoplay / Scrub Transition:
+    // If at top of page, let video 1 play on gentle loop; when scrolling down, pause and scrub precisely.
+    if (currentProgress > 0.01 && !video1.paused) {
+      try { video1.pause(); } catch (e) {}
+    } else if (currentProgress <= 0.01 && video1.paused) {
+      try { video1.play(); } catch (e) {}
+    }
+
     // --- VIDEO 1 ---
     if (currentProgress <= 0.52) {
       const p1 = Math.min(1, Math.max(0, currentProgress / 0.50));
-      scrubber1.seekTo(p1 * dur1);
+      if (currentProgress > 0.01) {
+        scrubber1.seekTo(p1 * dur1);
+      }
 
       if (currentProgress < 0.44) {
         scrubber1.setOpacity(1);
