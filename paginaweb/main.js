@@ -689,15 +689,16 @@ function setupScrollVideoKeynote() {
   const heroSection = document.getElementById('jobyHeroSection');
   const video1 = document.getElementById('jobyVideo1');
   const video2 = document.getElementById('jobyVideo2');
+  const video3 = document.getElementById('jobyVideo3');
   const titleBox = document.getElementById('jobyHeroTitleBox');
   const slides = document.querySelectorAll('.joby-slide-item');
   const progressFill = document.getElementById('jobyProgressFill');
   const phaseLabel = document.getElementById('jobyPhaseLabel');
 
-  if (!heroSection || !video1 || !video2) return;
+  if (!heroSection || !video1 || !video2 || !video3) return;
 
-  // 1. Initial video setup - Prime both videos for instant playback
-  [video1, video2].forEach((v, idx) => {
+  // 1. Initial video setup - Prime all 3 videos for instant playback
+  [video1, video2, video3].forEach((v, idx) => {
     v.muted = true;
     v.playsInline = true;
     v.setAttribute('playsinline', '');
@@ -713,7 +714,7 @@ function setupScrollVideoKeynote() {
   const primeMobile = () => {
     if (hasPrimed) return;
     hasPrimed = true;
-    [video1, video2].forEach(v => {
+    [video1, video2, video3].forEach(v => {
       try {
         const p = v.play();
         if (p !== undefined) {
@@ -745,10 +746,11 @@ function setupScrollVideoKeynote() {
 
   // Scrollytelling Phase Labels
   const PHASES = [
-    { threshold: 0.33, label: '01 / ARQUITECTURA & CÁMARA FUSION 48MP' },
-    { threshold: 0.52, label: '02 / TITANIO GRADO 5 & USB-C 10 GB/S' },
-    { threshold: 0.75, label: '03 / BOTÓN DE ACCIÓN & PERFIL SLIM' },
-    { threshold: 1.01, label: '04 / PANTALLA SUPER RETINA XDR & DYNAMIC ISLAND' }
+    { threshold: 0.30, label: '01 / CÁMARA FUSION 48MP & ZOOM 5X' },
+    { threshold: 0.49, label: '02 / TITANIO GRADO 5 & USB-C 10 GB/S' },
+    { threshold: 0.68, label: '03 / PANTALLA SUPER RETINA XDR & PROMOTION' },
+    { threshold: 0.85, label: '04 / LABORATORIO TÉCNICO & MICROELECTRÓNICA' },
+    { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
   // 2. Animation loop
@@ -760,34 +762,51 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // A. Crossfade & Scrub Videos (Transition point at 52%)
-    const TRANSITION_POINT = 0.52;
+    // A. Crossfade & Scrub Videos (3 Videos sequence: 0-31% -> 31-68% -> 68-100%)
+    const T1 = 0.31;
+    const T2 = 0.68;
 
-    if (currentProgress < TRANSITION_POINT) {
+    if (currentProgress < T1) {
       if (!video1.classList.contains('active')) {
         video1.classList.add('active');
         video2.classList.remove('active');
+        video3.classList.remove('active');
       }
 
-      const p1 = currentProgress / TRANSITION_POINT;
+      const p1 = currentProgress / T1;
       const duration1 = video1.duration || 9.0;
       const targetTime1 = Math.min(duration1 - 0.05, Math.max(0.01, p1 * duration1));
 
       if (Math.abs(video1.currentTime - targetTime1) > 0.03) {
         video1.currentTime = targetTime1;
       }
-    } else {
+    } else if (currentProgress < T2) {
       if (!video2.classList.contains('active')) {
         video2.classList.add('active');
         video1.classList.remove('active');
+        video3.classList.remove('active');
       }
 
-      const p2 = (currentProgress - TRANSITION_POINT) / (1 - TRANSITION_POINT);
+      const p2 = (currentProgress - T1) / (T2 - T1);
       const duration2 = video2.duration || 9.0;
       const targetTime2 = Math.min(duration2 - 0.05, Math.max(0.01, p2 * duration2));
 
       if (Math.abs(video2.currentTime - targetTime2) > 0.03) {
         video2.currentTime = targetTime2;
+      }
+    } else {
+      if (!video3.classList.contains('active')) {
+        video3.classList.add('active');
+        video1.classList.remove('active');
+        video2.classList.remove('active');
+      }
+
+      const p3 = (currentProgress - T2) / (1 - T2);
+      const duration3 = video3.duration || 10.0;
+      const targetTime3 = Math.min(duration3 - 0.05, Math.max(0.01, p3 * duration3));
+
+      if (Math.abs(video3.currentTime - targetTime3) > 0.03) {
+        video3.currentTime = targetTime3;
       }
     }
 
