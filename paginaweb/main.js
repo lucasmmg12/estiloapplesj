@@ -683,7 +683,103 @@ function setupNavigation() {
 // ==========================================================================
 // ==========================================================================
 // SCROLL-TRIGGERED KEYNOTE VIDEO SCRUBBER (Mobile-First Apple Keynote Background)
+// High-Performance 60FPS Video Scrubber with Asynchronous Seek Queue & Overlapping Crossfade
 // ==========================================================================
+
+class VideoScrubberController {
+  constructor(videoEl, fallbackDuration = 6.55) {
+    this.video = videoEl;
+    this.fallbackDuration = fallbackDuration;
+    this.isSeeking = false;
+    this.pendingTime = null;
+    this.currentOpacity = -1;
+    this.watchdogTimer = null;
+
+    if (!this.video) return;
+
+    // Hardware decoder callback: when a frame finishes rendering, dequeue the next requested scroll time
+    this.video.addEventListener('seeked', () => {
+      this.isSeeking = false;
+      if (this.watchdogTimer) {
+        clearTimeout(this.watchdogTimer);
+        this.watchdogTimer = null;
+      }
+      if (this.pendingTime !== null) {
+        const nextTime = this.pendingTime;
+        this.pendingTime = null;
+        this.seekTo(nextTime);
+      }
+    });
+
+    this.video.addEventListener('error', () => {
+      this.isSeeking = false;
+      this.pendingTime = null;
+    });
+  }
+
+  seekTo(targetTime) {
+    if (!this.video) return;
+    const dur = (isFinite(this.video.duration) && this.video.duration > 0)
+      ? this.video.duration
+      : this.fallbackDuration;
+
+    // Keep safe margin from exact end to prevent decoder end-of-stream freeze
+    const safeTime = Math.max(0.01, Math.min(dur - 0.08, targetTime));
+
+    // Skip redundant microscopic seeks to protect frame rate
+    if (Math.abs(this.video.currentTime - safeTime) < 0.02) {
+      return;
+    }
+
+    if (this.isSeeking) {
+      // Hardware decoder is busy rendering previous frame; queue the freshest scroll target
+      this.pendingTime = safeTime;
+      return;
+    }
+
+    this.isSeeking = true;
+
+    // Watchdog: reset seeking flag if browser fails to trigger 'seeked' within 200ms
+    if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
+    this.watchdogTimer = setTimeout(() => {
+      this.isSeeking = false;
+      if (this.pendingTime !== null) {
+        const next = this.pendingTime;
+        this.pendingTime = null;
+        this.seekTo(next);
+      }
+    }, 200);
+
+    if ('fastSeek' in this.video) {
+      try {
+        this.video.fastSeek(safeTime);
+      } catch (e) {
+        this.video.currentTime = safeTime;
+      }
+    } else {
+      this.video.currentTime = safeTime;
+    }
+  }
+
+  setOpacity(opacity) {
+    if (!this.video) return;
+    const clamped = Math.max(0, Math.min(1, opacity));
+    if (Math.abs(this.currentOpacity - clamped) < 0.005) return;
+    this.currentOpacity = clamped;
+
+    this.video.style.opacity = clamped.toFixed(3);
+    if (clamped > 0.001) {
+      if (this.video.style.visibility !== 'visible') {
+        this.video.style.visibility = 'visible';
+        this.video.style.display = 'block';
+      }
+    } else {
+      if (this.video.style.visibility !== 'hidden') {
+        this.video.style.visibility = 'hidden';
+      }
+    }
+  }
+}
 
 function setupScrollVideoKeynote() {
   const heroSection = document.getElementById('jobyHeroSection');
@@ -713,7 +809,16 @@ function setupScrollVideoKeynote() {
     v.load();
   });
 
-  // Mobile media pipeline unlock: iOS Safari & Chrome Mobile require initial touch to unlock hardware seeking
+  const scrubber1 = new VideoScrubberController(video1, knownDurations[0]);
+  const scrubber2 = new VideoScrubberController(video2, knownDurations[1]);
+  const scrubber3 = new VideoScrubberController(video3, knownDurations[2]);
+
+  // Initial visibility: Video 1 visible at start, others hidden
+  scrubber1.setOpacity(1);
+  scrubber2.setOpacity(0);
+  scrubber3.setOpacity(0);
+
+  // Mobile media pipeline unlock: iOS Safari & Chrome Mobile require initial gesture to prime hardware decoder
   let hasPrimed = false;
   const primeMobile = () => {
     if (hasPrimed) return;
@@ -733,7 +838,7 @@ function setupScrollVideoKeynote() {
 
   let targetProgress = 0;
   let currentProgress = 0;
-  const LERP_FACTOR = 0.16; // Fluid Apple-style interpolation
+  const LERP_FACTOR = 0.12; // Butter-smooth Apple-grade inertia
 
   function calculateProgress() {
     const rect = heroSection.getBoundingClientRect();
@@ -756,66 +861,77 @@ function setupScrollVideoKeynote() {
     { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
-  function scrubVideo(v, targetTime, fallbackDuration) {
-    if (!v) return;
-    const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : fallbackDuration;
-    const safeTime = Math.max(0.01, Math.min(dur - 0.05, targetTime));
-
-    if (Math.abs(v.currentTime - safeTime) > 0.03) {
-      if (!v.seeking) {
-        if ('fastSeek' in v) {
-          try {
-            v.fastSeek(safeTime);
-          } catch (e) {
-            v.currentTime = safeTime;
-          }
-        } else {
-          v.currentTime = safeTime;
-        }
-      }
-    }
-  }
-
-  // 2. Main Animation loop
+  // 2. Main 60fps Animation loop
   function scrubLoop() {
     const diff = targetProgress - currentProgress;
-    if (Math.abs(diff) > 0.0002) {
+    if (Math.abs(diff) > 0.0001) {
       currentProgress += diff * LERP_FACTOR;
     } else {
       currentProgress = targetProgress;
     }
 
-    // A. Crossfade & Scrub Videos synchronized with scroll
-    // Phase 1 (0.00 - 0.49): Cámara Fusion & Titanio Aeroespacial (Slides 1 & 2)
-    // Phase 2 (0.49 - 0.69): Display Super Retina XDR & Dynamic Island (Slide 3)
-    // Phase 3 (0.69 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5)
-    const T1 = 0.49;
-    const T2 = 0.69;
+    // A. CONTINUOUS OVERLAPPING TIMELINES & CROSSFADES
+    // Eliminates all freezes, decoder stalls, and black frames in the middle.
+    //
+    // Timeline breakdown:
+    // Video 1 (Cámara & Titanio): 0.00 - 0.52 (scrubs 0.00 - 0.50, crossfades out 0.44 - 0.52)
+    // Video 2 (Display & Dynamic Island): 0.44 - 0.74 (crossfades in 0.44 - 0.52, scrubs 0.44 - 0.72, crossfades out 0.66 - 0.74)
+    // Video 3 (Laboratorio & Servicio): 0.66 - 1.00 (crossfades in 0.66 - 0.74, scrubs 0.66 - 0.98)
 
-    if (currentProgress < T1) {
-      if (!video1.classList.contains('active')) {
-        video1.classList.add('active');
-        video2.classList.remove('active');
-        video3.classList.remove('active');
+    const dur1 = video1.duration || knownDurations[0];
+    const dur2 = video2.duration || knownDurations[1];
+    const dur3 = video3.duration || knownDurations[2];
+
+    // --- VIDEO 1 ---
+    if (currentProgress <= 0.52) {
+      const p1 = Math.min(1, Math.max(0, currentProgress / 0.50));
+      scrubber1.seekTo(p1 * dur1);
+
+      if (currentProgress < 0.44) {
+        scrubber1.setOpacity(1);
+      } else {
+        // Crossfade out into Video 2
+        const fadeOut = 1 - ((currentProgress - 0.44) / 0.08);
+        scrubber1.setOpacity(fadeOut);
       }
-      const p1 = Math.min(1, Math.max(0, currentProgress / T1));
-      scrubVideo(video1, p1 * (video1.duration || knownDurations[0]), knownDurations[0]);
-    } else if (currentProgress < T2) {
-      if (!video2.classList.contains('active')) {
-        video2.classList.add('active');
-        video1.classList.remove('active');
-        video3.classList.remove('active');
-      }
-      const p2 = Math.min(1, Math.max(0, (currentProgress - T1) / (T2 - T1)));
-      scrubVideo(video2, p2 * (video2.duration || knownDurations[1]), knownDurations[1]);
     } else {
-      if (!video3.classList.contains('active')) {
-        video3.classList.add('active');
-        video1.classList.remove('active');
-        video2.classList.remove('active');
+      scrubber1.setOpacity(0);
+    }
+
+    // --- VIDEO 2 ---
+    if (currentProgress >= 0.44 && currentProgress <= 0.74) {
+      const p2 = Math.min(1, Math.max(0, (currentProgress - 0.44) / 0.28));
+      scrubber2.seekTo(p2 * dur2);
+
+      if (currentProgress < 0.52) {
+        // Crossfade in from Video 1
+        const fadeIn = (currentProgress - 0.44) / 0.08;
+        scrubber2.setOpacity(fadeIn);
+      } else if (currentProgress <= 0.66) {
+        scrubber2.setOpacity(1);
+      } else {
+        // Crossfade out into Video 3
+        const fadeOut = 1 - ((currentProgress - 0.66) / 0.08);
+        scrubber2.setOpacity(fadeOut);
       }
-      const p3 = Math.min(1, Math.max(0, (currentProgress - T2) / (1 - T2)));
-      scrubVideo(video3, p3 * (video3.duration || knownDurations[2]), knownDurations[2]);
+    } else {
+      scrubber2.setOpacity(0);
+    }
+
+    // --- VIDEO 3 ---
+    if (currentProgress >= 0.66) {
+      const p3 = Math.min(1, Math.max(0, (currentProgress - 0.66) / 0.32));
+      scrubber3.seekTo(p3 * dur3);
+
+      if (currentProgress < 0.74) {
+        // Crossfade in from Video 2
+        const fadeIn = (currentProgress - 0.66) / 0.08;
+        scrubber3.setOpacity(fadeIn);
+      } else {
+        scrubber3.setOpacity(1);
+      }
+    } else {
+      scrubber3.setOpacity(0);
     }
 
     // B. Hero Title Box Fade-out
@@ -840,7 +956,7 @@ function setupScrollVideoKeynote() {
       if (currentProgress >= start && currentProgress <= end) {
         const range = end - start;
         const norm = (currentProgress - start) / range;
-        
+
         // Easing curve: 20% fade-in, 60% stay, 20% fade-out
         let opacity = 1;
         if (norm < 0.20) {
