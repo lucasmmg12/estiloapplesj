@@ -196,25 +196,31 @@ export class AsesorOnlineIA {
                 // Fallback silencioso al proxy
             }
 
-            // 2. Si la Edge Function no está desplegada en la nube aún, usar endpoint backend proxy
+            // 2. Si la Edge Function no responde, usar endpoint proxy
             if (!data) {
-                const res = await fetch('/api/growy-chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: this.model,
-                        messages: this.messages,
-                        temperature: 0.25,
-                        max_tokens: 220
-                    })
-                });
+                try {
+                    const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
+                    const res = await fetch(`${baseUrl}/api/growy-chat`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: this.model,
+                            messages: this.messages,
+                            temperature: 0.25,
+                            max_tokens: 220
+                        })
+                    });
 
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => ({}));
-                    throw new Error(errData.error?.message || errData.error || `HTTP ${res.status}`);
+                    if (res.ok) {
+                        data = await res.json();
+                    }
+                } catch (proxyErr) {
+                    console.warn('Proxy local no disponible:', proxyErr);
                 }
+            }
 
-                data = await res.json();
+            if (!data) {
+                throw new Error('No se pudo obtener respuesta del agente IA.');
             }
 
             const reply = data.choices[0]?.message?.content?.trim() || '¡Hola! En breve te asesoramos.';

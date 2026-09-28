@@ -4,11 +4,12 @@
 
 import CONFIG from '../config.js';
 
-// Inicializar cliente de Supabase
-const supabase = window.supabase.createClient(
-    CONFIG.supabase.url,
-    CONFIG.supabase.anonKey
-);
+import { createClient } from '@supabase/supabase-js';
+
+// Inicializar cliente de Supabase con soporte para Vite o CDN global
+const supabase = (typeof window !== 'undefined' && window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
+    : createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
 
 // ============================================
 // Funciones de Clientes

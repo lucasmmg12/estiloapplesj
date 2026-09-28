@@ -31,4 +31,6 @@ const CONFIG = {
 export default CONFIG;
 
 // Also expose globally for legacy scripts
-window.CONFIG = CONFIG;
+if (typeof window !== 'undefined') {
+    window.CONFIG = CONFIG;
+}
