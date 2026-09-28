@@ -9,7 +9,6 @@ import { growyPDF } from './growy-pdf.js';
 
 export class GrowyAgent {
     constructor() {
-        this.apiKey = CONFIG.openai?.apiKey || (typeof process !== 'undefined' ? process.env?.OPENAI_API_KEY : '') || '';
         this.model = CONFIG.openai?.model || 'gpt-4o-mini';
         this.systemPrompt = `Eres Growy, el agente de Inteligencia Artificial propio y omnisciente de Estilo Apple San Juan (Grow Labs).
 Eres un copiloto analítico, financiero y operativo de élite. Tienes acceso directo a la base de datos viva del ERP/CRM mediante herramientas (tools).
@@ -34,8 +33,8 @@ TUS REGLAS DE ORO:
         };
     }
 
-    setApiKey(key) {
-        this.apiKey = key;
+    setApiKey() {
+        // Obsoleto por seguridad: Las API Keys se gestionan exclusivamente en el servidor / Edge Function
     }
 
     on(event, callback) {
@@ -449,14 +448,41 @@ TUS REGLAS DE ORO:
     }
 
     /**
+     * Llamada segura a OpenAI delegada en la Edge Function de Supabase o en el servidor backend
+     */
+    async _llamarOpenAiSeguro({ messages, tools, tool_choice, model, temperature }) {
+        // 1. Intentar llamar a la Edge Function de Supabase (sin credenciales en el cliente)
+        try {
+            const { data, error } = await supabase.functions.invoke('growy-agent', {
+                body: { messages, tools, tool_choice, model, temperature }
+            });
+            if (!error && data && data.choices && data.choices[0]) {
+                return data;
+            }
+        } catch (edgeErr) {
+            console.warn('Edge function no alcanzable directamente, intentando con endpoint local /api/growy-chat...', edgeErr);
+        }
+
+        // 2. Fallback al endpoint backend seguro
+        const response = await fetch('/api/growy-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages, tools, tool_choice, model, temperature })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || errData.error || `Error HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return await response.json();
+    }
+
+    /**
      * Enviar mensaje del usuario al agente Growy
      * @param {string} userText 
      */
     async enviarMensaje(userText) {
-        if (!this.apiKey) {
-            throw new Error('API Key de OpenAI no configurada. Por favor verifica tu archivo .env (OPENAI_API_KEY o VITE_OPENAI_API_KEY).');
-        }
-
         this.messages.push({
             role: 'user',
             content: userText
@@ -469,27 +495,14 @@ TUS REGLAS DE ORO:
         while (loopCount < maxLoops) {
             loopCount++;
 
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: this.model,
-                    messages: this.messages,
-                    tools: tools,
-                    tool_choice: 'auto',
-                    temperature: 0.3
-                })
+            const data = await this._llamarOpenAiSeguro({
+                model: this.model,
+                messages: this.messages,
+                tools: tools,
+                tool_choice: 'auto',
+                temperature: 0.3
             });
 
-            if (!response.ok) {
-                const errData = await response.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `Error HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
             const choice = data.choices[0];
             const message = choice.message;
 

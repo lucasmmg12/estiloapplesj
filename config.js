@@ -16,9 +16,8 @@ const CONFIG = {
         botId: '931b173b-f544-43a3-9e73-7ed55020ffa0',
         baseUrl: 'https://app.builderbot.cloud/api/v2'
     },
-    // OpenAI Configuration
+    // OpenAI Configuration (Gestionado de forma segura vía Edge Function o backend)
     openai: {
-        apiKey: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_OPENAI_API_KEY) || (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) || '',
         model: 'gpt-4o-mini'
     },
     // Otras configuraciones globales

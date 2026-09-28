@@ -4,6 +4,7 @@
 // ============================================
 
 import CONFIG from '../config.js';
+import { supabase } from '../services/supabase-client.js';
 
 export const SYSTEM_PROMPT_ASESOR = `ROL Y PERSONALIDAD
 Eres de Estilo Apple (San Juan, Argentina). Tu tono es: extremadamente cordial, empático y cálido, bien argentino y sanjuanino (voseo), profesional, experto en Apple y resolutivo. Tratás al cliente con mucha amabilidad, haciéndolo sentir bienvenido y escuchado desde el primer mensaje.
@@ -122,7 +123,6 @@ XR: Diag: $15.000 | Módulo: Core 75 | Batería: Core 45 | Tapa Alt: 65 | Cámar
 
 export class AsesorOnlineIA {
     constructor() {
-        this.apiKey = CONFIG.openai?.apiKey || (typeof process !== 'undefined' ? process.env?.OPENAI_API_KEY : '') || '';
         this.model = 'gpt-4o-mini';
         this.modoAsesorBloqueado = false;
         this.direccionEnviada = false;
@@ -177,26 +177,46 @@ export class AsesorOnlineIA {
         }
 
         try {
-            const res = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${this.apiKey}`
-                },
-                body: JSON.stringify({
-                    model: this.model,
-                    messages: this.messages,
-                    temperature: 0.25,
-                    max_tokens: 220
-                })
-            });
+            let data = null;
 
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error?.message || `HTTP ${res.status}`);
+            // 1. Intentar llamar a Edge Function de Supabase
+            try {
+                const { data: edgeData, error: edgeErr } = await supabase.functions.invoke('growy-agent', {
+                    body: {
+                        model: this.model,
+                        messages: this.messages,
+                        temperature: 0.25,
+                        max_tokens: 220
+                    }
+                });
+                if (!edgeErr && edgeData && edgeData.choices && edgeData.choices[0]) {
+                    data = edgeData;
+                }
+            } catch (e) {
+                // Fallback silencioso al proxy
             }
 
-            const data = await res.json();
+            // 2. Si la Edge Function no está desplegada en la nube aún, usar endpoint backend proxy
+            if (!data) {
+                const res = await fetch('/api/growy-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: this.model,
+                        messages: this.messages,
+                        temperature: 0.25,
+                        max_tokens: 220
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || errData.error || `HTTP ${res.status}`);
+                }
+
+                data = await res.json();
+            }
+
             const reply = data.choices[0]?.message?.content?.trim() || '¡Hola! En breve te asesoramos.';
 
             if (reply.includes('Patio San Ignacio') || reply.includes('google.com/maps')) {
