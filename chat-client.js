@@ -113,6 +113,10 @@ const tagsSelectorGrid = document.getElementById('tagsSelectorGrid');
 const cardNotes = document.getElementById('cardNotes');
 const btnSaveCrmCard = document.getElementById('btnSaveCrmCard');
 const crmSaveStatusMsg = document.getElementById('crmSaveStatusMsg');
+const btnAiAutoFillCard = document.getElementById('btnAiAutoFillCard');
+const aiAutoFillLabel = document.getElementById('aiAutoFillLabel');
+const btnToggleSidebarDock = document.getElementById('btnToggleSidebarDock');
+const dockPosLabel = document.getElementById('dockPosLabel');
 
 // Modales
 const transferModal = document.getElementById('transferModal');
@@ -140,6 +144,9 @@ async function initConsole() {
 
     // 1. Configurar Operador Activo
     setupOperatorProfile();
+
+    // 1b. Configurar posición del dock de la Ficha (Izquierda / Derecha)
+    initSidebarDock();
 
     // 2. Renderizar Etiquetas en Ficha CRM
     renderAvailableTags();
@@ -357,6 +364,8 @@ function renderContactsList() {
                     <div class="card-meta-line">
                         ${sellerBadgeHtml}
                         ${c.modelo_dispositivo ? `<span class="status-chip">📱 ${c.modelo_dispositivo}</span>` : ''}
+                        ${c.cotizacion_estimada ? `<span class="status-chip chip-price" style="background:#ECFDF5; color:#047857; border:1px solid #A7F3D0; font-size:10px;">💰 ${escapeHtml(c.cotizacion_estimada)}</span>` : ''}
+                        ${Array.isArray(c.etiquetas) && c.etiquetas.length > 0 ? `<span class="status-chip" style="background:#F1F5F9; color:#475569; font-size:10px;">#${c.etiquetas[0]}</span>` : ''}
                     </div>
 
                     <div class="card-message-snippet">
@@ -414,6 +423,16 @@ export async function openChat(phone) {
 
     // Cargar historial de mensajes
     await loadChatMessages(phone);
+
+    // Si la ficha está incompleta o vacía y hay mensajes, autocompletar automáticamente con IA
+    const isCardIncomplete = !activeContact.modelo_dispositivo || !activeContact.cotizacion_estimada || !activeContact.notas || (!activeContact.etiquetas || activeContact.etiquetas.length === 0);
+    if (isCardIncomplete) {
+        setTimeout(() => {
+            if (activeChatPhone === phone) {
+                analyzeChatAndPopulateCard(phone, false);
+            }
+        }, 500);
+    }
 
     // Marcar como leído localmente
     if (activeContact && activeContact.unread_count > 0) {
@@ -838,6 +857,203 @@ async function handleSaveCustomerCard() {
 }
 
 // ============================================================================
+// 9b. INTELIGENCIA ARTIFICIAL: AUTOCOMPLETADO Y ENTENDIMIENTO DEL CHAT
+// ============================================================================
+
+let isAnalyzingChat = false;
+
+export async function analyzeChatAndPopulateCard(phone, force = false) {
+    if (!phone || isAnalyzingChat) return;
+
+    const messages = await fetchChatMessages(phone);
+    if (!messages || messages.length < 2) {
+        if (force) {
+            crmSaveStatusMsg.innerHTML = '<span style="color:#F59E0B; font-size:11px;">⚠️ Se necesitan al menos 2 mensajes para analizar.</span>';
+            setTimeout(() => { crmSaveStatusMsg.innerText = ''; }, 3000);
+        }
+        return;
+    }
+
+    isAnalyzingChat = true;
+    if (btnAiAutoFillCard) {
+        btnAiAutoFillCard.disabled = true;
+        if (aiAutoFillLabel) aiAutoFillLabel.innerText = 'Analizando...';
+    }
+    crmSaveStatusMsg.innerHTML = '<span style="color:#3B82F6; font-size:11.5px; font-weight:600;">✨ Analizando chat con IA...</span>';
+
+    try {
+        const extractedData = await extractCrmDataFromChat(messages);
+        if (extractedData) {
+            await applyAiExtractedData(extractedData, phone);
+        } else {
+            crmSaveStatusMsg.innerHTML = '<span style="color:#64748B; font-size:11.5px;">No se encontraron datos nuevos en el chat</span>';
+            setTimeout(() => { crmSaveStatusMsg.innerText = ''; }, 3000);
+        }
+    } catch (err) {
+        console.error('Error analizando chat con IA:', err);
+        crmSaveStatusMsg.innerHTML = '<span style="color:#EF4444; font-size:11.5px;">❌ Error al analizar chat</span>';
+        setTimeout(() => { crmSaveStatusMsg.innerText = ''; }, 3500);
+    } finally {
+        isAnalyzingChat = false;
+        if (btnAiAutoFillCard) {
+            btnAiAutoFillCard.disabled = false;
+            if (aiAutoFillLabel) aiAutoFillLabel.innerText = 'Autocompletar IA';
+        }
+    }
+}
+
+async function extractCrmDataFromChat(messages) {
+    const recent = messages.slice(-16);
+    const transcript = recent.map(m => {
+        const sender = m.es_mio ? (m.remitente_nombre || 'Asesor Estilo Apple') : 'Cliente';
+        const text = m.contenido || (m.media_type ? `[${m.media_type}]` : '[archivo]');
+        return `${sender}: ${text}`;
+    }).join('\n');
+
+    const systemPrompt = `Eres un asistente de inteligencia artificial para el CRM de Estilo Apple SJ (tienda y servicio técnico oficial Apple en San Juan, Argentina).
+Tu objetivo es analizar la conversación entre un cliente y el asesor comercial/técnico y extraer estructuradamente la información para completar la Ficha del Cliente.
+
+Debes responder ÚNICAMENTE un objeto JSON válido con los siguientes campos:
+{
+  "nombre": "Nombre del cliente si fue mencionado en el chat o en saludos (ej: 'Daiana')",
+  "dispositivo_interes": "Dispositivo o servicio buscado por el cliente (ej: 'Reparación iPhone 13 - Parlante Auricular' o 'iPhone 15 Pro')",
+  "dispositivo_canje": "Dispositivo actual que el cliente entrega para canje o para reparar en el laboratorio (ej: 'iPhone 13')",
+  "cotizacion_estimada": "Valor cotizado, presupuesto, diagnóstico o seña acordada (ej: 'Diagnóstico $20.000 bonificable')",
+  "etiquetas": ["Servicio Técnico", "Presupuestado", "Local Patio San Ignacio"], // Selecciona entre: "Plan Canje", "Venta Nueva", "Usado Seleccionado", "Servicio Técnico", "VIP", "Presupuestado", "Seña Recibida", "Local Patio San Ignacio"
+  "notas": "Resumen conciso y profesional de 1 a 2 oraciones con el contexto del cliente, falla o equipo buscado y próximos pasos acordados."
+}
+No agregues explicaciones fuera del bloque JSON.`;
+
+    const payload = {
+        model: 'gpt-4o-mini',
+        messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Analiza esta conversación de WhatsApp y extrae los datos de la ficha comercial:\n\n${transcript}` }
+        ],
+        temperature: 0.1
+    };
+
+    const res = await fetch('/api/growy-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        throw new Error(`Error en API: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    const rawContent = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!rawContent) return null;
+
+    const cleanJson = rawContent.replace(/```json/gi, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanJson);
+}
+
+async function applyAiExtractedData(data, phone) {
+    if (!data || !phone) return;
+
+    if (data.nombre) {
+        cardClientName.value = data.nombre;
+    }
+    if (data.dispositivo_interes) {
+        cardDeviceInterest.value = data.dispositivo_interes;
+    }
+    if (data.dispositivo_canje) {
+        cardDeviceCanje.value = data.dispositivo_canje;
+    }
+    if (data.cotizacion_estimada) {
+        cardCotizacion.value = data.cotizacion_estimada;
+    }
+    if (data.notas) {
+        cardNotes.value = data.notas;
+    }
+
+    if (Array.isArray(data.etiquetas)) {
+        tagsSelectorGrid.querySelectorAll('.tag-chip').forEach(btn => {
+            const tag = btn.getAttribute('data-tag');
+            const shouldBeActive = data.etiquetas.includes(tag);
+            btn.classList.toggle('active', shouldBeActive);
+        });
+    }
+
+    const selectedTags = [];
+    tagsSelectorGrid.querySelectorAll('.tag-chip.active').forEach(btn => {
+        selectedTags.push(btn.getAttribute('data-tag'));
+    });
+
+    const cardData = {
+        nombre: cardClientName.value.trim(),
+        modelo_dispositivo: cardDeviceInterest.value.trim() || cardDeviceCanje.value.trim(),
+        dispositivo_interes: cardDeviceInterest.value.trim(),
+        dispositivo_canje: cardDeviceCanje.value.trim(),
+        cotizacion_estimada: cardCotizacion.value.trim(),
+        notas: cardNotes.value.trim(),
+        etiquetas: selectedTags
+    };
+
+    try {
+        await saveCustomerCard(phone, cardData);
+    } catch (saveErr) {
+        console.warn('Advertencia guardando ficha con IA en Supabase:', saveErr);
+    }
+
+    if (activeContact && activeContact.phone === phone) {
+        Object.assign(activeContact, cardData);
+        if (data.nombre) activeContact.contact_name = data.nombre;
+        updateChatHeader(activeContact);
+    }
+    const mapItem = conversationsMap.get(phone);
+    if (mapItem) {
+        Object.assign(mapItem, cardData);
+        if (data.nombre) mapItem.contact_name = data.nombre;
+    }
+
+    renderContactsList();
+
+    crmSaveStatusMsg.innerHTML = '<span style="color:#10B981; font-weight:700;">✨ Ficha autocompletada con éxito</span>';
+    setTimeout(() => { crmSaveStatusMsg.innerText = ''; }, 4000);
+}
+
+// ============================================================================
+// 9c. POSICIONAMIENTO DEL DOCK (IZQUIERDA / DERECHA)
+// ============================================================================
+
+let detailsDockPosition = localStorage.getItem('estilo_crm_dock_position') || 'left';
+
+function initSidebarDock() {
+    const container = document.querySelector('.crm-app-container');
+    if (!container) return;
+    if (detailsDockPosition === 'left') {
+        container.classList.add('dock-left');
+    } else {
+        container.classList.remove('dock-left');
+    }
+    updateDockButtonUI();
+}
+
+function toggleSidebarDock() {
+    const container = document.querySelector('.crm-app-container');
+    if (!container) return;
+    const isNowLeft = container.classList.toggle('dock-left');
+    detailsDockPosition = isNowLeft ? 'left' : 'right';
+    localStorage.setItem('estilo_crm_dock_position', detailsDockPosition);
+    updateDockButtonUI();
+}
+
+function updateDockButtonUI() {
+    const container = document.querySelector('.crm-app-container');
+    const isLeft = container && container.classList.contains('dock-left');
+    if (dockPosLabel) {
+        dockPosLabel.innerText = isLeft ? '⇥ Der' : '⇤ Izq';
+    }
+    if (btnToggleSidebarDock) {
+        btnToggleSidebarDock.title = isLeft ? 'Mover panel a la derecha del chat' : 'Mover panel a la izquierda del chat';
+    }
+}
+
+// ============================================================================
 // 10. TRANSFERENCIAS Y CIERRE DE CONVERSACIÓN
 // ============================================================================
 
@@ -1103,6 +1319,21 @@ function setupEventListeners() {
         crmDetailsSidebar.classList.add('collapsed');
         btnToggleCrmCard.classList.remove('active');
     });
+
+    // 7b. Botón Autocompletar con IA y Toggle Dock
+    if (btnAiAutoFillCard) {
+        btnAiAutoFillCard.addEventListener('click', () => {
+            if (activeChatPhone) {
+                analyzeChatAndPopulateCard(activeChatPhone, true);
+            }
+        });
+    }
+
+    if (btnToggleSidebarDock) {
+        btnToggleSidebarDock.addEventListener('click', () => {
+            toggleSidebarDock();
+        });
+    }
 
     // Botón Volver Móvil
     mobileBackBtn.addEventListener('click', () => {

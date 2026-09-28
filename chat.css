@@ -1180,9 +1180,24 @@ body {
     display: none;
 }
 
+/* Docking position: Left or Right */
+.crm-app-container.dock-left .crm-details-sidebar {
+    order: -1;
+    border-right: 1px solid var(--border-light);
+    border-left: none;
+}
+
+.crm-app-container.dock-left .crm-sidebar {
+    order: -2;
+}
+
+.crm-app-container.dock-left .crm-chat-pane {
+    order: 0;
+}
+
 .details-header {
     height: 64px;
-    padding: 0 18px;
+    padding: 0 14px 0 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1201,6 +1216,65 @@ body {
     font-weight: 700;
     color: var(--text-main);
     margin: 0;
+    white-space: nowrap;
+}
+
+.details-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-ai-auto-fill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border: none;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-ai-auto-fill:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-ai-auto-fill:disabled {
+    background: #94A3B8;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+.ai-sparkle {
+    font-size: 12px;
+}
+
+.btn-dock-toggle {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    color: var(--text-muted);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 5px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-dock-toggle:hover {
+    background: #E2E8F0;
+    color: var(--text-main);
 }
 
 .close-details-btn {
@@ -1209,6 +1283,8 @@ body {
     font-size: 22px;
     color: var(--text-muted);
     cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
 }
 
 .details-scrollable-content {

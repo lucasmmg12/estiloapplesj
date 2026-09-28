@@ -261,7 +261,16 @@
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     <h4>Ficha del Cliente</h4>
                 </div>
-                <button class="close-details-btn" id="btnCloseDetailsSidebar" title="Cerrar panel">&times;</button>
+                <div class="details-header-actions">
+                    <button type="button" class="btn-ai-auto-fill" id="btnAiAutoFillCard" title="Analizar chat con IA y completar ficha automáticamente">
+                        <span class="ai-sparkle">✨</span>
+                        <span id="aiAutoFillLabel">Autocompletar IA</span>
+                    </button>
+                    <button type="button" class="btn-dock-toggle" id="btnToggleSidebarDock" title="Cambiar posición del panel (Izquierda / Derecha)">
+                        <span id="dockPosLabel">⇤ Izq</span>
+                    </button>
+                    <button class="close-details-btn" id="btnCloseDetailsSidebar" title="Cerrar panel">&times;</button>
+                </div>
             </header>
 
             <div class="details-scrollable-content">
