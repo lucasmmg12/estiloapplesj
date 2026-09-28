@@ -1817,6 +1817,184 @@ img {
 }
 
 /* ==========================================================================
+   GOOGLE REVIEWS INTEGRATION & VERIFICATION
+   ========================================================================== */
+
+.google-badge-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.google-rating-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  backdrop-filter: blur(12px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-rating-pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.google-pill-stars {
+  color: #fbbc05;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+}
+
+.google-pill-score {
+  font-weight: 700;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.google-pill-dot {
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+}
+
+.google-pill-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.google-pill-external {
+  color: var(--text-tertiary);
+  margin-left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.google-rating-pill:hover .google-pill-external {
+  transform: translate(2px, -2px);
+  color: #ffffff;
+}
+
+/* Card Header with Google Verified Tag */
+.testimonial-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.testimonial-card-header .testimonial-stars {
+  margin-bottom: 0;
+}
+
+.google-verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(66, 133, 244, 0.1);
+  border: 1px solid rgba(66, 133, 244, 0.25);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8ab4f8;
+  letter-spacing: 0.3px;
+}
+
+.testimonial-link-google {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.testimonial-link-google:hover {
+  color: #8ab4f8;
+}
+
+.testimonial-link-google svg {
+  transition: transform 0.2s ease;
+}
+
+.testimonial-link-google:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* Google Action Banner */
+.google-reviews-action-banner {
+  margin-top: 36px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(66, 133, 244, 0.06) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 24px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  backdrop-filter: blur(20px);
+}
+
+.google-banner-logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.google-banner-logo-row strong {
+  font-size: 1.05rem;
+  color: #ffffff;
+}
+
+.google-banner-badge {
+  background: rgba(251, 188, 5, 0.15);
+  border: 1px solid rgba(251, 188, 5, 0.3);
+  color: #fbbc05;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.google-banner-text {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.btn-google-maps {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #0b0c10;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-google-maps:hover {
+  background: #f1f3f4;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
+}
+
+/* ==========================================================================
    FAQ ACCORDION
    ========================================================================== */
 
