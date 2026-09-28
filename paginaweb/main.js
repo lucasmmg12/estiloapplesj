@@ -316,12 +316,6 @@ function initApp() {
   fetchLiveContext();
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
-} else {
-  initApp();
-}
-
 async function fetchLiveContext() {
   try {
     if (window.supabase && CONFIG && CONFIG.supabase) {
@@ -681,98 +675,9 @@ function setupNavigation() {
 }
 
 // ==========================================================================
-// ==========================================================================
 // SCROLL-TRIGGERED KEYNOTE VIDEO SCRUBBER (Mobile-First Apple Keynote Background)
-// High-Performance 60FPS Video Scrubber with Asynchronous Seek Queue & Overlapping Crossfade
+// High-Performance 60FPS Video Scrubber with Smooth Seeking & Overlapping Crossfade
 // ==========================================================================
-
-class VideoScrubberController {
-  constructor(videoEl, fallbackDuration = 6.55) {
-    this.video = videoEl;
-    this.fallbackDuration = fallbackDuration;
-    this.isSeeking = false;
-    this.pendingTime = null;
-    this.currentOpacity = -1;
-    this.lastSeekTime = -1;
-    this.watchdogTimer = null;
-
-    if (!this.video) return;
-
-    // Hardware decoder callback: when a frame finishes rendering, dequeue the next requested scroll time
-    this.video.addEventListener('seeked', () => {
-      this.isSeeking = false;
-      if (this.watchdogTimer) {
-        clearTimeout(this.watchdogTimer);
-        this.watchdogTimer = null;
-      }
-      if (this.pendingTime !== null) {
-        const nextTime = this.pendingTime;
-        this.pendingTime = null;
-        this.seekTo(nextTime);
-      }
-    });
-
-    this.video.addEventListener('error', () => {
-      this.isSeeking = false;
-      this.pendingTime = null;
-    });
-  }
-
-  seekTo(targetTime) {
-    if (!this.video) return;
-    const dur = (isFinite(this.video.duration) && this.video.duration > 0)
-      ? this.video.duration
-      : this.fallbackDuration;
-
-    // Keep safe margin from exact end to prevent decoder end-of-stream freeze
-    const safeTime = Math.max(0.01, Math.min(dur - 0.08, targetTime));
-
-    // Skip redundant microscopic seeks to protect frame rate (only after at least 1 seek has occurred)
-    if (this.lastSeekTime !== -1 && Math.abs(this.lastSeekTime - safeTime) < 0.015) {
-      return;
-    }
-
-    if (this.isSeeking) {
-      // Hardware decoder is busy rendering previous frame; queue the freshest scroll target
-      this.pendingTime = safeTime;
-      return;
-    }
-
-    this.isSeeking = true;
-    this.lastSeekTime = safeTime;
-
-    // Watchdog: reset seeking flag if browser fails to trigger 'seeked' within 200ms
-    if (this.watchdogTimer) clearTimeout(this.watchdogTimer);
-    this.watchdogTimer = setTimeout(() => {
-      this.isSeeking = false;
-      if (this.pendingTime !== null) {
-        const next = this.pendingTime;
-        this.pendingTime = null;
-        this.seekTo(next);
-      }
-    }, 200);
-
-    try {
-      this.video.currentTime = safeTime;
-    } catch (e) {
-      this.isSeeking = false;
-    }
-  }
-
-  setOpacity(opacity) {
-    if (!this.video) return;
-    const clamped = Math.max(0, Math.min(1, opacity));
-    if (Math.abs(this.currentOpacity - clamped) < 0.005) return;
-    this.currentOpacity = clamped;
-
-    this.video.style.opacity = clamped.toFixed(3);
-    if (clamped > 0.01) {
-      this.video.classList.add('active');
-    } else {
-      this.video.classList.remove('active');
-    }
-  }
-}
 
 function setupScrollVideoKeynote() {
   const heroSection = document.getElementById('jobyHeroSection');
@@ -789,8 +694,8 @@ function setupScrollVideoKeynote() {
   const allVideos = [video1, video2, video3];
   const knownDurations = [6.55, 6.55, 6.55];
 
-  // 1. Initial video setup - Configure inline attributes and prime hardware decoders
-  allVideos.forEach((v, index) => {
+  // 1. Initial video setup - Configure inline attributes for mobile & desktop
+  allVideos.forEach(v => {
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
@@ -798,54 +703,56 @@ function setupScrollVideoKeynote() {
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
     v.setAttribute('preload', 'auto');
-
-    // Prime the video decoder so the first frame is painted immediately
-    const playPromise = v.play();
-    if (playPromise !== undefined) {
-      playPromise.then(() => {
-        v.pause();
-        v.currentTime = 0.01;
-      }).catch(() => {
-        v.currentTime = 0.01;
-      });
-    } else {
-      v.currentTime = 0.01;
-    }
   });
 
-  const scrubber1 = new VideoScrubberController(video1, knownDurations[0]);
-  const scrubber2 = new VideoScrubberController(video2, knownDurations[1]);
-  const scrubber3 = new VideoScrubberController(video3, knownDurations[2]);
+  // Ensure Video 1 starts active and visible
+  video1.classList.add('active');
+  video1.style.opacity = '1';
+  video2.classList.remove('active');
+  video2.style.opacity = '0';
+  video3.classList.remove('active');
+  video3.style.opacity = '0';
 
-  // Initial visibility: Video 1 visible at start, others hidden
-  scrubber1.setOpacity(1);
-  scrubber2.setOpacity(0);
-  scrubber3.setOpacity(0);
+  let isVideo1Playing = false;
+  let isPlayPending = false;
 
-  // Initial seek on Video 1 to ensure frame is painted right now
-  scrubber1.seekTo(0.01);
+  const startVideo1Autoplay = () => {
+    if (isPlayPending || isVideo1Playing) return;
+    isPlayPending = true;
+    const playPromise = video1.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        isVideo1Playing = true;
+      }).catch(() => {
+        isVideo1Playing = false;
+      }).finally(() => {
+        isPlayPending = false;
+      });
+    } else {
+      isVideo1Playing = true;
+      isPlayPending = false;
+    }
+  };
 
-  // Mobile media pipeline unlock: touch/scroll gesture fallback
-  let hasPrimed = false;
-  const primeMobile = () => {
-    if (hasPrimed) return;
-    hasPrimed = true;
-    allVideos.forEach(v => {
+  // Immediate attempt to play Video 1 in hero
+  startVideo1Autoplay();
+
+  // User gesture unlock for iOS Safari / Android Chrome
+  const primeMedia = () => {
+    startVideo1Autoplay();
+    [video2, video3].forEach(v => {
       try {
-        const p = v.play();
-        if (p !== undefined) {
-          p.then(() => v.pause()).catch(() => {});
-        }
+        if (v.currentTime < 0.01) v.currentTime = 0.01;
       } catch (e) {}
     });
   };
-  window.addEventListener('touchstart', primeMobile, { passive: true, once: true });
-  window.addEventListener('pointerdown', primeMobile, { passive: true, once: true });
-  window.addEventListener('scroll', primeMobile, { passive: true, once: true });
+  window.addEventListener('touchstart', primeMedia, { passive: true, once: true });
+  window.addEventListener('pointerdown', primeMedia, { passive: true, once: true });
+  window.addEventListener('scroll', primeMedia, { passive: true, once: true });
 
   let targetProgress = 0;
   let currentProgress = 0;
-  const LERP_FACTOR = 0.12; // Butter-smooth Apple-grade inertia
+  const LERP_FACTOR = 0.14; // Butter-smooth Apple-grade inertia
 
   function calculateProgress() {
     const rect = heroSection.getBoundingClientRect();
@@ -868,6 +775,30 @@ function setupScrollVideoKeynote() {
     { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
+  function scrubVideo(v, targetTime, fallbackDur) {
+    if (!v) return;
+    const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : fallbackDur;
+    const safeTime = Math.max(0.01, Math.min(dur - 0.05, targetTime));
+    if (Math.abs(v.currentTime - safeTime) > 0.025 && !v.seeking) {
+      if ('fastSeek' in v) {
+        try { v.fastSeek(safeTime); } catch (e) { v.currentTime = safeTime; }
+      } else {
+        v.currentTime = safeTime;
+      }
+    }
+  }
+
+  function setVideoOpacity(v, opacity) {
+    if (!v) return;
+    const clamped = Math.max(0, Math.min(1, opacity));
+    v.style.opacity = clamped.toFixed(3);
+    if (clamped > 0.03) {
+      v.classList.add('active');
+    } else {
+      v.classList.remove('active');
+    }
+  }
+
   // 2. Main 60fps Animation loop
   function scrubLoop() {
     const diff = targetProgress - currentProgress;
@@ -877,78 +808,76 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // A. CONTINUOUS OVERLAPPING TIMELINES & CROSSFADES
-    // Eliminates all freezes, decoder stalls, and black frames in the middle.
-    //
-    // Timeline breakdown:
-    // Video 1 (Cámara & Titanio): 0.00 - 0.52 (scrubs 0.00 - 0.50, crossfades out 0.44 - 0.52)
-    // Video 2 (Display & Dynamic Island): 0.44 - 0.74 (crossfades in 0.44 - 0.52, scrubs 0.44 - 0.72, crossfades out 0.66 - 0.74)
-    // Video 3 (Laboratorio & Servicio): 0.66 - 1.00 (crossfades in 0.66 - 0.74, scrubs 0.66 - 0.98)
-
     const dur1 = video1.duration || knownDurations[0];
     const dur2 = video2.duration || knownDurations[1];
     const dur3 = video3.duration || knownDurations[2];
 
-    // Smart Autoplay / Scrub Transition:
-    // If at top of page, let video 1 play on gentle loop; when scrolling down, pause and scrub precisely.
-    if (currentProgress > 0.01 && !video1.paused) {
-      try { video1.pause(); } catch (e) {}
-    } else if (currentProgress <= 0.01 && video1.paused) {
-      try { video1.play(); } catch (e) {}
-    }
-
-    // --- VIDEO 1 ---
-    if (currentProgress <= 0.52) {
-      const p1 = Math.min(1, Math.max(0, currentProgress / 0.50));
-      if (currentProgress > 0.01) {
-        scrubber1.seekTo(p1 * dur1);
-      }
-
-      if (currentProgress < 0.44) {
-        scrubber1.setOpacity(1);
-      } else {
-        // Crossfade out into Video 2
-        const fadeOut = 1 - ((currentProgress - 0.44) / 0.08);
-        scrubber1.setOpacity(fadeOut);
-      }
+    // TOP OF PAGE (0.00 - 0.02): Natural smooth 60fps autoplay loop
+    if (currentProgress <= 0.02) {
+      startVideo1Autoplay();
+      setVideoOpacity(video1, 1);
+      setVideoOpacity(video2, 0);
+      setVideoOpacity(video3, 0);
     } else {
-      scrubber1.setOpacity(0);
-    }
-
-    // --- VIDEO 2 ---
-    if (currentProgress >= 0.44 && currentProgress <= 0.74) {
-      const p2 = Math.min(1, Math.max(0, (currentProgress - 0.44) / 0.28));
-      scrubber2.seekTo(p2 * dur2);
-
-      if (currentProgress < 0.52) {
-        // Crossfade in from Video 1
-        const fadeIn = (currentProgress - 0.44) / 0.08;
-        scrubber2.setOpacity(fadeIn);
-      } else if (currentProgress <= 0.66) {
-        scrubber2.setOpacity(1);
-      } else {
-        // Crossfade out into Video 3
-        const fadeOut = 1 - ((currentProgress - 0.66) / 0.08);
-        scrubber2.setOpacity(fadeOut);
+      // SCROLLING DOWN: Pause autoplay so scroll scrubbing takes over seamlessly
+      if (isVideo1Playing && !video1.paused) {
+        try {
+          video1.pause();
+        } catch (e) {}
+        isVideo1Playing = false;
       }
-    } else {
-      scrubber2.setOpacity(0);
-    }
 
-    // --- VIDEO 3 ---
-    if (currentProgress >= 0.66) {
-      const p3 = Math.min(1, Math.max(0, (currentProgress - 0.66) / 0.32));
-      scrubber3.seekTo(p3 * dur3);
+      // --- VIDEO 1 (0.02 to 0.50) ---
+      if (currentProgress <= 0.50) {
+        const p1 = Math.min(1, Math.max(0, (currentProgress - 0.02) / 0.44));
+        scrubVideo(video1, p1 * dur1, knownDurations[0]);
 
-      if (currentProgress < 0.74) {
-        // Crossfade in from Video 2
-        const fadeIn = (currentProgress - 0.66) / 0.08;
-        scrubber3.setOpacity(fadeIn);
+        if (currentProgress < 0.40) {
+          setVideoOpacity(video1, 1);
+        } else {
+          // Crossfade out into Video 2
+          const fadeOut = 1 - ((currentProgress - 0.40) / 0.10);
+          setVideoOpacity(video1, fadeOut);
+        }
       } else {
-        scrubber3.setOpacity(1);
+        setVideoOpacity(video1, 0);
       }
-    } else {
-      scrubber3.setOpacity(0);
+
+      // --- VIDEO 2 (0.40 to 0.74) ---
+      if (currentProgress >= 0.40 && currentProgress <= 0.74) {
+        const p2 = Math.min(1, Math.max(0, (currentProgress - 0.40) / 0.28));
+        scrubVideo(video2, p2 * dur2, knownDurations[1]);
+
+        if (currentProgress < 0.50) {
+          // Crossfade in from Video 1
+          const fadeIn = (currentProgress - 0.40) / 0.10;
+          setVideoOpacity(video2, fadeIn);
+        } else if (currentProgress <= 0.64) {
+          setVideoOpacity(video2, 1);
+        } else {
+          // Crossfade out into Video 3
+          const fadeOut = 1 - ((currentProgress - 0.64) / 0.10);
+          setVideoOpacity(video2, fadeOut);
+        }
+      } else {
+        setVideoOpacity(video2, 0);
+      }
+
+      // --- VIDEO 3 (0.64 to 1.00) ---
+      if (currentProgress >= 0.64) {
+        const p3 = Math.min(1, Math.max(0, (currentProgress - 0.64) / 0.34));
+        scrubVideo(video3, p3 * dur3, knownDurations[2]);
+
+        if (currentProgress < 0.74) {
+          // Crossfade in from Video 2
+          const fadeIn = (currentProgress - 0.64) / 0.10;
+          setVideoOpacity(video3, fadeIn);
+        } else {
+          setVideoOpacity(video3, 1);
+        }
+      } else {
+        setVideoOpacity(video3, 0);
+      }
     }
 
     // B. Hero Title Box Fade-out
@@ -965,7 +894,7 @@ function setupScrollVideoKeynote() {
       }
     }
 
-    // C. Scrollytelling Slides Crossfade (Preserving unique spatial CSS positioning)
+    // C. Scrollytelling Slides Crossfade
     slides.forEach(slide => {
       const start = parseFloat(slide.getAttribute('data-start') || '0');
       const end = parseFloat(slide.getAttribute('data-end') || '1');
@@ -1006,4 +935,11 @@ function setupScrollVideoKeynote() {
   }
 
   requestAnimationFrame(scrubLoop);
+}
+
+// Iniciar aplicación una vez que todo el script y sus componentes están listos
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
 }
