@@ -694,43 +694,23 @@ function setupScrollVideoKeynote() {
   if (!heroSection || !video1 || !video2 || !video3) return;
 
   const allVideos = [video1, video2, video3];
-  const stageDurations = [9.0, 9.0, 10.0];
 
-  function getDuration(v, idx) {
-    return (Number.isFinite(v.duration) && v.duration > 0.5) ? v.duration : stageDurations[idx];
-  }
-
-  // 1. Configuración inicial de videos (silenciados, inline, listos para scroll-play)
-  allVideos.forEach((v, idx) => {
+  // 1. Initial video configuration (muted, loop, inline playback)
+  allVideos.forEach(v => {
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
-    v.loop = false;
+    v.loop = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
-    v.currentTime = 0.01;
-    if (idx === 0) {
-      v.classList.add('active');
-    } else {
-      v.classList.remove('active');
-    }
+    v.setAttribute('loop', '');
   });
 
-  let currentStage = 0;
+  let currentStage = -1;
   let isHeroVisible = true;
-  let lastSeekTime = 0;
 
-  function safeSeek(video, time) {
-    const now = performance.now();
-    if (video.seeking && (now - lastSeekTime < 40)) return;
-    lastSeekTime = now;
-    try {
-      video.currentTime = time;
-    } catch (e) {}
-  }
-
-  // Transición suave entre las 3 etapas de video del Hero
+  // Function to switch active video stage and play smoothly
   function switchStage(newStage) {
     if (newStage === currentStage) return;
     currentStage = newStage;
@@ -738,32 +718,45 @@ function setupScrollVideoKeynote() {
     allVideos.forEach((v, idx) => {
       if (idx === newStage) {
         v.classList.add('active');
+        try {
+          // Si el video estaba detenido o al final, reiniciar para que reproduzca completo
+          if (v.currentTime >= (v.duration || 9) - 0.2) {
+            v.currentTime = 0;
+          }
+        } catch (e) {}
+
+        const playPromise = v.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
       } else {
         v.classList.remove('active');
-        try { v.pause(); } catch (e) {}
+        // Pausar video anterior tras completar el crossfade suave de 350ms
+        setTimeout(() => {
+          if (idx !== currentStage) {
+            try {
+              v.pause();
+            } catch (e) {}
+          }
+        }, 350);
       }
     });
   }
 
-  // Desbloqueo garantizado de decodificación para Safari iOS y Android
+  // Desbloqueo garantizado de autoplay para navegadores móviles (Safari iOS / Android)
   const unlockAndPlay = () => {
-    allVideos.forEach(v => {
-      try {
-        const p = v.play();
-        if (p !== undefined) {
-          p.then(() => {
-            if (currentProgress === 0) v.pause();
-          }).catch(() => {});
-        }
-      } catch (e) {}
-    });
+    const activeIndex = currentStage >= 0 ? currentStage : 0;
+    const targetVideo = allVideos[activeIndex];
+    if (targetVideo && targetVideo.paused && isHeroVisible) {
+      targetVideo.play().catch(() => {});
+    }
   };
 
-  ['touchstart', 'pointerdown', 'scroll', 'click', 'wheel'].forEach(evt => {
+  ['touchstart', 'pointerdown', 'scroll', 'click'].forEach(evt => {
     window.addEventListener(evt, unlockAndPlay, { passive: true, once: true });
   });
 
-  // Cálculo de progreso de scroll a lo largo de la sección Hero (520vh)
+  // Cálculo de progreso de scroll a lo largo de la sección Hero
   let targetProgress = 0;
   let currentProgress = 0;
   const LERP_FACTOR = 0.15; // Suavizado cinematográfico 60fps
@@ -775,7 +768,7 @@ function setupScrollVideoKeynote() {
     const rawProgress = currentScroll / Math.max(1, totalScrollable);
     targetProgress = Math.max(0, Math.min(1, rawProgress));
 
-    // Detección de visibilidad: si el hero salió de pantalla, pausar videos para ahorrar batería y GPU
+    // Detección de visibilidad: si el hero salió de pantalla, pausar videos para ahorrar recursos
     const visibleNow = rect.bottom > 0 && rect.top < window.innerHeight;
     if (visibleNow !== isHeroVisible) {
       isHeroVisible = visibleNow;
@@ -783,6 +776,11 @@ function setupScrollVideoKeynote() {
         allVideos.forEach(v => {
           try { v.pause(); } catch (e) {}
         });
+      } else {
+        const activeVid = allVideos[currentStage >= 0 ? currentStage : 0];
+        if (activeVid) {
+          activeVid.play().catch(() => {});
+        }
       }
     }
   }
@@ -790,6 +788,9 @@ function setupScrollVideoKeynote() {
   window.addEventListener('scroll', calculateProgress, { passive: true });
   window.addEventListener('resize', calculateProgress, { passive: true });
   calculateProgress();
+
+  // Iniciar inmediatamente en el Stage 0 (Video 1 activo y reproduciendo)
+  switchStage(0);
 
   // Scrollytelling Phase Labels
   const PHASES = [
@@ -809,65 +810,24 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // Determinación del video activo y progreso dentro de la etapa:
+    // Determinación del video activo según el progreso del scroll:
     // Stage 0 (0.00 - 0.50): Cámara Fusion & Titanio (Slides 1 & 2) -> Video 1
     // Stage 1 (0.50 - 0.70): Display Super Retina XDR & Dynamic Island (Slide 3) -> Video 2
     // Stage 2 (0.70 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5) -> Video 3
     let targetStage = 0;
-    let stageProgress = 0;
-
     if (currentProgress >= 0.70) {
       targetStage = 2;
-      stageProgress = (currentProgress - 0.70) / 0.30;
     } else if (currentProgress >= 0.50) {
       targetStage = 1;
-      stageProgress = (currentProgress - 0.50) / 0.20;
     } else {
       targetStage = 0;
-      stageProgress = currentProgress / 0.50;
     }
-
-    stageProgress = Math.max(0, Math.min(1, stageProgress));
 
     if (targetStage !== currentStage) {
       switchStage(targetStage);
     }
 
-    // A. Reproducción Sincronizada con el Desplazamiento (Scroll-Driven Playback)
-    const activeVideo = allVideos[currentStage];
-    if (activeVideo && isHeroVisible) {
-      const dur = getDuration(activeVideo, currentStage);
-      const targetTime = Math.max(0.01, Math.min(dur - 0.05, stageProgress * dur));
-      const timeDiff = targetTime - activeVideo.currentTime;
-      const isActivelyScrolling = Math.abs(diff) > 0.0003;
-
-      if (!isActivelyScrolling && Math.abs(timeDiff) < 0.08) {
-        // Scroll detenido y video en posición sincronizada: pausar en este frame
-        if (!activeVideo.paused) {
-          activeVideo.pause();
-        }
-      } else if (timeDiff > 0.04) {
-        // Scrolleando hacia abajo: reproducir con fluidez nativa acelerada según la velocidad de scroll
-        if (timeDiff > 0.6) {
-          // Desfase grande por scroll rápido
-          safeSeek(activeVideo, targetTime);
-        } else {
-          const rate = Math.min(3.0, Math.max(0.75, timeDiff * 3.5));
-          activeVideo.playbackRate = rate;
-          if (activeVideo.paused) {
-            activeVideo.play().catch(() => {});
-          }
-        }
-      } else if (timeDiff < -0.04) {
-        // Scrolleando hacia arriba: retroceder frame sincronizado
-        if (!activeVideo.paused) {
-          activeVideo.pause();
-        }
-        safeSeek(activeVideo, targetTime);
-      }
-    }
-
-    // B. Hero Title Box Fade-out hacia arriba (estilo Apple Keynote)
+    // A. Hero Title Box Fade-out hacia arriba (estilo Apple Keynote)
     if (titleBox) {
       if (currentProgress < 0.10) {
         const titleOpacity = 1 - (currentProgress / 0.10);
@@ -881,7 +841,7 @@ function setupScrollVideoKeynote() {
       }
     }
 
-    // C. Scrollytelling Slides Crossfade secuencial
+    // B. Scrollytelling Slides Crossfade secuencial
     slides.forEach(slide => {
       const start = parseFloat(slide.getAttribute('data-start') || '0');
       const end = parseFloat(slide.getAttribute('data-end') || '1');
@@ -906,7 +866,7 @@ function setupScrollVideoKeynote() {
       }
     });
 
-    // D. Barra de progreso y HUD de fase
+    // C. Barra de progreso y HUD de fase
     if (progressFill) {
       progressFill.style.width = (currentProgress * 100).toFixed(1) + '%';
     }
