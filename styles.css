@@ -841,6 +841,116 @@ body::before {
     color: var(--accent-red);
 }
 
+/* ==========================================================================
+   MINI-KPI & METRICS ENHANCEMENTS (Glassmorphism & Apple-Grade Typography)
+   ========================================================================== */
+.mini-kpi {
+    background: rgba(255, 255, 255, 0.035);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.mini-kpi:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+}
+
+.mini-kpi .label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8E8E93;
+}
+
+.mini-kpi .value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+}
+
+/* Micro badges for financial indicators */
+.mini-kpi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    width: fit-content;
+    margin-top: 3px;
+}
+
+.mini-kpi-badge.up {
+    background: rgba(48, 209, 88, 0.15);
+    color: #30D158;
+    border: 1px solid rgba(48, 209, 88, 0.25);
+}
+
+.mini-kpi-badge.down {
+    background: rgba(255, 69, 58, 0.15);
+    color: #FF453A;
+    border: 1px solid rgba(255, 69, 58, 0.25);
+}
+
+/* Payment Method Badges (Pills) */
+.badge-pm {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    width: fit-content;
+}
+
+.badge-pm-efectivo {
+    background: rgba(48, 209, 88, 0.14);
+    color: #30D158;
+    border: 1px solid rgba(48, 209, 88, 0.25);
+}
+
+.badge-pm-transferencia {
+    background: rgba(10, 132, 255, 0.14);
+    color: #0A84FF;
+    border: 1px solid rgba(10, 132, 255, 0.25);
+}
+
+.badge-pm-mercadopago {
+    background: rgba(0, 158, 227, 0.14);
+    color: #009EE3;
+    border: 1px solid rgba(0, 158, 227, 0.25);
+}
+
+.badge-pm-usdt {
+    background: rgba(100, 210, 255, 0.14);
+    color: #64D2FF;
+    border: 1px solid rgba(100, 210, 255, 0.25);
+}
+
+.badge-pm-tarjeta {
+    background: rgba(191, 90, 242, 0.14);
+    color: #BF5AF2;
+    border: 1px solid rgba(191, 90, 242, 0.25);
+}
+
 /* Charts Layout */
 .charts-container {
     display: grid;
@@ -933,79 +1043,74 @@ body::before {
 
 
 .data-table {
-
     width: 100%;
-
-    border-collapse: collapse;
-
+    border-collapse: separate;
+    border-spacing: 0;
 }
-
-
 
 .data-table thead {
-
-    background: #F9F9FB;
-
-    border-bottom: 2px solid #E5E5EA;
-
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-
 
 .data-table th {
-
-    padding: 1rem;
-
+    padding: 0.85rem 1rem;
     text-align: left;
-
-    font-size: 0.85rem;
-
-    font-weight: 700;
-
-    color: #1D1D1F;
-
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #8E8E93;
     text-transform: uppercase;
-
-    letter-spacing: 0.05em;
-
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.data-table th:first-child {
+    border-top-left-radius: 10px;
+}
 
+.data-table th:last-child {
+    border-top-right-radius: 10px;
+}
 
 .data-table td {
-
-    padding: 1rem;
-
-    border-bottom: 1px solid #F2F2F7;
-
-    color: #6E6E73;
-
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    color: #E5E5EA;
+    font-size: 0.88rem;
+    vertical-align: middle;
+    transition: background 0.15s ease;
 }
-
-
 
 .data-table tbody tr {
-
-    transition: var(--transition);
-
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
-
 }
 
-
+.data-table tbody tr:hover td {
+    background: rgba(255, 255, 255, 0.04);
+}
 
 .data-table tbody tr:hover {
-
-    background: #F5F5F7;
-
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.3);
 }
 
-
-
 .data-table tbody tr:last-child td {
-
     border-bottom: none;
+}
 
+.data-table .col-monto {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+}
+
+.data-table .col-monto.ingreso {
+    color: #30D158;
+}
+
+.data-table .col-monto.gasto {
+    color: #FF453A;
 }
 
 
@@ -3779,102 +3884,66 @@ select option,
 
 /* NavegaciÃ³n Principal */
 
+/* Navegación Principal (Segmented Control Estilo macOS / Apple Glass) */
 .main-nav {
-
     display: flex;
-
-    gap: 0.5rem;
-
-    background: #FFFFFF;
-
-    backdrop-filter: blur(20px);
-
-    -webkit-backdrop-filter: blur(20px);
-
-    padding: 0.75rem;
-
+    align-items: center;
+    gap: 4px;
+    background: rgba(22, 22, 26, 0.75);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    padding: 6px;
     border-radius: 16px;
-
-    border: 1px solid #E5E5EA;
-
-    box-shadow: var(--shadow-md);
-
-    margin-bottom: 1rem;
-
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 20;
 }
-
-
 
 .nav-tab {
-
     display: flex;
-
     align-items: center;
-
     gap: 0.5rem;
-
-    padding: 0.75rem 1.25rem;
-
+    padding: 8px 16px;
     background: transparent;
-
-    border: none;
-
-    border-radius: 12px;
-
-    color: #6E6E73;
-
-    font-size: 0.95rem;
-
+    border: 1px solid transparent;
+    border-radius: 11px;
+    color: #8E8E93;
+    font-size: 0.88rem;
     font-weight: 500;
-
     cursor: pointer;
-
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
-
+    user-select: none;
 }
-
-
 
 .nav-tab svg {
-
-    width: 20px;
-
-    height: 20px;
-
-    transition: all 0.3s ease;
-
+    width: 17px;
+    height: 17px;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
-
-
 
 .nav-tab:hover {
-
-    background: #F5F5F7;
-
-    color: #1D1D1F;
-
+    background: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
 }
 
-
+.nav-tab:hover svg {
+    transform: scale(1.06);
+}
 
 .nav-tab.active {
-    background: var(--primary);
+    background: rgba(255, 255, 255, 0.12);
     color: #FFFFFF;
-
-    box-shadow: 0 4px 12px rgba(92, 46, 46, 0.2),
-
-        0 0 0 transparent;
-
+    font-weight: 600;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-
-
 .nav-tab.active svg {
-
-    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
-
+    color: #FFFFFF;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4));
 }
 
 

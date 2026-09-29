@@ -1724,18 +1724,130 @@ async function renderizarVentasConFiltro() {
 // Instance Cache
 let chartInstances = {};
 
-// Global Chart Rendering Helper
+// Helpers de formato y gradiente para gráficos modernos
+const formatCurrencyARS = (val) => {
+    return '$ ' + Number(val || 0).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+};
+
+const formatShortARS = (val) => {
+    if (!val || val === 0) return '$0';
+    const abs = Math.abs(val);
+    if (abs >= 1000000) return '$' + (val / 1000000).toFixed(1).replace('.0', '') + 'M';
+    if (abs >= 1000) return '$' + (val / 1000).toFixed(0) + 'k';
+    return '$' + val;
+};
+
+const getCanvasGradient = (canvasId, colorHex, alphaTop = 0.32, alphaBottom = 0.0) => {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return colorHex;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return colorHex;
+    const h = canvas.height || 250;
+    const gradient = ctx.createLinearGradient(0, 0, 0, h);
+    const r = parseInt(colorHex.slice(1, 3), 16) || 48;
+    const g = parseInt(colorHex.slice(3, 5), 16) || 209;
+    const b = parseInt(colorHex.slice(5, 7), 16) || 88;
+    gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alphaTop})`);
+    gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${alphaBottom})`);
+    return gradient;
+};
+
+// Global Chart Rendering Helper con opciones modernas por defecto
 const renderChart = (id, type, labels, datasets, options = {}) => {
     const ctx = document.getElementById(id);
     if (!ctx) return;
     if (chartInstances[id]) chartInstances[id].destroy();
+
+    const isDark = document.body.classList.contains('dark-mode') || true;
+    const textColor = isDark ? '#A1A1A6' : '#6E6E73';
+    const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)';
+
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 650,
+            easing: 'easeOutQuart'
+        },
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        plugins: {
+            legend: {
+                display: false,
+                labels: {
+                    color: textColor,
+                    font: { size: 12, weight: '500', family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    padding: 14
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(20, 20, 24, 0.94)',
+                titleColor: '#FFFFFF',
+                titleFont: { size: 13, weight: '600', family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+                bodyColor: '#E5E5EA',
+                bodyFont: { size: 12, weight: '400', family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' },
+                borderColor: 'rgba(255, 255, 255, 0.12)',
+                borderWidth: 1,
+                padding: 12,
+                boxPadding: 6,
+                cornerRadius: 10,
+                displayColors: true,
+                usePointStyle: true,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.dataset.label || '';
+                        const val = context.parsed.y !== undefined ? context.parsed.y : context.parsed;
+                        if (typeof val === 'number') {
+                            if (label.includes('ARS') || label.includes('Ingresos') || label.includes('Gastos') || label.includes('Ventas') || label.includes('Métricas') || label.includes('Balance')) {
+                                return ` ${label}: ${formatCurrencyARS(val)}`;
+                            }
+                            return ` ${label}: ${val.toLocaleString('es-AR')}`;
+                        }
+                        return ` ${label}: ${val}`;
+                    }
+                }
+            }
+        },
+        scales: type === 'line' || type === 'bar' ? {
+            x: {
+                grid: { display: false },
+                ticks: {
+                    color: textColor,
+                    font: { size: 11, weight: '500' }
+                }
+            },
+            y: {
+                grid: {
+                    color: gridColor,
+                    borderDash: [4, 4]
+                },
+                ticks: {
+                    color: textColor,
+                    font: { size: 11 },
+                    callback: function(val) {
+                        return formatShortARS(val);
+                    }
+                }
+            }
+        } : {}
+    };
+
+    // Deep merge superficial de opciones
+    const mergedPlugins = { ...baseOptions.plugins, ...(options.plugins || {}) };
+    const mergedScales = { ...baseOptions.scales, ...(options.scales || {}) };
+
     chartInstances[id] = new Chart(ctx, {
         type,
         data: { labels, datasets },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            ...options
+            ...baseOptions,
+            ...options,
+            plugins: mergedPlugins,
+            scales: (type === 'line' || type === 'bar') ? mergedScales : options.scales
         }
     });
 };
@@ -1758,7 +1870,7 @@ export async function renderizarGraficos(filteredData = null) {
         };
 
         // ------------------
-        // AGGREGATION LOGIC
+        // AGGREGATION LOGIC (AGRUPACIÓN POR MES)
         // ------------------
 
         if (!transacciones || transacciones.length === 0) {
@@ -1766,58 +1878,25 @@ export async function renderizarGraficos(filteredData = null) {
             return;
         }
 
-        // Determinar rango de fechas para decidir agrupamiento
+        // Determinar año base de las transacciones
         let fechas = transacciones.map(t => new Date(t.date).getTime());
-        let minDate = new Date(Math.min(...fechas));
         let maxDate = new Date(Math.max(...fechas));
-        let diffMeses = (maxDate.getFullYear() - minDate.getFullYear()) * 12 + (maxDate.getMonth() - minDate.getMonth());
-
-        let labelsTrends = [];
-        let dataIncTrends = [];
-        let dataExpTrends = [];
-
-        // AGRUPAR POR DÍAS (Rango Dinámico: Ene 1 -> Hoy)
         const baseYear = maxDate.getFullYear();
-        const now = new Date();
-        const currentYear = now.getFullYear();
 
-        // Determinar fecha de corte: Hoy (si es año actual) o 31 Dic (si es pasado)
-        let cutoffDate;
-        if (baseYear < currentYear) {
-            cutoffDate = new Date(baseYear, 11, 31);
-        } else {
-            cutoffDate = now;
-        }
-
-        // Calcular días totales a mostrar
-        const startOfYear = new Date(baseYear, 0, 1);
-        const msPerDay = 1000 * 60 * 60 * 24;
-        // +1 para incluir el día de hoy inclusive
-        const daysToShow = Math.floor((cutoffDate - startOfYear) / msPerDay) + 1;
-
-        labelsTrends = [];
-        dataIncTrends = new Array(daysToShow).fill(0);
-        dataExpTrends = new Array(daysToShow).fill(0);
-
-        let iterDate = new Date(baseYear, 0, 1);
-        for (let i = 0; i < daysToShow; i++) {
-            if (iterDate.getDate() === 1) {
-                labelsTrends.push(iterDate.toLocaleDateString('es-AR', { month: 'short' }).toUpperCase());
-            } else {
-                labelsTrends.push('');
-            }
-            iterDate.setDate(iterDate.getDate() + 1);
-        }
+        // 12 meses completos del año para visualización limpia sin ruido
+        const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const labelsTrends = [...MESES_CORTOS];
+        const dataIncTrends = new Array(12).fill(0);
+        const dataExpTrends = new Array(12).fill(0);
 
         transacciones.forEach(t => {
             const date = new Date(t.date);
             if (date.getFullYear() === baseYear) {
-                const start = new Date(baseYear, 0, 1);
-                const dayIndex = Math.floor((date - start) / (1000 * 60 * 60 * 24));
-                if (dayIndex >= 0 && dayIndex < daysToShow) {
+                const month = date.getMonth();
+                if (month >= 0 && month < 12) {
                     const monto = getMontoARS(t);
-                    if (t.type === 'INCOME') dataIncTrends[dayIndex] += monto;
-                    else dataExpTrends[dayIndex] += monto;
+                    if (t.type === 'INCOME') dataIncTrends[month] += monto;
+                    else dataExpTrends[month] += monto;
                 }
             }
         });
@@ -1880,72 +1959,105 @@ export async function renderizarGraficos(filteredData = null) {
             }
         });
 
-        // RENDERING
+        // ------------------
+        // RENDERING GRÁFICOS DE ALTO IMPACTO ESTÉTICO
         // ------------------
 
-        // --- DASHBOARD GENERAL (LEGACY COMPAT) ---
-
-
+        // 1. Gráficos de Tendencias Mensuales (Dashboard General)
         renderChart('chartTrendIngresos', 'line', labelsTrends, [{
-            label: 'Ingresos Históricos (ARS)',
+            label: `Ingresos (${baseYear})`,
             data: dataIncTrends,
-            borderColor: '#00ff88',
-            backgroundColor: 'rgba(52, 199, 89, 0.1)',
+            borderColor: '#30D158',
+            backgroundColor: getCanvasGradient('chartTrendIngresos', '#30D158', 0.28, 0.0),
+            borderWidth: 2.5,
             fill: true,
-            tension: 0.4
+            tension: 0.38,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#30D158',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2
         }]);
 
         renderChart('chartTrendGastos', 'line', labelsTrends, [{
-            label: 'Gastos Históricos (ARS)',
+            label: `Gastos (${baseYear})`,
             data: dataExpTrends,
-            borderColor: '#ff4d4d',
-            backgroundColor: 'rgba(255, 77, 77, 0.1)',
+            borderColor: '#FF453A',
+            backgroundColor: getCanvasGradient('chartTrendGastos', '#FF453A', 0.25, 0.0),
+            borderWidth: 2.5,
             fill: true,
-            tension: 0.4
+            tension: 0.38,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#FF453A',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2
         }]);
 
-        // Top Services
+        // 2. Top Servicios Más Vendidos (Barras horizontales con bordes redondeados)
         const sortedServices = Object.entries(servicesMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
         renderChart('chartTopServices', 'bar', sortedServices.map(x => x[0]), [{
             label: 'Servicios Realizados',
             data: sortedServices.map(x => x[1]),
-            backgroundColor: '#00d4ff',
-            borderRadius: 5
-        }]);
+            backgroundColor: '#0A84FF',
+            borderRadius: 8,
+            borderSkipped: false,
+            barPercentage: 0.65
+        }], {
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [4, 4] },
+                    ticks: { precision: 0, color: '#A1A1A6' }
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: '#E5E5EA', font: { weight: '500' } }
+                }
+            }
+        });
 
-        // Top Products
+        // 3. Top Productos (Barras estilizadas)
         const sortedProducts = Object.entries(productsMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
         renderChart('chartTopProducts', 'bar', sortedProducts.map(x => x[0]), [{
             label: 'Unidades Vendidas',
             data: sortedProducts.map(x => x[1]),
-            backgroundColor: '#f59e0b',
-            borderRadius: 5
-        }]);
+            backgroundColor: '#FF9F0A',
+            borderRadius: 8,
+            borderSkipped: false,
+            barPercentage: 0.65
+        }], {
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#A1A1A6' }
+                },
+                y: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [4, 4] },
+                    ticks: { precision: 0, color: '#A1A1A6' }
+                }
+            }
+        });
 
-        // iPhone Generations
+        // 4. Generaciones iPhone (Doughnut Moderno con separación y cutout amplio)
         const sortedGen = Object.entries(iphoneMap).sort((a, b) => b[1] - a[1]);
         renderChart('chartIphoneGenerations', 'doughnut', sortedGen.map(x => x[0]), [{
             data: sortedGen.map(x => x[1]),
-            backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#6366f1'],
-            borderWidth: 0
-        }], { cutout: '60%' });
-
-        // Payment Methods (General) - Improved Visual
-        const sortedPay = Object.entries(paymentMap).sort((a, b) => b[1] - a[1]);
-        renderChart('chartPaymentMethods', 'doughnut', sortedPay.map(x => x[0]), [{
-            data: sortedPay.map(x => x[1]),
-            backgroundColor: ['#8B949E', '#2ea44f', '#1F6FEB', '#FB8500', '#DC3545'],
-            borderColor: '#1a1a1a',
-            borderWidth: 2
+            backgroundColor: ['#0A84FF', '#30D158', '#BF5AF2', '#FF9F0A', '#64D2FF', '#FF375F'],
+            borderColor: 'rgba(18, 18, 20, 0.8)',
+            borderWidth: 2,
+            spacing: 3,
+            borderRadius: 6
         }], {
-            cutout: '50%',
+            cutout: '70%',
             plugins: {
                 legend: {
+                    display: true,
                     position: 'right',
                     labels: {
-                        color: '#6E6E73',
-                        font: { size: 13, weight: '600' },
-                        padding: 15,
+                        color: '#A1A1A6',
+                        font: { size: 11, weight: '500' },
+                        padding: 10,
                         usePointStyle: true,
                         pointStyle: 'circle'
                     }
@@ -1953,39 +2065,105 @@ export async function renderizarGraficos(filteredData = null) {
             }
         });
 
+        // 5. Métodos de Pago Utilizados (Doughnut Estilizado)
+        const sortedPay = Object.entries(paymentMap).sort((a, b) => b[1] - a[1]);
+        renderChart('chartPaymentMethods', 'doughnut', sortedPay.map(x => x[0]), [{
+            data: sortedPay.map(x => x[1]),
+            backgroundColor: ['#30D158', '#0A84FF', '#64D2FF', '#009EE3', '#BF5AF2', '#8E8E93'],
+            borderColor: 'rgba(18, 18, 20, 0.8)',
+            borderWidth: 2,
+            spacing: 3,
+            borderRadius: 6
+        }], {
+            cutout: '68%',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#A1A1A6',
+                        font: { size: 12, weight: '500' },
+                        padding: 14,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        });
 
-        // --- NEW TABS: INGRESOS / VENTAS ---
+        // --- TABS INGRESOS / VENTAS ---
 
-        // 1. Trend Ingresos Tab
+        // 6. Trend Ingresos Tab (Evolución Mensual en la pestaña de Ventas)
         renderChart('chartTrendIngresos_Tab', 'line', labelsTrends, [{
-            label: 'Evolución Histórica (ARS)',
+            label: `Ingresos Mensuales (${baseYear})`,
             data: dataIncTrends,
-            borderColor: '#00ff88',
-            backgroundColor: 'rgba(52, 199, 89, 0.12)',
+            borderColor: '#30D158',
+            backgroundColor: getCanvasGradient('chartTrendIngresos_Tab', '#30D158', 0.28, 0.0),
+            borderWidth: 2.5,
             fill: true,
-            tension: 0.3
+            tension: 0.38,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#30D158',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2
         }]);
 
-        // 2. Payment Methods Tab
+        // 7. Payment Methods Tab
         renderChart('chartPaymentMethods_Tab', 'doughnut', sortedPay.map(x => x[0]), [{
             data: sortedPay.map(x => x[1]),
-            backgroundColor: ['#5C2E2Ecc', '#34C759cc', '#007AFFcc', '#FF9500cc', '#FF3B30cc'],
-            borderWidth: 0
-        }], { cutout: '50%' }); // Doughnut looks cleaner in tab
+            backgroundColor: ['#30D158', '#0A84FF', '#64D2FF', '#009EE3', '#BF5AF2'],
+            borderWidth: 2,
+            borderColor: 'rgba(18, 18, 20, 0.8)',
+            spacing: 3,
+            borderRadius: 6
+        }], {
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#A1A1A6',
+                        font: { size: 11, weight: '500' },
+                        padding: 12,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        });
 
+        // --- TABS EGRESOS / GASTOS ---
 
-        // --- NEW TABS: EGRESOS / GASTOS ---
-
-        // 1. Expense Categories Composition
+        // 8. Expense Categories Composition
         const sortedExpCat = Object.entries(expenseCatMap).sort((a, b) => b[1] - a[1]);
         renderChart('chartGastosCat_Tab', 'doughnut', sortedExpCat.map(x => x[0]), [{
             data: sortedExpCat.map(x => x[1]),
             backgroundColor: [
-                '#ff4d4d', '#ff8c00', '#f59e0b', '#8b5cf6', '#ec4899',
-                '#3b82f6', '#10b981', '#6366f1', '#a8a29e', '#64748b'
+                '#FF453A', '#FF9F0A', '#FFD60A', '#BF5AF2', '#FF375F',
+                '#0A84FF', '#30D158', '#5E5CE6', '#AC8E68', '#636366'
             ],
-            borderWidth: 0
-        }], { cutout: '60%' });
+            borderWidth: 2,
+            borderColor: 'rgba(18, 18, 20, 0.8)',
+            spacing: 3,
+            borderRadius: 6
+        }], {
+            cutout: '68%',
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        color: '#A1A1A6',
+                        font: { size: 11, weight: '500' },
+                        padding: 10,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                }
+            }
+        });
 
 
         // ------------------
@@ -2042,14 +2220,25 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     renderChart('chartAnalisisDescriptivo', 'bar', ['Ingresos', 'Egresos', 'Balance'], [{
         label: 'Métricas Clave (ARS)',
         data: [totalInc, totalExp, Math.abs(balance)],
-        backgroundColor: ['#10b981', '#ef4444', balance >= 0 ? '#3b82f6' : '#f59e0b'],
-        borderWidth: 0
+        backgroundColor: ['#30D158', '#FF453A', balance >= 0 ? '#0A84FF' : '#FF9F0A'],
+        borderRadius: 8,
+        borderSkipped: false,
+        barPercentage: 0.65
     }], {
         indexAxis: 'y',
         plugins: { legend: { display: false } },
         scales: {
-            x: { ticks: { color: '#6E6E73' }, grid: { color: 'rgba(0,0,0,0.06)' } },
-            y: { ticks: { color: '#6E6E73' }, grid: { display: false } }
+            x: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [4, 4] },
+                ticks: {
+                    color: '#A1A1A6',
+                    callback: function(val) { return formatShortARS(val); }
+                }
+            },
+            y: {
+                grid: { display: false },
+                ticks: { color: '#E5E5EA', font: { weight: '500' } }
+            }
         }
     });
 
@@ -2066,12 +2255,25 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const margen = totalInc > 0 ? (balance / totalInc) * 100 : 0;
     renderChart('chartAnalisisDiagnostico', 'doughnut', ['Margen', 'Costos'], [{
         data: [Math.max(margen, 0), Math.max(100 - margen, 0)],
-        backgroundColor: [margen >= 30 ? '#10b981' : '#fb923c', '#6b7280'],
-        borderWidth: 0
+        backgroundColor: [margen >= 30 ? '#30D158' : '#FF9F0A', 'rgba(255, 255, 255, 0.12)'],
+        borderColor: 'rgba(18, 18, 20, 0.8)',
+        borderWidth: 2,
+        spacing: 3,
+        borderRadius: 6
     }], {
-        cutout: '65%',
+        cutout: '72%',
         plugins: {
-            legend: { position: 'bottom', labels: { color: '#6E6E73', font: { size: 11 } } }
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    color: '#A1A1A6',
+                    font: { size: 11, weight: '500' },
+                    padding: 12,
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            }
         }
     });
 
@@ -2081,8 +2283,8 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
     const projected = avgDaily * daysInMonth;
 
     const predictivo = `
-        Basado en el rendimiento diario actual (ARS ${Math.round(avgDaily).toLocaleString()}/día), 
-        se proyecta cerrar el mes con ingresos aproximados de ARS ${Math.round(projected).toLocaleString()}.
+        Basado en el rendimiento diario actual (ARS ${Math.round(avgDaily).toLocaleString('es-AR')}/día), 
+        se proyecta cerrar el mes con ingresos aproximados de ARS ${Math.round(projected).toLocaleString('es-AR')}.
         Se espera un aumento de tráfico los fines de semana.
     `;
     const predEl = document.getElementById('analisisPredictivo');
@@ -2090,18 +2292,32 @@ function generarAnalisisIA(transacciones, incTrends, expTrends, products, servic
 
     // Chart Predictivo: Current vs Projected (Line Trend)
     renderChart('chartAnalisisPredictivo', 'line', ['Actual', 'Proyectado'], [{
-        label: 'Ingresos Mensuales',
+        label: 'Ingresos Mensuales (ARS)',
         data: [totalInc, projected],
-        borderColor: '#8b5cf6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        borderWidth: 3,
+        borderColor: '#BF5AF2',
+        backgroundColor: getCanvasGradient('chartAnalisisPredictivo', '#BF5AF2', 0.25, 0.0),
+        borderWidth: 2.5,
         fill: true,
-        tension: 0.4
+        tension: 0.38,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#BF5AF2',
+        pointBorderColor: '#FFFFFF',
+        pointBorderWidth: 2
     }], {
         plugins: { legend: { display: false } },
         scales: {
-            x: { ticks: { color: '#6E6E73' }, grid: { display: false } },
-            y: { ticks: { color: '#6E6E73' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+            x: {
+                grid: { display: false },
+                ticks: { color: '#A1A1A6' }
+            },
+            y: {
+                grid: { color: 'rgba(255, 255, 255, 0.05)', borderDash: [4, 4] },
+                ticks: {
+                    color: '#A1A1A6',
+                    callback: function(val) { return formatShortARS(val); }
+                }
+            }
         }
     });
 
