@@ -694,94 +694,72 @@ function setupScrollVideoKeynote() {
   if (!heroSection || !video1 || !video2 || !video3) return;
 
   const allVideos = [video1, video2, video3];
-  const knownDurations = [9.0, 9.0, 10.0];
 
-  function applySeek(video, safeTime) {
-    if ('fastSeek' in video) {
-      try {
-        video.fastSeek(safeTime);
-        return;
-      } catch (e) {}
-    }
-    video.currentTime = safeTime;
-  }
-
-  function scrubVideo(video, targetSec, fallbackDur) {
-    if (!video) return;
-    const dur = (Number.isFinite(video.duration) && video.duration > 0) ? video.duration : fallbackDur;
-    const safeTime = Math.max(0.01, Math.min(dur - 0.05, targetSec));
-
-    if (Math.abs(video.currentTime - safeTime) < 0.025) return;
-
-    if (video.seeking || video._isSeeking) {
-      video._pendingSeek = safeTime;
-      return;
-    }
-
-    video._isSeeking = true;
-    applySeek(video, safeTime);
-  }
-
-  // 1. Initial video setup - Inline attributes & seek queue listeners
-  allVideos.forEach((v, idx) => {
+  // 1. Initial video configuration (muted, loop, inline playback)
+  allVideos.forEach(v => {
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
-    v.loop = false;
+    v.loop = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
-    v.currentTime = 0.01;
-    v._pendingSeek = null;
-    v._isSeeking = false;
-
-    v.addEventListener('seeking', () => {
-      v._isSeeking = true;
-    });
-
-    v.addEventListener('seeked', () => {
-      v._isSeeking = false;
-      if (v._pendingSeek !== null) {
-        const next = v._pendingSeek;
-        v._pendingSeek = null;
-        if (Math.abs(v.currentTime - next) > 0.025) {
-          v._isSeeking = true;
-          applySeek(v, next);
-        }
-      }
-    });
-
-    if (idx === 0) {
-      v.classList.add('active');
-    } else {
-      v.classList.remove('active');
-    }
+    v.setAttribute('loop', '');
   });
 
-  // Mobile gesture unlock (habilita pipeline de decodificación en Safari iOS y Chrome Android)
-  let hasPrimed = false;
-  const primeVideos = () => {
-    if (hasPrimed) return;
-    hasPrimed = true;
-    allVideos.forEach(v => {
-      try {
-        const p = v.play();
-        if (p !== undefined) {
-          p.then(() => {
-            v.pause();
-          }).catch(() => {});
+  let currentStage = -1;
+  let isHeroVisible = true;
+
+  // Function to switch active video stage and play smoothly
+  function switchStage(newStage) {
+    if (newStage === currentStage) return;
+    currentStage = newStage;
+
+    allVideos.forEach((v, idx) => {
+      if (idx === newStage) {
+        v.classList.add('active');
+        try {
+          // Si el video estaba detenido o al final, reiniciar para que reproduzca completo
+          if (v.currentTime >= (v.duration || 9) - 0.2) {
+            v.currentTime = 0;
+          }
+        } catch (e) {}
+
+        const playPromise = v.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
         }
-      } catch (e) {}
+      } else {
+        v.classList.remove('active');
+        // Pausar video anterior tras completar el crossfade suave de 350ms
+        setTimeout(() => {
+          if (idx !== currentStage) {
+            try {
+              v.pause();
+            } catch (e) {}
+          }
+        }, 350);
+      }
     });
+  }
+
+  // Desbloqueo garantizado de autoplay para navegadores móviles (Safari iOS / Android)
+  const unlockAndPlay = () => {
+    const activeIndex = currentStage >= 0 ? currentStage : 0;
+    const targetVideo = allVideos[activeIndex];
+    if (targetVideo && targetVideo.paused && isHeroVisible) {
+      targetVideo.play().catch(() => {});
+    }
   };
 
-  window.addEventListener('touchstart', primeVideos, { passive: true, once: true });
-  window.addEventListener('pointerdown', primeVideos, { passive: true, once: true });
-  window.addEventListener('scroll', primeVideos, { passive: true, once: true });
+  ['touchstart', 'pointerdown', 'scroll', 'click'].forEach(evt => {
+    window.addEventListener(evt, unlockAndPlay, { passive: true, once: true });
+  });
 
+  // Cálculo de progreso de scroll a lo largo de la sección Hero
   let targetProgress = 0;
   let currentProgress = 0;
-  const LERP_FACTOR = 0.14; // Inercia cinematográfica fluida y reactiva
+  const LERP_FACTOR = 0.15; // Suavizado cinematográfico 60fps
 
   function calculateProgress() {
     const rect = heroSection.getBoundingClientRect();
@@ -789,11 +767,30 @@ function setupScrollVideoKeynote() {
     const currentScroll = -rect.top;
     const rawProgress = currentScroll / Math.max(1, totalScrollable);
     targetProgress = Math.max(0, Math.min(1, rawProgress));
+
+    // Detección de visibilidad: si el hero salió de pantalla, pausar videos para ahorrar recursos
+    const visibleNow = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (visibleNow !== isHeroVisible) {
+      isHeroVisible = visibleNow;
+      if (!isHeroVisible) {
+        allVideos.forEach(v => {
+          try { v.pause(); } catch (e) {}
+        });
+      } else {
+        const activeVid = allVideos[currentStage >= 0 ? currentStage : 0];
+        if (activeVid) {
+          activeVid.play().catch(() => {});
+        }
+      }
+    }
   }
 
   window.addEventListener('scroll', calculateProgress, { passive: true });
   window.addEventListener('resize', calculateProgress, { passive: true });
   calculateProgress();
+
+  // Iniciar inmediatamente en el Stage 0 (Video 1 activo y reproduciendo)
+  switchStage(0);
 
   // Scrollytelling Phase Labels
   const PHASES = [
@@ -804,8 +801,8 @@ function setupScrollVideoKeynote() {
     { threshold: 1.01, label: '05 / GARANTÍA ESCRITA & SERVICIO EN SAN JUAN' }
   ];
 
-  // 2. Loop de animación principal a 60fps
-  function scrubLoop() {
+  // Render loop a 60fps sincronizado con requestAnimationFrame
+  function renderLoop() {
     const diff = targetProgress - currentProgress;
     if (Math.abs(diff) > 0.0001) {
       currentProgress += diff * LERP_FACTOR;
@@ -813,56 +810,24 @@ function setupScrollVideoKeynote() {
       currentProgress = targetProgress;
     }
 
-    // A. Crossfade & Scrubbing de los 3 Videos en secuencia
-    // Video 1 (0.00 - 0.50): Cámara Fusion & Titanio Aeroespacial (Slides 1 & 2)
-    // Video 2 (0.50 - 0.70): Display Super Retina XDR & Dynamic Island (Slide 3)
-    // Video 3 (0.70 - 1.00): Laboratorio de Microelectrónica & Reparaciones (Slides 4 & 5)
-    const T1 = 0.50;
-    const T2 = 0.70;
-
-    if (currentProgress < T1) {
-      if (!video1.classList.contains('active')) {
-        video1.classList.add('active');
-        video2.classList.remove('active');
-        video3.classList.remove('active');
-      }
-
-      const p1 = Math.max(0, Math.min(1, currentProgress / T1));
-      const dur1 = (Number.isFinite(video1.duration) && video1.duration > 0) ? video1.duration : knownDurations[0];
-      scrubVideo(video1, p1 * dur1, knownDurations[0]);
-
-      // Precarga pasiva del primer frame de Video 2 al aproximarse
-      if (currentProgress > 0.38 && video2.currentTime < 0.01) {
-        video2.currentTime = 0.01;
-      }
-    } else if (currentProgress < T2) {
-      if (!video2.classList.contains('active')) {
-        video2.classList.add('active');
-        video1.classList.remove('active');
-        video3.classList.remove('active');
-      }
-
-      const p2 = Math.max(0, Math.min(1, (currentProgress - T1) / (T2 - T1)));
-      const dur2 = (Number.isFinite(video2.duration) && video2.duration > 0) ? video2.duration : knownDurations[1];
-      scrubVideo(video2, p2 * dur2, knownDurations[1]);
-
-      // Precarga pasiva del primer frame de Video 3 al aproximarse
-      if (currentProgress > 0.60 && video3.currentTime < 0.01) {
-        video3.currentTime = 0.01;
-      }
+    // Determinación del video activo según el progreso del scroll:
+    // Stage 0 (0.00 - 0.50): Cámara Fusion & Titanio (Slides 1 & 2) -> Video 1
+    // Stage 1 (0.50 - 0.70): Display Super Retina XDR & Dynamic Island (Slide 3) -> Video 2
+    // Stage 2 (0.70 - 1.00): Laboratorio de Microelectrónica & Garantía (Slides 4 & 5) -> Video 3
+    let targetStage = 0;
+    if (currentProgress >= 0.70) {
+      targetStage = 2;
+    } else if (currentProgress >= 0.50) {
+      targetStage = 1;
     } else {
-      if (!video3.classList.contains('active')) {
-        video3.classList.add('active');
-        video1.classList.remove('active');
-        video2.classList.remove('active');
-      }
-
-      const p3 = Math.max(0, Math.min(1, (currentProgress - T2) / (1 - T2)));
-      const dur3 = (Number.isFinite(video3.duration) && video3.duration > 0) ? video3.duration : knownDurations[2];
-      scrubVideo(video3, p3 * dur3, knownDurations[2]);
+      targetStage = 0;
     }
 
-    // B. Hero Title Box Fade-out hacia arriba (patrón Apple Keynote)
+    if (targetStage !== currentStage) {
+      switchStage(targetStage);
+    }
+
+    // A. Hero Title Box Fade-out hacia arriba (estilo Apple Keynote)
     if (titleBox) {
       if (currentProgress < 0.10) {
         const titleOpacity = 1 - (currentProgress / 0.10);
@@ -876,7 +841,7 @@ function setupScrollVideoKeynote() {
       }
     }
 
-    // C. Scrollytelling Slides Crossfade
+    // B. Scrollytelling Slides Crossfade secuencial
     slides.forEach(slide => {
       const start = parseFloat(slide.getAttribute('data-start') || '0');
       const end = parseFloat(slide.getAttribute('data-end') || '1');
@@ -901,7 +866,7 @@ function setupScrollVideoKeynote() {
       }
     });
 
-    // D. Barra de progreso y HUD de fase
+    // C. Barra de progreso y HUD de fase
     if (progressFill) {
       progressFill.style.width = (currentProgress * 100).toFixed(1) + '%';
     }
@@ -913,10 +878,10 @@ function setupScrollVideoKeynote() {
       }
     }
 
-    requestAnimationFrame(scrubLoop);
+    requestAnimationFrame(renderLoop);
   }
 
-  requestAnimationFrame(scrubLoop);
+  requestAnimationFrame(renderLoop);
 }
 
 // Iniciar aplicación una vez que todo el script y sus componentes están listos
