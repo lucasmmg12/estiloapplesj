@@ -2002,12 +2002,11 @@ window.mostrarConfirmacion = function (mensaje, onConfirm) {
     const msgElement = document.getElementById('mensajeConfirmacion');
     const btnConfirm = document.getElementById('btnConfirmarAccion');
 
+    if (!modal || !msgElement || !btnConfirm) return;
+
     msgElement.innerText = mensaje;
     confirmationCallback = onConfirm;
 
-    // Reset position logic would go here if we wanted to re-center every time
-    // But keeping last dragged position is often nice. 
-    // For now let's just show it.
     modal.classList.add('active');
 
     // Setup one-time click listener
@@ -2018,7 +2017,8 @@ window.mostrarConfirmacion = function (mensaje, onConfirm) {
 };
 
 window.cerrarModalConfirmacion = function () {
-    document.getElementById('modalConfirmacion').classList.remove('active');
+    const modal = document.getElementById('modalConfirmacion');
+    if (modal) modal.classList.remove('active');
     confirmationCallback = null;
 };
 
@@ -2026,6 +2026,8 @@ window.cerrarModalConfirmacion = function () {
 function setupDraggableModal() {
     const modalContent = document.getElementById('modalConfirmacionContent');
     const header = document.getElementById('modalConfirmacionHeader');
+
+    if (!header || !modalContent) return;
 
     let isDragging = false;
     let currentX;
