@@ -552,24 +552,19 @@ function setupEventListeners() {
         }
     }
 
-    // Custom Confirm Dialog
+    // Custom Confirm Dialog (Apple HIG Style)
     function mostrarConfirmacion(titulo, mensaje, onConfirm) {
         const modal = document.getElementById('modalConfirmacion');
-        const header = document.getElementById('modalConfirmacionHeader');
+        const tituloEl = document.getElementById('modalConfirmTitulo');
         const mensajeEl = document.getElementById('mensajeConfirmacion');
         const btnConfirmar = document.getElementById('btnConfirmarAccion');
 
         if (!modal || !mensajeEl || !btnConfirmar) return;
 
-        // Update content
-        header.querySelector('.modal-title').textContent = titulo;
+        if (tituloEl) {
+            tituloEl.textContent = titulo.replace(/^[^wsáéíóúÁÉÍÓÚñÑ]+/g, '').trim() || 'Eliminar Movimiento';
+        }
         mensajeEl.textContent = mensaje;
-
-        // Change colors for delete action
-        header.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
-        btnConfirmar.className = 'btn-primary';
-        btnConfirmar.style.background = '#dc2626';
-        btnConfirmar.textContent = 'Eliminar';
 
         // Set up confirmation handler
         btnConfirmar.onclick = () => {

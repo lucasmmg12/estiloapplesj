@@ -3055,70 +3055,110 @@ body::before {
 
 
 
+/* ==========================================================================
+   MODAL CONFIRMACIÓN (Apple macOS Alert Sheet)
+   ========================================================================== */
 .modal-confirm-content {
+    background: #FFFFFF !important;
+    border: 1px solid #E5E5EA !important;
+    border-radius: 22px !important;
+    box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.25), 0 0 1px rgba(0, 0, 0, 0.12) !important;
+    width: 420px !important;
+    max-width: 92vw !important;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    z-index: 10000 !important;
+}
 
+.modal-confirm-body {
+    padding: 2.2rem 2rem 1.6rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background: #FFFFFF;
+}
 
-    backdrop-filter: blur(20px);
+.modal-confirm-icon-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(255, 59, 48, 0.10);
+    color: #D70015;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 0 0 6px rgba(255, 59, 48, 0.04);
+}
 
-    border: 1px solid #E5E5EA;
+.modal-confirm-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1D1D1F;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
 
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-
-    width: 450px;
-
-    max-width: 90%;
-
-    position: absolute;
-
-    /* Essential for dragging overriding flex centering */
-
-    top: 50%;
-
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
-    /* Initial center */
-
+.modal-confirm-desc {
+    font-size: 0.92rem;
+    color: #6E6E73 !important;
+    line-height: 1.5;
     margin: 0;
-
-    overflow: hidden;
-
+    max-width: 320px;
 }
 
-
-
-.modal-confirm-header {
-
-    cursor: grab;
-
-    background: #F9F9FB;
-
-    padding: 1.5rem;
-
-    user-select: none;
-
+.modal-confirm-footer {
+    background: #F8F9FA !important;
+    border-top: 1px solid #F2F2F7 !important;
+    padding: 1.1rem 1.75rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+    align-items: center !important;
 }
 
-
-
-.modal-confirm-header:active {
-
-    cursor: grabbing;
-
+.btn-modal-cancel {
+    padding: 9px 18px;
+    border-radius: 10px;
+    background: #FFFFFF;
+    border: 1px solid #E5E5EA;
+    color: #1D1D1F;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
-
-
-.modal-confirm-content .modal-footer {
-
-    border-top: 1px solid #E5E5EA;
-
+.btn-modal-cancel:hover {
     background: #F5F5F7;
+    border-color: #D1D1D6;
+}
 
-    padding: 1.5rem;
+.btn-modal-danger {
+    padding: 9px 22px;
+    border-radius: 10px;
+    background: #D70015;
+    border: none;
+    color: #FFFFFF;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    box-shadow: 0 3px 12px rgba(215, 0, 21, 0.28);
+}
 
+.btn-modal-danger:hover {
+    background: #BA0012;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 16px rgba(215, 0, 21, 0.38);
 }
 
 
@@ -4942,17 +4982,17 @@ svg {
 .modal-content {
     position: relative;
     z-index: 2;
-    background: #1a1a1a;
-    background: var(--bg-card, #1a1a1a);
+    background: #FFFFFF !important;
     border: 1px solid #E5E5EA;
     border-radius: 20px;
     padding: 2rem;
     max-width: 600px;
     width: 90%;
-    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.7);
-    animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.22), 0 0 1px rgba(0, 0, 0, 0.1);
+    animation: modalPop 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     max-height: 90vh;
     overflow-y: auto;
+    color: #1D1D1F;
 }
 
 @keyframes modalPop {
@@ -4996,12 +5036,11 @@ svg {
 }
 
 .modal-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    background: linear-gradient(to right, #fff, #aaa);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1D1D1F !important;
+    background: none !important;
+    -webkit-text-fill-color: initial !important;
     letter-spacing: -0.02em;
 }
 
