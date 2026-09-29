@@ -2177,16 +2177,16 @@ function renderizarProgramados() {
 
         return `
             <tr>
-                <td><strong>${clienteNombre}</strong></td>
+                <td><strong style="color: #1D1D1F; font-weight: 600;">${clienteNombre}</strong></td>
                 <td>
                     <span class="intencion-badge ${item.tipo_plantilla.toLowerCase()}">${item.tipo_plantilla}</span>
                 </td>
                 <td>
-                    <div>${fechaObj.toLocaleDateString('es-AR')}</div>
-                    <small style="color: var(--gray-400)">${fechaObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</small>
+                    <div style="color: #1D1D1F; font-weight: 600;">${fechaObj.toLocaleDateString('es-AR')}</div>
+                    <small style="color: #48484A; font-weight: 500;">${fechaObj.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}</small>
                 </td>
                 <td>
-                    <span class="badge" style="background: var(--${estadoBadge}-color, #2196F3); color: white;">
+                    <span class="badge-status ${estadoBadge}">
                         ${estadoText}
                     </span>
                 </td>

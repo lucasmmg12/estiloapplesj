@@ -9,14 +9,14 @@
     --secondary: #F5F5F7;
     /* Pastel (Soft Pink/Cream) */
     --accent: #d81b60;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
+    --success: #166534;
+    --warning: #B45309;
+    --danger: #D70015;
     --dark: #F5F5F7;
     /* Dark Wine base */
     --gray-900: #F5F5F7;
     --gray-200: #1D1D1F;
-    --gray-400: #6E6E73;
+    --gray-400: #48484A;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

@@ -30,18 +30,26 @@
     /* Borgoña Oscuro */
     --primary-glow: rgba(92, 46, 46, 0.15);
 
-    --secondary: #E8D5C4;
-    /* Beige/Dorado Claro */
-    --secondary-dark: #C9A882;
-    /* Dorado Oscuro */
-    --accent-gold: #D4AF37;
-    /* Dorado Acento */
+    --secondary: #8C6D53;
+    /* Dorado/Bronce de alto contraste para fondos claros */
+    --secondary-light: #E8D5C4;
+    --secondary-dark: #6B4F3A;
+    --accent-gold: #996515;
+    --estilo-gold: #996515;
 
-    /* Colores de Estado */
-    --accent-blue: #0071e3;
-    --accent-green: #30d158;
-    --accent-red: #ff453a;
-    --accent-orange: #ff9f0a;
+    /* Colores de Estado (Apple HIG Altos Contrastes para Fondos Claros) */
+    --accent-blue: #0071E3;
+    --accent-green: #1E8238;
+    --accent-red: #D70015;
+    --accent-orange: #C96800;
+    --accent-light: #48484A;
+
+    /* Semántica común de estado para badges y alertas */
+    --success: #1E8238;
+    --warning: #C96800;
+    --danger: #D70015;
+    --info: #0071E3;
+    --border-color: #E5E5EA;
 
     /* Fondos Premium ESTILO */
     --bg-dark: #F5F5F7;
@@ -51,16 +59,21 @@
     --glass-border: #E5E5EA;
     --glass-hover: #FAFAFA;
 
-    /* Textos ESTILO */
+    /* Textos ESTILO - Optimizados para legibilidad y alto contraste sobre fondo blanco/claro */
     --text-primary: #1D1D1F;
-    --text-secondary: #6E6E73;
-    --text-muted: #86868B;
+    --text-secondary: #3A3A3C;
+    --text-muted: #555558;
 
-    /* Grises */
+    /* Grises de alta nitidez */
     --gray-50: #F5F5F7;
     --gray-100: #1D1D1F;
-    --gray-400: #6E6E73;
-    --gray-600: #AEAEB2;
+    --gray-200: #3A3A3C;
+    --gray-300: #48484A;
+    --gray-400: #48484A;
+    --gray-500: #555558;
+    --gray-600: #636366;
+    --gray-700: #8E8E93;
+    --gray-800: #1D1D1F;
 
     /* Efectos */
     --blur: 40px;
@@ -1064,11 +1077,11 @@ body::before {
 .data-table th {
     padding: 0.85rem 1.1rem;
     text-align: left;
-    font-size: 0.72rem;
+    font-size: 0.74rem;
     font-weight: 700;
-    color: #6E6E73;
+    color: #1D1D1F !important;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     border-bottom: 1px solid #E5E5EA;
     background: #F8F9FA;
 }
@@ -1084,10 +1097,24 @@ body::before {
 .data-table td {
     padding: 0.95rem 1.1rem;
     border-bottom: 1px solid #F2F2F7;
-    color: #1D1D1F;
+    color: #1D1D1F !important;
     font-size: 0.88rem;
     vertical-align: middle;
     transition: background 0.15s ease;
+}
+
+.data-table td strong {
+    color: #1D1D1F !important;
+    font-weight: 600;
+}
+
+.data-table td div {
+    color: #1D1D1F !important;
+}
+
+.data-table td small {
+    color: #48484A !important;
+    font-weight: 500;
 }
 
 .data-table tbody tr {
@@ -1332,65 +1359,98 @@ body::before {
 
 
 .intencion-badge {
-
-    display: inline-block;
-
-    padding: 0.4rem 0.8rem;
-
-    border-radius: 8px;
-
-    font-size: 0.85rem;
-
-    font-weight: 600;
-
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
-
-
 
 .intencion-badge.comprar {
-
-    background: rgba(16, 185, 129, 0.1);
-
-    color: var(--success);
-
-    border: 1px solid rgba(16, 185, 129, 0.3);
-
+    background: rgba(52, 199, 89, 0.16) !important;
+    color: #166534 !important; /* Deep crisp forest green */
+    border: 1px solid rgba(52, 199, 89, 0.38) !important;
 }
-
-
 
 .intencion-badge.averiguar {
-
-    background: rgba(245, 158, 11, 0.1);
-
-    color: var(--warning);
-
-    border: 1px solid rgba(245, 158, 11, 0.3);
-
+    background: rgba(245, 158, 11, 0.16) !important;
+    color: #92400E !important; /* Deep crisp amber/brown */
+    border: 1px solid rgba(245, 158, 11, 0.38) !important;
 }
-
-
 
 .intencion-badge.consulta {
-
-    background: #F9F9FB;
-
-    color: #1D1D1F;
-
-    border: 1px solid #E5E5EA;
-
+    background: #F2F2F7 !important;
+    color: #1D1D1F !important; /* Charcoal black */
+    border: 1px solid #D1D1D6 !important;
 }
 
-
-
 .intencion-badge.reclamo {
+    background: rgba(239, 68, 68, 0.16) !important;
+    color: #991B1B !important; /* Deep crisp red */
+    border: 1px solid rgba(239, 68, 68, 0.38) !important;
+}
 
-    background: rgba(239, 68, 68, 0.1);
+/* Badges de Estado Operativo (Envíos, Logs, Alertas) */
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+}
 
-    color: var(--danger);
+.badge-status.info {
+    background: rgba(0, 113, 227, 0.12);
+    color: #0071E3;
+    border: 1px solid rgba(0, 113, 227, 0.25);
+}
 
-    border: 1px solid rgba(239, 68, 68, 0.3);
+.badge-status.warning {
+    background: rgba(255, 149, 0, 0.14);
+    color: #B45309;
+    border: 1px solid rgba(255, 149, 0, 0.3);
+}
 
+.badge-status.danger,
+.badge-status.error {
+    background: rgba(255, 59, 48, 0.12);
+    color: #D70015;
+    border: 1px solid rgba(255, 59, 48, 0.25);
+}
+
+.badge-status.success {
+    background: rgba(52, 199, 89, 0.14);
+    color: #1E8238;
+    border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+/* Acciones en Tablas y Tarjetas */
+.btn-action.danger {
+    background: rgba(255, 59, 48, 0.08);
+    border: 1px solid rgba(255, 59, 48, 0.25);
+    color: #D70015 !important;
+    padding: 0.45rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 9px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-action.danger:hover {
+    background: rgba(255, 59, 48, 0.16);
+    border-color: rgba(255, 59, 48, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(255, 59, 48, 0.15);
 }
 
 
@@ -2674,99 +2734,56 @@ body::before {
 
 
 .search-input::placeholder {
-
-    color: #86868B;
-
+    color: #6E6E73;
 }
-
-
 
 .precio-cell {
-
     font-weight: 600;
-
     color: var(--primary);
-
 }
-
-
 
 .precio-usd {
-
-    color: var(--success);
-
+    color: #166534;
     font-weight: 700;
-
 }
-
-
 
 .precio-ars {
-
-    color: #6E6E73;
-
+    color: #3A3A3C;
+    font-weight: 600;
 }
-
-
 
 .cuota-cell {
-
-    color: var(--warning);
-
+    color: #B45309;
+    font-weight: 600;
     font-size: 0.9rem;
-
 }
-
-
 
 .bateria-badge {
-
-    display: inline-block;
-
-    padding: 0.25rem 0.5rem;
-
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.6rem;
     border-radius: 6px;
-
-    font-size: 0.85rem;
-
-    font-weight: 600;
-
+    font-size: 0.82rem;
+    font-weight: 700;
 }
-
-
 
 .bateria-badge.alta {
-
-    background: rgba(16, 185, 129, 0.1);
-
-    color: var(--success);
-
-    border: 1px solid rgba(16, 185, 129, 0.3);
-
+    background: rgba(52, 199, 89, 0.16);
+    color: #166534 !important;
+    border: 1px solid rgba(52, 199, 89, 0.38);
 }
-
-
 
 .bateria-badge.media {
-
-    background: rgba(245, 158, 11, 0.1);
-
-    color: var(--warning);
-
-    border: 1px solid rgba(245, 158, 11, 0.3);
-
+    background: rgba(245, 158, 11, 0.16);
+    color: #92400E !important;
+    border: 1px solid rgba(245, 158, 11, 0.38);
 }
 
-
-
 .bateria-badge.baja {
-
-    background: rgba(239, 68, 68, 0.1);
-
-    color: var(--danger);
-
-    border: 1px solid rgba(239, 68, 68, 0.3);
-
+    background: rgba(239, 68, 68, 0.16);
+    color: #991B1B !important;
+    border: 1px solid rgba(239, 68, 68, 0.38);
 }
 
 
@@ -4523,25 +4540,29 @@ select option,
 
 
 
-/* Excepciones para colores semánticos (mantenerlos si tienen clase específica) */
+/* Excepciones para colores semánticos (optimizados para fondos claros) */
 .text-success,
 .text-green {
-    color: var(--success) !important;
+    color: #166534 !important;
+    font-weight: 600;
 }
 
 .text-danger,
 .text-red {
-    color: var(--danger) !important;
+    color: #D70015 !important;
+    font-weight: 600;
 }
 
 .text-warning,
 .text-yellow {
-    color: var(--warning) !important;
+    color: #92400E !important;
+    font-weight: 600;
 }
 
 .text-info,
 .text-blue {
-    color: #38bdf8 !important;
+    color: #0071E3 !important;
+    font-weight: 600;
 }
 
 /* Badges específicos */
@@ -4555,37 +4576,18 @@ select option,
     /* Blanco sobre borravino es mejor */
 }
 
-
-
 /* Placeholders */
 ::placeholder {
-    color: #86868B !important;
+    color: #6E6E73 !important;
     opacity: 1;
 }
 
 :-ms-input-placeholder {
-    color: #86868B !important;
+    color: #6E6E73 !important;
 }
 
 ::-ms-input-placeholder {
-    color: #86868B !important;
-}
-
-/* Excepciones Críticas (Botones y Badges) */
-.btn-primary {
-    color: white !important;
-}
-
-.text-danger {
-    color: #ef4444 !important;
-}
-
-.text-success {
-    color: #10b981 !important;
-}
-
-.text-warning {
-    color: #f59e0b !important;
+    color: #6E6E73 !important;
 }
 
 /* ============================================
@@ -4806,12 +4808,12 @@ select option,
     align-items: center;
     padding: 1.2rem 1.5rem;
     border-top: 1px solid #E5E5EA;
-    background: rgba(0, 0, 0, 0.1);
+    background: #FFFFFF;
 }
 
 .segmented-control {
     display: flex;
-    background: #F5F5F7;
+    background: #EBEBED;
     padding: 3px;
     border-radius: 12px;
 }
@@ -4820,7 +4822,7 @@ select option,
     padding: 0.4rem 1rem;
     border: none;
     background: transparent;
-    color: var(--gray-400) !important;
+    color: #48484A !important;
     font-size: 0.75rem;
     font-weight: 600;
     border-radius: 9px;
@@ -4829,8 +4831,10 @@ select option,
 }
 
 .seg-btn.active {
-    background: #EFEFEF;
-    color: white !important;
+    background: #FFFFFF !important;
+    color: #1D1D1F !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
 }
 
 .pagination-nav {
@@ -4864,7 +4868,8 @@ select option,
 
 .pagination-info {
     font-size: 0.8rem;
-    color: var(--gray-400);
+    color: #3A3A3C;
+    font-weight: 500;
 }
 
 /* Ajuste Gráfico Rendimiento */
@@ -4888,31 +4893,32 @@ select option,
 
 .chat-bubble.sent {
     align-self: flex-end;
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    background: #0071E3;
     /* Blue iMessage Style */
-    color: #1D1D1F;
+    color: #FFFFFF;
     border-bottom-right-radius: 4px;
 }
 
 .chat-bubble.received {
     align-self: flex-start;
-    background: #F5F5F7;
-    /* Gray/Dark Bubble */
-    color: #e5e5e5;
+    background: #E9E9EB;
+    /* Clean Apple Gray Bubble */
+    color: #1D1D1F !important;
     border-bottom-left-radius: 4px;
-    border: 1px solid #E5E5EA;
+    border: 1px solid #D1D1D6;
 }
 
 .chat-timestamp {
     font-size: 0.7rem;
     margin-top: 0.3rem;
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.8);
     text-align: right;
     display: block;
 }
 
 .chat-bubble.received .chat-timestamp {
     text-align: left;
+    color: #6E6E73;
 }
 
 .chat-date-divider {
@@ -5657,3 +5663,65 @@ button.btn-primary:hover {
     object-fit: cover;
     border: 2px solid #E5E5EA;
 }
+
+/* ============================================
+   SISTEMA DE ALTO CONTRASTE (FONDOS CLAROS)
+   ============================================ */
+
+/* Envíos Programados, Conversaciones y Clientes */
+#tablaProgramados td,
+#tablaConversaciones td,
+#tablaClientes td,
+#tablaCatalogo td,
+.data-table td {
+    color: #1D1D1F !important;
+}
+
+#tablaProgramados td strong,
+#tablaConversaciones td strong,
+#tablaClientes td strong,
+#tablaCatalogo td strong,
+.data-table td strong {
+    color: #1D1D1F !important;
+    font-weight: 600 !important;
+}
+
+#tablaProgramados td div,
+.data-table td div {
+    color: #1D1D1F !important;
+}
+
+#tablaProgramados td small,
+.data-table td small {
+    color: #48484A !important;
+    font-weight: 500 !important;
+}
+
+/* Encabezados de tabla */
+.data-table thead th,
+.table-finance thead th {
+    color: #1D1D1F !important;
+    font-weight: 700 !important;
+}
+
+/* Links en tablas */
+.data-table td a,
+.whatsapp-link {
+    color: #0071E3 !important;
+    font-weight: 600 !important;
+    text-decoration: none;
+}
+
+.whatsapp-link:hover {
+    text-decoration: underline;
+    color: #0051A8 !important;
+}
+
+/* Labels de formularios en fondos claros */
+.erp-form label,
+.form-group label,
+.modal label {
+    color: #1D1D1F !important;
+    font-weight: 600;
+}
+
