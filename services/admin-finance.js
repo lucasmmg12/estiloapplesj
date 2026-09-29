@@ -1150,17 +1150,17 @@ async function cargarTablaMovimientos() {
         const montoFormateado = m.amount.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
         tr.innerHTML = `
-            <td>${fecha}</td>
-            <td><span class="badge" style="background: ${isIncome ? 'rgba(0,255,136,0.1)' : 'rgba(255,99,99,0.1)'}; color: ${color};">${isIncome ? 'Ingreso' : 'Egreso'}</span></td>
-            <td>${m.transaction_categories?.name || 'Desconocido'}</td>
-            <td style="color: ${color}; font-weight: 600;">${simbolo}$${montoFormateado} <span style="font-size:0.8em; color:var(--gray-400)">${m.currency}</span></td>
-            <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${m.description}">${m.description || '-'}</td>
-            <td style="text-align: center;">
-                <button class="btn-action icon-only" onclick="abrirModalEdicion('${m.id}')" title="Editar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <td class="col-fecha">${fecha}</td>
+            <td><span class="badge-tipo ${isIncome ? 'ingreso' : 'egreso'}">${isIncome ? 'Ingreso' : 'Egreso'}</span></td>
+            <td class="col-categoria">${m.transaction_categories?.name || 'Desconocido'}</td>
+            <td class="col-monto-val ${isIncome ? 'ingreso' : 'egreso'}">${simbolo}${montoFormateado} <span class="currency-tag">${m.currency}</span></td>
+            <td class="col-detalle" title="${m.description || ''}">${m.description || '—'}</td>
+            <td style="text-align: center; white-space: nowrap;">
+                <button class="btn-action-apple" onclick="abrirModalEdicion('${m.id}')" title="Editar">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                 </button>
-                <button class="btn-action icon-only danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                <button class="btn-action-apple danger" onclick="eliminarMovimiento('${m.id}')" title="Eliminar" style="margin-left: 6px;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
             </td>
         `;
@@ -1183,38 +1183,40 @@ function renderPaginationButtons(containerId, currentPg, totalPg, onPageClick) {
     const btnStyle = `
         padding: 0.35rem 0.65rem;
         border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.03);
-        color: var(--gray-400);
+        border: 1px solid #E5E5EA;
+        background: #FFFFFF;
+        color: #1D1D1F;
         font-size: 0.8rem;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.16s ease;
         font-family: 'JetBrains Mono', monospace;
         min-width: 32px;
         text-align: center;
+        font-weight: 500;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     `;
 
     const activeStyle = `
         padding: 0.35rem 0.65rem;
         border-radius: 8px;
-        border: 1px solid var(--accent-green, #00ff88);
-        background: rgba(0,255,136,0.12);
-        color: #00ff88;
+        border: 1px solid #5C2E2E;
+        background: #5C2E2E;
+        color: #FFFFFF;
         font-size: 0.8rem;
         cursor: default;
         font-weight: 700;
         font-family: 'JetBrains Mono', monospace;
         min-width: 32px;
         text-align: center;
-        box-shadow: 0 0 8px rgba(0,255,136,0.15);
+        box-shadow: 0 2px 6px rgba(92, 46, 46, 0.2);
     `;
 
     const disabledStyle = `
         padding: 0.35rem 0.65rem;
         border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.04);
-        background: transparent;
-        color: rgba(255,255,255,0.15);
+        border: 1px solid #F2F2F7;
+        background: #F8F9FA;
+        color: #C7C7CC;
         font-size: 0.8rem;
         cursor: not-allowed;
         font-family: 'JetBrains Mono', monospace;
@@ -1341,14 +1343,18 @@ async function cargarTablaVentasTab() {
             const monto = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(v.amount);
 
             tr.innerHTML = `
-                <td style="color: var(--gray-400); font-size: 0.9rem;">${fecha}</td>
-                <td style="font-weight: 500;">${v.transaction_categories?.name || 'Venta'}</td>
-                <td style="color: var(--gray-300); font-size: 0.9rem;">${v.description || '-'}</td>
-                <td style="color: var(--accent-green); font-weight: 700;">${monto} <small>${v.currency}</small></td>
-                <td style="text-align: center;">
-                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                        <button class="btn-action" onclick="abrirModalEdicion('${v.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✏️</button>
-                        <button class="btn-action danger" onclick="eliminarMovimiento('${v.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">🗑️</button>
+                <td class="col-fecha">${fecha}</td>
+                <td class="col-categoria">${v.transaction_categories?.name || 'Venta'}</td>
+                <td class="col-detalle">${v.description || '—'}</td>
+                <td class="col-monto-val ingreso">${monto} <span class="currency-tag">${v.currency}</span></td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                        <button class="btn-action-apple" onclick="abrirModalEdicion('${v.id}')" title="Editar">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="btn-action-apple danger" onclick="eliminarMovimiento('${v.id}')" title="Eliminar">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                     </div>
                 </td>
             `;
@@ -1412,14 +1418,18 @@ async function cargarTablaGastosTab() {
             const monto = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(g.amount);
 
             tr.innerHTML = `
-                <td style="color: var(--gray-400); font-size: 0.9rem;">${fecha}</td>
-                <td style="font-weight: 500;">${g.transaction_categories?.name || 'Gasto'}</td>
-                <td style="color: var(--gray-300); font-size: 0.9rem;">${g.description || '-'}</td>
-                <td style="color: var(--accent-red); font-weight: 700;">${monto} <small>${g.currency}</small></td>
-                <td style="text-align: center;">
-                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                        <button class="btn-action" onclick="abrirModalEdicion('${g.id}')" title="Editar" style="background: rgba(255, 255, 255, 0.05); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✏️</button>
-                        <button class="btn-action danger" onclick="eliminarMovimiento('${g.id}')" title="Eliminar" style="background: rgba(255, 69, 58, 0.1); border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer;">🗑️</button>
+                <td class="col-fecha">${fecha}</td>
+                <td class="col-categoria">${g.transaction_categories?.name || 'Gasto'}</td>
+                <td class="col-detalle">${g.description || '—'}</td>
+                <td class="col-monto-val egreso">${monto} <span class="currency-tag">${g.currency}</span></td>
+                <td style="text-align: center; white-space: nowrap;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                        <button class="btn-action-apple" onclick="abrirModalEdicion('${g.id}')" title="Editar">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="btn-action-apple danger" onclick="eliminarMovimiento('${g.id}')" title="Eliminar">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                     </div>
                 </td>
             `;
