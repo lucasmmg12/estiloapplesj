@@ -9,7 +9,7 @@
     "orientation": "any",
     "icons": [
         {
-            "src": "/public/logogrow.png",
+            "src": "/logogrow.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"

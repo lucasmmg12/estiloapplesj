@@ -29,7 +29,7 @@ export class GrowyUI {
         fab.title = 'Abrir Growy AI Copilot (Ctrl + G)';
         fab.innerHTML = `
             <div class="growy-avatar-wrap">
-                <img src="public/logogrow.webp" alt="Growy" class="growy-avatar-img" onerror="this.src='public/logogrow.png'">
+                <img src="/logogrow.webp" alt="Growy" class="growy-avatar-img" onerror="this.src='/logogrow.png'">
                 <span class="growy-status-dot"></span>
             </div>
             <span>Growy IA</span>
@@ -50,7 +50,7 @@ export class GrowyUI {
             <header class="growy-header">
                 <div class="growy-header-info">
                     <div class="growy-header-avatar">
-                        <img src="public/logogrow.webp" alt="Growy" onerror="this.src='public/logogrow.png'">
+                        <img src="/logogrow.webp" alt="Growy" onerror="this.src='/logogrow.png'">
                     </div>
                     <div class="growy-header-text">
                         <h3>Growy <span>AI Copilot</span></h3>

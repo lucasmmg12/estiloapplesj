@@ -562,7 +562,7 @@ function setupEventListeners() {
         if (!modal || !mensajeEl || !btnConfirmar) return;
 
         if (tituloEl) {
-            tituloEl.textContent = titulo.replace(/^[^wsáéíóúÁÉÍÓÚñÑ]+/g, '').trim() || 'Eliminar Movimiento';
+            tituloEl.textContent = titulo.replace(/^[^\w\sáéíóúÁÉÍÓÚñÑ]+/gu, '').trim() || titulo;
         }
         mensajeEl.textContent = mensaje;
 
