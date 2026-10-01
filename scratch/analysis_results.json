@@ -1,0 +1,74 @@
+[
+  {
+    "mes": "Abril 2026",
+    "key": "2026-04",
+    "entrantes": 7869,
+    "salientes": 9287,
+    "total": 17156,
+    "salientes_bot": 3904,
+    "salientes_agente": 5383,
+    "porc_bot": "42.0%",
+    "porc_agente": "58.0%",
+    "clientes_unicos": 2436
+  },
+  {
+    "mes": "Mayo 2026",
+    "key": "2026-05",
+    "entrantes": 8788,
+    "salientes": 10269,
+    "total": 19057,
+    "salientes_bot": 4518,
+    "salientes_agente": 5751,
+    "porc_bot": "44.0%",
+    "porc_agente": "56.0%",
+    "clientes_unicos": 3034
+  },
+  {
+    "mes": "Junio 2026",
+    "key": "2026-06",
+    "entrantes": 7763,
+    "salientes": 9467,
+    "total": 17230,
+    "salientes_bot": 4267,
+    "salientes_agente": 5200,
+    "porc_bot": "45.1%",
+    "porc_agente": "54.9%",
+    "clientes_unicos": 3038
+  },
+  {
+    "mes": "Julio 2026",
+    "key": "2026-07",
+    "entrantes": 9214,
+    "salientes": 8443,
+    "total": 17657,
+    "salientes_bot": 2455,
+    "salientes_agente": 5988,
+    "porc_bot": "29.1%",
+    "porc_agente": "70.9%",
+    "clientes_unicos": 2387
+  },
+  {
+    "mes": "Agosto 2026",
+    "key": "2026-08",
+    "entrantes": 8154,
+    "salientes": 8073,
+    "total": 16227,
+    "salientes_bot": 2673,
+    "salientes_agente": 5400,
+    "porc_bot": "33.1%",
+    "porc_agente": "66.9%",
+    "clientes_unicos": 2370
+  },
+  {
+    "mes": "Septiembre 2026",
+    "key": "2026-09",
+    "entrantes": 6924,
+    "salientes": 8543,
+    "total": 15467,
+    "salientes_bot": 2908,
+    "salientes_agente": 5635,
+    "porc_bot": "34.0%",
+    "porc_agente": "66.0%",
+    "clientes_unicos": 2300
+  }
+]
