@@ -35,6 +35,7 @@
 
         <ul class="dock-menu-items">
           <li><a href="#modelos" class="dock-link">Modelos</a></li>
+          <li><a href="#repuestos" class="dock-link">Repuestos</a></li>
           <li><a href="#plancanje" class="dock-link">Plan Canje</a></li>
           <li><a href="#testimonios" class="dock-link">Opiniones</a></li>
           <li><a href="#ubicacion" class="dock-link">Dónde estamos</a></li>
@@ -91,6 +92,15 @@
           <span class="tab-text tab-text-advisor">Asesor IA</span>
         </button>
 
+        <a href="#repuestos" class="tabbar-tab" id="tabRepuestos" title="Repuestos & Taller">
+          <div class="tab-icon-wrap">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+          </div>
+          <span class="tab-text">Repuestos</span>
+        </a>
+
         <a href="#plancanje" class="tabbar-tab" id="tabCanje" title="Plan Canje">
           <div class="tab-icon-wrap">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -101,16 +111,6 @@
             </svg>
           </div>
           <span class="tab-text">Canje</span>
-        </a>
-
-        <a href="#ubicacion" class="tabbar-tab" id="tabLocation" title="Dónde estamos">
-          <div class="tab-icon-wrap">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-          </div>
-          <span class="tab-text">Tienda</span>
         </a>
       </div>
 
@@ -601,6 +601,222 @@
       </div>
     </section>
 
+    <!-- ==========================================================================
+         SCROLLYTELLING: REPUESTOS & LABORATORIO TÉCNICO OFICIAL
+         Experiencia Scrollytelling inmersiva con video sticky en segundo plano,
+         slides secuenciales al scrollear, insights de batería y masterclass al final.
+         ========================================================================== -->
+    <section class="repuesto-scrolly-section" id="repuestos">
+      <div class="repuesto-scrolly-sticky" id="repuestoScrollySticky">
+        
+        <!-- Video Background Layer (Sticky full-screen container) -->
+        <div class="repuesto-scrolly-media">
+          <video id="repuestoScrollyVideo1" class="repuesto-scrolly-video active" playsinline webkit-playsinline muted autoplay loop preload="auto" disablepictureinpicture disableremoteplayback src="/iPhone_battery_panning_shot_20261007092440.mp4"></video>
+          <video id="repuestoScrollyVideo2" class="repuesto-scrolly-video" playsinline webkit-playsinline muted loop preload="auto" disablepictureinpicture disableremoteplayback src="/Reparando_iPhone_con_herramientas_20260928000026.mp4"></video>
+          <div class="repuesto-scrolly-overlay"></div>
+        </div>
+
+        <!-- Floating Category Selector Tabs at top of scrollytelling -->
+        <div class="repuesto-scrolly-tabs-wrap">
+          <div class="repuesto-scrolly-tabs" id="repuestoScrollyTabs">
+            <button type="button" class="scrolly-tab-btn active" data-repuesto="bateria">
+              <span>🔋</span> Baterías Bionic
+            </button>
+            <button type="button" class="scrolly-tab-btn" data-repuesto="pantalla">
+              <span>📱</span> Módulos Soft OLED
+            </button>
+            <button type="button" class="scrolly-tab-btn" data-repuesto="camara">
+              <span>📸</span> Cámaras Fusion
+            </button>
+          </div>
+        </div>
+
+        <!-- Initial Title Box (Centered, visible at top, fades out upwards on scroll) -->
+        <div class="repuesto-scrolly-title-box" id="repuestoScrollyTitleBox">
+          <div class="repuesto-scrolly-eyebrow">
+            <span class="scrolly-pulse-dot"></span>
+            <span>Laboratorio & Repuestos Oficiales</span>
+          </div>
+          <h2 class="repuesto-scrolly-title" id="scrollyMainTitle">Batería Bionic.<br>Poder químico de precisión.</h2>
+          <p class="repuesto-scrolly-subtitle" id="scrollyMainSubtitle">
+            Celdas de litio-cobalto 100% nuevas de 0 ciclos, preservación del chip BMS original y la verdad sobre los repuestos que ningún servicio técnico te cuenta.
+          </p>
+          <div class="repuesto-scrolly-indicator">
+            <span>Deslizá hacia abajo para explorar la anatomía</span>
+            <div class="repuesto-scroll-line"></div>
+          </div>
+        </div>
+
+        <!-- Sequential Text Slides (Scrollytelling crossfading as you scroll) -->
+        <div class="repuesto-scrolly-slides" id="repuestoScrollySlides">
+          
+          <!-- Slide 1: Celdas & Química (Top Left) -->
+          <div class="repuesto-slide-card slide-pos-1" data-start="0.10" data-end="0.27">
+            <span class="repuesto-slide-tag">01 / CELDAS & QUÍMICA</span>
+            <h3 class="repuesto-slide-heading">Celdas de Litio-Cobalto.<br>100% Nuevas, 0 Ciclos.</h3>
+            <p class="repuesto-slide-text">
+              Alta densidad energética con electrolito de grado aeroespacial. Curva de descarga lineal continua que garantiza autonomía real durante todo el día sin caídas bruscas de porcentaje ni degradación prematura.
+            </p>
+          </div>
+
+          <!-- Slide 2: Original Homologado Apple (Top Right) -->
+          <div class="repuesto-slide-card slide-pos-2" data-start="0.29" data-end="0.46">
+            <span class="repuesto-slide-tag tag-apple">02 / REPUESTO ORIGINAL APPLE</span>
+            <h3 class="repuesto-slide-heading">Directo de Fábrica.<br>Serialización de Silicio.</h3>
+            <p class="repuesto-slide-text">
+              Pieza extraída de la misma línea de montaje de Apple. Cuenta con serialización única en su microchip que se sincroniza con la placa lógica. iOS la reconoce de fábrica con salud al 100% sin mensajes de advertencia.
+            </p>
+          </div>
+
+          <!-- Slide 3: Alternativo Premium AMC Centrix & Trasplante BMS (Center Left) -->
+          <div class="repuesto-slide-card slide-pos-3 card-highlight" data-start="0.48" data-end="0.67">
+            <span class="repuesto-slide-tag tag-premium">03 / ALTERNATIVO PREMIUM (AMC CENTRIX)</span>
+            <h3 class="repuesto-slide-heading">Ingeniería Inversa &<br>Trasplante de Chip BMS.</h3>
+            <p class="repuesto-slide-text">
+              Cobre 100% puro y silicio de primera mano. En nuestro laboratorio desoldamos el micro-chip BMS de tu batería anterior y lo soldamos a la celda nueva: <strong>tu iPhone no muestra ningún cartel de 'Pieza desconocida'</strong> y mantiene la lectura de salud al 100%.
+            </p>
+          </div>
+
+          <!-- Slide 4: El Peligro del Genérico Chino (Center Right) -->
+          <div class="repuesto-slide-card slide-pos-4 card-danger" data-start="0.70" data-end="0.86">
+            <span class="repuesto-slide-tag tag-danger">04 / ¿POR QUÉ NO GENÉRICOS CHINOS?</span>
+            <h3 class="repuesto-slide-heading">Pistas Bañadas en Cobre.<br>Resistividad y Calentamiento.</h3>
+            <p class="repuesto-slide-text">
+              Las copias baratas usan metales impuros apenas bañados en cobre. La física es implacable: mayor resistencia eléctrica = <strong>el iPhone calienta y la batería se drena un 40% más rápido</strong>. En Estilo jamás instalamos repuestos genéricos.
+            </p>
+          </div>
+
+          <!-- Slide 5: Laboratorio Propio en San Juan & Garantía (Bottom Center) -->
+          <div class="repuesto-slide-card slide-pos-5" data-start="0.88" data-end="0.99">
+            <span class="repuesto-slide-tag tag-guarantee">05 / LABORATORIO EN SAN JUAN</span>
+            <h3 class="repuesto-slide-heading">6 Meses de Garantía Escrita.<br>Servicio Exprés en 45 Minutos.</h3>
+            <p class="repuesto-slide-text">
+              Atención personalizada en Patio San Ignacio (Local 7). Cambio con instrumental antiestático computarizado y sellado hermético IP68 como nuevo.
+            </p>
+            <div class="repuesto-slide-cta-wrap">
+              <button type="button" class="btn-scrolly-advisor" onclick="window.advisorUI?.open(); window.advisorUI?.enviar('Hola! Quiero cotizar el cambio de batería en el laboratorio de servicio técnico')">
+                <img src="/avatar-asesor.png" alt="Asesor" class="advisor-mini-avatar-img">
+                <span>Cotizar con Asesor Online</span>
+              </button>
+              <a href="#videoExplicativoRepuestos" class="btn-scrolly-scroll">
+                <span>Ver Video Explicativo Abajo ↓</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Minimalist Bottom Progress Bar (Joby style) -->
+        <div class="repuesto-scrolly-bottom-bar">
+          <div class="repuesto-progress-track">
+            <div class="repuesto-progress-fill" id="repuestoProgressFill"></div>
+          </div>
+          <div class="repuesto-current-phase" id="repuestoPhaseLabel">01 / CELDAS DE ALTA DENSIDAD & 0 CICLOS</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         SUB-SECCIÓN INMEDIATA: VIDEO EXPLICATIVO MASTERCLASS & RESUMEN PERSUASIVO
+         ========================================================================== -->
+    <div class="repuestos-masterclass-outer" id="videoExplicativoRepuestos">
+      <div class="container">
+        
+        <div class="masterclass-header">
+          <span class="masterclass-pill">🎬 MASTERCLASS DE LABORATORIO</span>
+          <h3 class="masterclass-title">Mirá la explicación de nuestro técnico en el taller</h3>
+          <p class="masterclass-desc">
+            En este video, te mostramos con piezas reales desarmadas cómo funciona la serialización de Apple, el trasplante del flex BMS y qué pasa por dentro de tu teléfono con un repuesto genérico.
+          </p>
+        </div>
+
+        <!-- Responsive Iframe Container (Exact Iframe requested by user) -->
+        <div class="masterclass-video-container">
+          <div class="youtube-player-frame-box">
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/ToPNCqd-TG0?si=ivd7ghDxLi1pZcmg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+        </div>
+
+        <!-- Video Engaging Summary (Debajo del video para dar ganas de verlo) -->
+        <div class="masterclass-summary-box">
+          
+          <div class="summary-top-meta">
+            <div class="summary-badge-time">
+              <span class="play-icon">▶</span>
+              <span>Duración: 6 min 10 s · Explicación con piezas reales en mano</span>
+            </div>
+            <h4 class="summary-headline">Resumen del video: Lo que tenés que saber antes de cambiar tu batería o pantalla</h4>
+            <p class="summary-subline">
+              ¿Vas a cambiar la batería o pantalla de tu iPhone? No te dejes engañar con ofertas que parecen baratas. En este video, nuestro especialista desarma los repuestos sobre la mesa y te muestra con piezas reales y microscopio lo que pasa adentro:
+            </p>
+          </div>
+
+          <!-- Key Takeaways Grid -->
+          <div class="summary-takeaways-grid">
+            
+            <div class="takeaway-card">
+              <div class="takeaway-time">0:01 - 1:02</div>
+              <div class="takeaway-title">1. Repuestos Originales: El Secreto del Silicio Homologado</div>
+              <p class="takeaway-text">
+                Apple fabrica piezas adicionales en su misma línea de montaje oficial. Cada componente tiene un <strong>número de serie único e irrepetible</strong> grabado en un chip de silicio. Si se sincroniza una vez con tu placa queda como pieza original de fábrica. Si se traslada a otro teléfono sin reprogramar, iOS detecta que ya no es virgen.
+              </p>
+            </div>
+
+            <div class="takeaway-card">
+              <div class="takeaway-time">1:03 - 2:51</div>
+              <div class="takeaway-title">2. Repuestos Certificados (AMC Centrix): Ingeniería Inversa & Trasplante BMS</div>
+              <p class="takeaway-text">
+                Fabricados mediante ingeniería inversa de máxima precisión con cobre 100% puro y silicio premium. Como Apple no vende su chip serializado suelto, <strong>en Estilo desoldamos el micro-chip BMS de tu pieza anterior y lo soldamos en el nuevo repuesto</strong>. Así tu iPhone mantiene la salud al 100% y <strong>no aparece ningún cartel molesto de 'Pieza desconocida'</strong>.
+              </p>
+            </div>
+
+            <div class="takeaway-card">
+              <div class="takeaway-time">2:52 - 4:28</div>
+              <div class="takeaway-title">3. Repuestos Genéricos Chinos: La Trampa Eléctrica y el Vidrio Quebradizo</div>
+              <p class="takeaway-text">
+                Copia de la copia. Las pistas de comunicación no son de cobre, sino <strong>metales de baja pureza apenas bañados en cobre</strong>. Esto crea altísima resistividad eléctrica: <strong>el teléfono calienta y la batería se drena hasta un 40% más rápido</strong>. Además, en pantallas usan <em>Hard OLED</em> con sustrato de vidrio que se quiebra al menor golpe, en vez del <em>Soft OLED</em> plástico flexible del original.
+              </p>
+            </div>
+
+            <div class="takeaway-card highlight-takeaway">
+              <div class="takeaway-time">4:29 - 6:10</div>
+              <div class="takeaway-title">4. La Regla de Oro de Estilo Apple SJ</div>
+              <p class="takeaway-text">
+                <em>"El único que gana con un repuesto genérico es quien te lo vende barato; el cliente termina perdiendo su celular."</em> En Estilo Apple SJ cuidamos tu inversión: solo instalamos piezas <strong>Originales</strong> y <strong>Certificadas AMC Centrix</strong> con 6 meses de garantía escrita en San Juan.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Callout Quote Box -->
+          <div class="summary-quote-callout">
+            <div class="quote-symbol">“</div>
+            <div class="quote-content">
+              <strong>No arriesgues tu iPhone por ahorrar unos pocos pesos en repuestos de baja calidad.</strong>
+              <p>Mirá el video completo para ver los componentes en vivo y consultá a nuestro equipo técnico por la reparación exacta de tu modelo.</p>
+            </div>
+            <div class="quote-actions">
+              <button type="button" class="btn-summary-advisor" onclick="window.advisorUI?.open(); window.advisorUI?.enviar('Hola! Vi el video explicativo de repuestos y quiero cotizar la batería/pantalla para mi iPhone')">
+                <span class="advisor-dot-live"></span>
+                <span>Consultar Asesor Técnico</span>
+              </button>
+              <a href="https://wa.me/5492643229503?text=Hola%20Estilo%20Apple!%20Vi%20el%20video%20de%20repuestos%20y%20quiero%20consultar%20por%20mi%20iPhone" target="_blank" rel="noopener noreferrer" class="btn-summary-whatsapp">
+                <span>Consultar por WhatsApp</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
     <!-- Testimonials & Social Proof -->
     <section class="section testimonials-section" id="testimonios">
       <div class="container">
@@ -984,6 +1200,7 @@
             <div class="footer-col-title">Navegación</div>
             <ul class="footer-links">
               <li><a href="#modelos">Modelos Disponibles</a></li>
+              <li><a href="#repuestos">Repuestos & Baterías</a></li>
               <li><a href="#plancanje">Plan Canje Usados</a></li>
               <li><a href="#experiencia">Garantía 120 Días</a></li>
               <li><a href="#comparador">Comparador de Equipos</a></li>

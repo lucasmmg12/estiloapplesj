@@ -303,6 +303,7 @@ function initApp() {
   // 2. Setup Listeners and Interactive Widgets
   setupNavigation();
   setupScrollVideoKeynote();
+  setupRepuestosScrollytelling();
   setupFilters();
   setupSearch();
   setupTradeInCalculator();
@@ -873,6 +874,231 @@ function setupScrollVideoKeynote() {
 
     if (phaseLabel) {
       const currentPhase = PHASES.find(ph => currentProgress <= ph.threshold) || PHASES[PHASES.length - 1];
+      if (phaseLabel.textContent !== currentPhase.label) {
+        phaseLabel.textContent = currentPhase.label;
+      }
+    }
+
+    requestAnimationFrame(renderLoop);
+  }
+
+  requestAnimationFrame(renderLoop);
+}
+
+// ==========================================================================
+// SCROLLYTELLING EXPERIENCE: REPUESTOS & LABORATORIO TÉCNICO OFICIAL
+// Pinned background video with smooth 60fps lerped scrollytelling slides
+// ==========================================================================
+
+function setupRepuestosScrollytelling() {
+  const section = document.getElementById('repuestos');
+  const video1 = document.getElementById('repuestoScrollyVideo1');
+  const video2 = document.getElementById('repuestoScrollyVideo2');
+  const titleBox = document.getElementById('repuestoScrollyTitleBox');
+  const slides = document.querySelectorAll('.repuesto-slide-card');
+  const progressFill = document.getElementById('repuestoProgressFill');
+  const phaseLabel = document.getElementById('repuestoPhaseLabel');
+  const categoryTabs = document.querySelectorAll('.scrolly-tab-btn');
+  const mainTitle = document.getElementById('scrollyMainTitle');
+  const mainSubtitle = document.getElementById('scrollyMainSubtitle');
+
+  if (!section || !video1) return;
+
+  const allVideos = [video1, video2].filter(Boolean);
+
+  // Configure videos for autoplay, muted, inline loop
+  allVideos.forEach(v => {
+    v.muted = true;
+    v.defaultMuted = true;
+    v.playsInline = true;
+    v.loop = true;
+    v.setAttribute('playsinline', '');
+    v.setAttribute('webkit-playsinline', '');
+    v.setAttribute('muted', '');
+    v.setAttribute('loop', '');
+  });
+
+  let currentStage = 0;
+  let isSectionVisible = true;
+
+  function switchRepuestoVideo(newStage) {
+    if (newStage === currentStage || !allVideos[newStage]) return;
+    currentStage = newStage;
+
+    allVideos.forEach((v, idx) => {
+      if (idx === newStage) {
+        v.classList.add('active');
+        try {
+          if (v.currentTime >= (v.duration || 9) - 0.2) {
+            v.currentTime = 0;
+          }
+        } catch (e) {}
+        v.play().catch(() => {});
+      } else {
+        v.classList.remove('active');
+        setTimeout(() => {
+          if (idx !== currentStage) {
+            try { v.pause(); } catch (e) {}
+          }
+        }, 350);
+      }
+    });
+  }
+
+  // Guaranteed mobile unlock
+  const unlockAndPlay = () => {
+    const targetVideo = allVideos[currentStage] || allVideos[0];
+    if (targetVideo && targetVideo.paused && isSectionVisible) {
+      targetVideo.play().catch(() => {});
+    }
+  };
+  ['touchstart', 'pointerdown', 'scroll', 'click'].forEach(evt => {
+    window.addEventListener(evt, unlockAndPlay, { passive: true, once: true });
+  });
+
+  // Category switcher data (allows exploring other parts via the sticky tabs)
+  const SCROLLY_PARTS = {
+    bateria: {
+      title: 'Batería Bionic.<br>Poder químico de precisión.',
+      subtitle: 'Celdas de litio-cobalto 100% nuevas de 0 ciclos, preservación del chip BMS original y la verdad sobre los repuestos que ningún servicio técnico te cuenta.',
+      video: '/iPhone_battery_panning_shot_20261007092440.mp4'
+    },
+    pantalla: {
+      title: 'Super Retina XDR.<br>Módulos Soft OLED 120Hz.',
+      subtitle: 'Paneles flexibles con sustrato plástico de alta absorción de impactos, True Tone homologado y brillo pico de 2.000 nits bajo la luz solar.',
+      video: '/iPhone_18_Pro_Max_display_20260926090336.mp4'
+    },
+    camara: {
+      title: 'Cámaras Fusion.<br>Óptica y Estabilización Sensor-Shift.',
+      subtitle: 'Sensores Quad-Pixel de alta resolución, estabilización magnética de segunda generación y teleobjetivos tetraprisma homologados.',
+      video: '/iPhone_camera_module_panning_20260926090246.mp4'
+    }
+  };
+
+  categoryTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const partKey = tab.getAttribute('data-repuesto');
+      const data = SCROLLY_PARTS[partKey];
+      if (!data) return;
+
+      categoryTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      if (mainTitle) mainTitle.innerHTML = data.title;
+      if (mainSubtitle) mainSubtitle.textContent = data.subtitle;
+
+      if (video1) {
+        video1.style.opacity = '0';
+        setTimeout(() => {
+          video1.src = data.video;
+          video1.load();
+          video1.play().catch(() => {});
+          video1.style.opacity = '1';
+        }, 200);
+      }
+    });
+  });
+
+  // Scrollytelling Phases Definition
+  const REPUESTO_PHASES = [
+    { threshold: 0.28, label: '01 / CELDAS DE ALTA DENSIDAD & 0 CICLOS' },
+    { threshold: 0.48, label: '02 / REPUESTO ORIGINAL HOMOLOGADO APPLE' },
+    { threshold: 0.70, label: '03 / ALTERNATIVO PREMIUM & TRASPLANTE BMS' },
+    { threshold: 0.88, label: '04 / LA TRAMPA DE LOS GENÉRICOS CHINOS' },
+    { threshold: 1.01, label: '05 / GARANTÍA & LABORATORIO EN SAN JUAN' }
+  ];
+
+  // Scroll Progress Calculation with LERP
+  let targetProgress = 0;
+  let currentProgress = 0;
+  const LERP_FACTOR = 0.15;
+
+  function calculateProgress() {
+    const rect = section.getBoundingClientRect();
+    const totalScrollable = section.offsetHeight - window.innerHeight;
+    const currentScroll = -rect.top;
+    const rawProgress = currentScroll / Math.max(1, totalScrollable);
+    targetProgress = Math.max(0, Math.min(1, rawProgress));
+
+    const visibleNow = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (visibleNow !== isSectionVisible) {
+      isSectionVisible = visibleNow;
+      if (!isSectionVisible) {
+        allVideos.forEach(v => {
+          try { v.pause(); } catch (e) {}
+        });
+      } else {
+        const activeVid = allVideos[currentStage] || allVideos[0];
+        if (activeVid) activeVid.play().catch(() => {});
+      }
+    }
+  }
+
+  window.addEventListener('scroll', calculateProgress, { passive: true });
+  window.addEventListener('resize', calculateProgress, { passive: true });
+  calculateProgress();
+
+  function renderLoop() {
+    const diff = targetProgress - currentProgress;
+    if (Math.abs(diff) > 0.0001) {
+      currentProgress += diff * LERP_FACTOR;
+    } else {
+      currentProgress = targetProgress;
+    }
+
+    // Switch to video 2 (bench tools) in final laboratory phase if available
+    if (video2) {
+      const targetVideoStage = currentProgress >= 0.75 ? 1 : 0;
+      if (targetVideoStage !== currentStage) {
+        switchRepuestoVideo(targetVideoStage);
+      }
+    }
+
+    // A. Title Box Fade Out Upwards
+    if (titleBox) {
+      if (currentProgress < 0.10) {
+        const titleOpacity = 1 - (currentProgress / 0.10);
+        const titleY = -(currentProgress / 0.10) * 35;
+        titleBox.style.opacity = Math.max(0, titleOpacity).toFixed(3);
+        titleBox.style.transform = `translateY(${titleY.toFixed(1)}px)`;
+        titleBox.style.pointerEvents = 'auto';
+      } else {
+        titleBox.style.opacity = '0';
+        titleBox.style.pointerEvents = 'none';
+      }
+    }
+
+    // B. Slides Crossfade Sequentially
+    slides.forEach(slide => {
+      const start = parseFloat(slide.getAttribute('data-start') || '0');
+      const end = parseFloat(slide.getAttribute('data-end') || '1');
+
+      if (currentProgress >= start && currentProgress <= end) {
+        const range = end - start;
+        const norm = (currentProgress - start) / range;
+
+        let opacity = 1;
+        if (norm < 0.20) {
+          opacity = norm / 0.20;
+        } else if (norm > 0.80) {
+          opacity = (1 - norm) / 0.20;
+        }
+
+        slide.style.opacity = Math.max(0, Math.min(1, opacity)).toFixed(3);
+        slide.classList.add('active');
+      } else {
+        slide.style.opacity = '0';
+        slide.classList.remove('active');
+      }
+    });
+
+    // C. Progress Fill & Phase Label
+    if (progressFill) {
+      progressFill.style.width = (currentProgress * 100).toFixed(1) + '%';
+    }
+
+    if (phaseLabel) {
+      const currentPhase = REPUESTO_PHASES.find(ph => currentProgress <= ph.threshold) || REPUESTO_PHASES[REPUESTO_PHASES.length - 1];
       if (phaseLabel.textContent !== currentPhase.label) {
         phaseLabel.textContent = currentPhase.label;
       }
