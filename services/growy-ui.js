@@ -10,6 +10,7 @@ export class GrowyUI {
         this.initialized = false;
         this.pendingTool = null;
         this.lastGeneratedPDF = null;
+        this.pendingReports = [];
     }
 
     init() {
@@ -183,10 +184,11 @@ export class GrowyUI {
         });
 
         growyAgent.on('onReportGenerated', (report) => {
+            this.pendingReports.push(report);
             this.renderizarReportCard(report);
         });
 
-        growyAgent.on('onMessage', (msg) => {
+        growyAgent.on('onMessage', () => {
             this.ocultarIndicadorTool();
         });
     }
@@ -214,9 +216,15 @@ export class GrowyUI {
                         <div class="growy-excel-sub">${report.filename} • ${report.totalFilas || 0} registros • ${report.totalHojas || 1} hoja(s)</div>
                     </div>
                 </div>
-                <span class="growy-excel-download-btn" style="pointer-events: none;">
-                    ✓ Descargado
-                </span>
+                ${report.blobUrl ? `
+                <a href="${report.blobUrl}" download="${report.filename}" class="growy-excel-download-btn" title="Descargar archivo Excel">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Descargar
+                </a>` : `<span class="growy-excel-download-btn">✓ Descargado</span>`}
             `;
         } else {
             card.className = 'growy-pdf-card';
@@ -236,9 +244,15 @@ export class GrowyUI {
                         <div class="growy-pdf-sub">${report.filename} • ${report.totalPaginas || 1} página(s)</div>
                     </div>
                 </div>
-                <span class="growy-pdf-download-btn" style="pointer-events: none;">
-                    ✓ Descargado
-                </span>
+                ${report.blobUrl ? `
+                <a href="${report.blobUrl}" download="${report.filename}" class="growy-pdf-download-btn" title="Descargar archivo PDF">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Descargar
+                </a>` : `<span class="growy-pdf-download-btn">✓ Descargado</span>`}
             `;
         }
 
@@ -292,9 +306,11 @@ export class GrowyUI {
         this.mostrarIndicadorTool('pensando');
 
         try {
+            this.pendingReports = [];
             const respuesta = await growyAgent.enviarMensaje(text);
             this.ocultarIndicadorTool();
             this.renderizarMensaje('assistant', respuesta);
+            this.pendingReports = [];
         } catch (err) {
             this.ocultarIndicadorTool();
             this.renderizarMensaje('assistant', `⚠️ **Error:** ${err.message || 'No se pudo conectar con el agente de IA.'}`);
@@ -319,8 +335,8 @@ export class GrowyUI {
         if (nombre === 'consultar_clientes') label = '👥 Buscando en base de clientes...';
         if (nombre === 'consultar_conversacion_chat') label = '💬 Leyendo historial de chat...';
         if (nombre === 'obtener_cotizacion_dolar') label = '💵 Obteniendo cotización del dólar...';
-        if (nombre === 'generar_reporte_pdf') label = '📄 Generando informe ejecutivo en PDF...';
-        if (nombre === 'generar_reporte_excel') label = '📊 Generando planilla de cálculo en Excel (.xlsx)...';
+        if (nombre === 'generar_reporte_pdf') label = '📄 Compilando informe ejecutivo en PDF...';
+        if (nombre === 'generar_reporte_excel') label = '📊 Compilando planilla de cálculo en Excel (.xlsx)...';
 
         const el = document.createElement('div');
         el.className = 'growy-tool-indicator';
@@ -368,55 +384,141 @@ export class GrowyUI {
         if (!raw) return '';
         let text = raw;
 
-        // Sanitizar entidades básicas
-        text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        // 1. Limpiar enlaces sandbox alucinados por OpenAI
+        text = text.replace(/\[([^\]]+)\]\(sandbox:[^\)]+\)/g, '<strong>$1</strong>');
 
-        // Bloques de código
-        text = text.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-        // Código inline
-        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+        // 2. Bloques de código con escape de HTML
+        text = text.replace(/```([\s\S]*?)```/g, (match, code) => {
+            const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<pre class="growy-pre"><code>${safeCode}</code></pre>`;
+        });
 
-        // Negrita **texto**
+        // 3. Código inline
+        text = text.replace(/`([^`]+)`/g, (match, code) => {
+            const safeCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<code>${safeCode}</code>`;
+        });
+
+        // 4. Negritas e itálicas
         text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-        // Cursiva *texto*
         text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-        // Líneas y saltos de párrafo
-        const lines = text.split('\n');
-        let inList = false;
-        let htmlLines = [];
+        // 5. Enlaces externos válidos (https o http)
+        text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="growy-link">$1</a>');
 
-        for (let line of lines) {
+        const lines = text.split('\n');
+        const htmlParts = [];
+        let i = 0;
+
+        while (i < lines.length) {
+            const line = lines[i];
             const trimmed = line.trim();
-            if (trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) {
-                if (!inList) {
-                    htmlLines.push('<ul>');
-                    inList = true;
+
+            if (!trimmed) {
+                i++;
+                continue;
+            }
+
+            // Ya fue transformado en bloque pre
+            if (trimmed.startsWith('<pre') || trimmed.endsWith('</pre>')) {
+                htmlParts.push(trimmed);
+                i++;
+                continue;
+            }
+
+            // Encabezados Markdown
+            if (trimmed.startsWith('#### ')) {
+                htmlParts.push(`<h4 class="growy-h4">${trimmed.slice(5)}</h4>`);
+                i++;
+                continue;
+            }
+            if (trimmed.startsWith('### ')) {
+                htmlParts.push(`<h4 class="growy-h4">${trimmed.slice(4)}</h4>`);
+                i++;
+                continue;
+            }
+            if (trimmed.startsWith('## ')) {
+                htmlParts.push(`<h3 class="growy-h3">${trimmed.slice(3)}</h3>`);
+                i++;
+                continue;
+            }
+            if (trimmed.startsWith('# ')) {
+                htmlParts.push(`<h2 class="growy-h2">${trimmed.slice(2)}</h2>`);
+                i++;
+                continue;
+            }
+
+            // Separador horizontal
+            if (/^(\-{3,}|\*{3,})$/.test(trimmed)) {
+                htmlParts.push('<hr class="growy-hr">');
+                i++;
+                continue;
+            }
+
+            // Tablas Markdown
+            if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+                const tableLines = [];
+                while (i < lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+                    tableLines.push(lines[i].trim());
+                    i++;
                 }
-                htmlLines.push(`<li>${trimmed.substring(2)}</li>`);
-            } else if (/^\d+\.\s/.test(trimmed)) {
-                if (!inList) {
-                    htmlLines.push('<ol>');
-                    inList = true;
-                }
-                htmlLines.push(`<li>${trimmed.replace(/^\d+\.\s/, '')}</li>`);
-            } else {
-                if (inList) {
-                    htmlLines.push(inList === 'ol' ? '</ol>' : '</ul>');
-                    inList = false;
-                }
-                if (trimmed.length > 0) {
-                    htmlLines.push(`<p>${line}</p>`);
+
+                if (tableLines.length >= 2) {
+                    const parseRow = (r) => r.slice(1, -1).split('|').map(c => c.trim());
+                    const headers = parseRow(tableLines[0]);
+                    let startIdx = 1;
+                    if (tableLines[1].replace(/[\s\-\|:]/g, '') === '') {
+                        startIdx = 2;
+                    }
+
+                    let tableHtml = '<div class="growy-table-wrap"><table class="growy-table"><thead><tr>';
+                    headers.forEach(h => { tableHtml += `<th>${h}</th>`; });
+                    tableHtml += '</tr></thead><tbody>';
+
+                    for (let r = startIdx; r < tableLines.length; r++) {
+                        const cells = parseRow(tableLines[r]);
+                        tableHtml += '<tr>';
+                        cells.forEach(c => { tableHtml += `<td>${c}</td>`; });
+                        tableHtml += '</tr>';
+                    }
+                    tableHtml += '</tbody></table></div>';
+                    htmlParts.push(tableHtml);
+                    continue;
                 }
             }
+
+            // Listas desordenadas
+            if (trimmed.startsWith('- ') || trimmed.startsWith('• ') || trimmed.startsWith('* ')) {
+                let listHtml = '<ul class="growy-ul">';
+                while (i < lines.length && (lines[i].trim().startsWith('- ') || lines[i].trim().startsWith('• ') || lines[i].trim().startsWith('* '))) {
+                    const itemText = lines[i].trim().replace(/^[\-\•\*]\s+/, '');
+                    listHtml += `<li>${itemText}</li>`;
+                    i++;
+                }
+                listHtml += '</ul>';
+                htmlParts.push(listHtml);
+                continue;
+            }
+
+            // Listas ordenadas
+            if (/^\d+\.\s/.test(trimmed)) {
+                let listHtml = '<ol class="growy-ol">';
+                while (i < lines.length && /^\d+\.\s/.test(lines[i].trim())) {
+                    const itemText = lines[i].trim().replace(/^\d+\.\s+/, '');
+                    listHtml += `<li>${itemText}</li>`;
+                    i++;
+                }
+                listHtml += '</ol>';
+                htmlParts.push(listHtml);
+                continue;
+            }
+
+            // Párrafo de texto normal
+            htmlParts.push(`<p>${trimmed}</p>`);
+            i++;
         }
 
-        if (inList) {
-            htmlLines.push('</ul>');
-        }
-
-        return htmlLines.join('');
+        return htmlParts.join('');
     }
 }
 

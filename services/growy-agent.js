@@ -29,6 +29,7 @@ REGLAS DE ORO:
    - Si el usuario pide un "pdf", "informe formal", "reporte ejecutivo" o "documento": consulta los datos y llama a 'generar_reporte_pdf'.
    - Si el usuario pide "en PDF y Excel" o "ambos": consulta los datos y genera ambos reportes llamando consecutivamente a 'generar_reporte_pdf' y 'generar_reporte_excel'.
    - Si pide un reporte sin especificar formato: genera el informe en PDF con KPIs ejecutivos y menciona que también puedes descargárselo en Excel con el detalle tabular completo.
+   - IMPORTANTE SOBRE DESCARGAS: Las herramientas 'generar_reporte_pdf' y 'generar_reporte_excel' compilan y descargan el archivo directamente en el navegador del usuario. NUNCA inventes enlaces markdown con esquemas falsos como sandbox:/ o file:// ni inventes URLs inexistentes. Confirma cordialmente que el reporte se generó y descargó con éxito, indicando el nombre del archivo y el resumen ejecutivo de métricas clave.
 3. Formato y Análisis Financiero:
    - Siempre desglosa ingresos y egresos separando claramente dólares (USD) y pesos argentinos (ARS).
    - Calcula el Balance Neto = Total Ingresos - Total Egresos.
@@ -387,11 +388,11 @@ REGLAS DE ORO:
         switch (nombre) {
             case 'consultar_metricas_globales': {
                 try {
-                    // 1. Stock total y valorización
+                    // 1. Stock total y valorización (solo productos activos)
                     const { data: prods } = await supabase
                         .from('productos')
                         .select('id, modelo, precio_usd, costo_usd, stock, activo')
-                        .or('stock.gt.0,activo.eq.true');
+                        .eq('activo', true);
 
                     let totalStockUnidades = 0;
                     let valorVentaStockUSD = 0;
@@ -474,62 +475,78 @@ REGLAS DE ORO:
 
             case 'consultar_finanzas': {
                 try {
-                    let query = supabase
-                        .from('transactions')
-                        .select(`
-                            id,
-                            date,
-                            amount,
-                            currency,
-                            exchange_rate,
-                            type,
-                            description,
-                            is_personal,
-                            branch,
-                            category_id,
-                            payment_method_id,
-                            supplier_id,
-                            transaction_categories (id, name, type),
-                            payment_methods (id, name),
-                            suppliers (id, name)
-                        `);
+                    let fromDate = args.fecha_inicio || null;
+                    let toDate = args.fecha_fin || null;
 
-                    // 1. Filtro por tipo: normalización 'ingreso' -> 'INCOME', 'egreso' -> 'EXPENSE'
-                    if (args.tipo && args.tipo !== 'todos') {
-                        const tNorm = args.tipo.toLowerCase();
-                        if (tNorm.includes('ingreso') || tNorm === 'income') {
-                            query = query.eq('type', 'INCOME');
-                        } else if (tNorm.includes('egreso') || tNorm.includes('gasto') || tNorm === 'expense') {
-                            query = query.eq('type', 'EXPENSE');
-                        }
-                    }
-
-                    // 2. Filtro por categoría mediante subconsulta a transaction_categories
+                    // Subconsulta de categoría si se especificó
+                    let catIds = null;
                     if (args.categoria) {
                         const { data: catMatches } = await supabase
                             .from('transaction_categories')
                             .select('id')
                             .ilike('name', `%${args.categoria}%`);
                         if (catMatches && catMatches.length > 0) {
-                            query = query.in('category_id', catMatches.map(c => c.id));
+                            catIds = catMatches.map(c => c.id);
                         }
                     }
 
-                    // 3. Filtros por rango de fechas
-                    if (args.fecha_inicio) {
-                        query = query.gte('date', args.fecha_inicio);
+                    // Determinar tipo normalizado
+                    let normalizedType = null;
+                    if (args.tipo && args.tipo !== 'todos') {
+                        const tNorm = args.tipo.toLowerCase();
+                        if (tNorm.includes('ingreso') || tNorm === 'income') normalizedType = 'INCOME';
+                        else if (tNorm.includes('egreso') || tNorm.includes('gasto') || tNorm === 'expense') normalizedType = 'EXPENSE';
                     }
-                    if (args.fecha_fin) {
-                        query = query.lte('date', args.fecha_fin);
+
+                    // Paginar para acumular métricas exactas completas sin truncamiento de 50 registros
+                    let allData = [];
+                    let from = 0;
+                    const step = 1000;
+                    let hasMore = true;
+
+                    while (hasMore) {
+                        let query = supabase
+                            .from('transactions')
+                            .select(`
+                                id,
+                                date,
+                                amount,
+                                currency,
+                                exchange_rate,
+                                type,
+                                description,
+                                is_personal,
+                                branch,
+                                category_id,
+                                payment_method_id,
+                                supplier_id,
+                                transaction_categories (id, name, type),
+                                payment_methods (id, name),
+                                suppliers (id, name)
+                            `)
+                            .order('date', { ascending: false })
+                            .range(from, from + step - 1);
+
+                        if (normalizedType) query = query.eq('type', normalizedType);
+                        if (catIds) query = query.in('category_id', catIds);
+                        if (fromDate) query = query.gte('date', fromDate);
+                        if (toDate) query = query.lte('date', toDate);
+
+                        const { data: chunk, error: chunkErr } = await query;
+                        if (chunkErr) throw chunkErr;
+
+                        if (chunk && chunk.length > 0) {
+                            allData = allData.concat(chunk);
+                            if (chunk.length < step) hasMore = false;
+                            else from += step;
+                        } else {
+                            hasMore = false;
+                        }
+
+                        if (allData.length >= 6000) break;
                     }
 
-                    const limit = Math.min(args.limite || 50, 200);
-                    query = query.order('date', { ascending: false }).limit(limit);
-
-                    const { data, error } = await query;
-                    if (error) return { error: error.message };
-
-                    // Cálculo de métricas agregadas
+                    // Cálculo de métricas agregadas completas
                     let totalIngresosUSD = 0;
                     let totalEgresosUSD = 0;
                     let totalIngresosARS = 0;
@@ -537,7 +554,7 @@ REGLAS DE ORO:
                     const porCategoria = {};
                     const porMedioPago = {};
 
-                    data.forEach(t => {
+                    allData.forEach(t => {
                         const monto = parseFloat(t.amount) || 0;
                         const isIncome = (t.type || '').toUpperCase() === 'INCOME';
                         const isUSD = (t.currency || '').toUpperCase() === 'USD';
@@ -569,31 +586,35 @@ REGLAS DE ORO:
                         else porMedioPago[payName].total_ars += monto;
                     });
 
+                    // Transacciones de muestra para inspección
+                    const limit = Math.min(args.limite || 50, 100);
+                    const sampleTransacciones = allData.slice(0, limit).map(t => ({
+                        id: t.id,
+                        fecha: t.date ? t.date.split('T')[0] : 'N/A',
+                        tipo: t.type === 'INCOME' ? 'Ingreso' : 'Egreso',
+                        categoria: t.transaction_categories?.name || 'Sin categoría',
+                        descripcion: t.description || 'Sin descripción',
+                        monto: `${t.currency || 'ARS'} ${Number(t.amount).toLocaleString('es-AR')}`,
+                        monto_num: Number(t.amount),
+                        moneda: t.currency || 'ARS',
+                        medio_pago: t.payment_methods?.name || 'N/A',
+                        proveedor: t.suppliers?.name || null,
+                        es_personal: t.is_personal || false
+                    }));
+
                     return {
-                        total_transacciones_obtenidas: data.length,
+                        total_transacciones_analizadas: allData.length,
                         totales_consolidados: {
-                            ingresos_usd: totalIngresosUSD,
-                            egresos_usd: totalEgresosUSD,
-                            balance_neto_usd: totalIngresosUSD - totalEgresosUSD,
-                            ingresos_ars: totalIngresosARS,
-                            egresos_ars: totalEgresosARS,
-                            balance_neto_ars: totalIngresosARS - totalEgresosARS
+                            ingresos_usd: Math.round(totalIngresosUSD * 100) / 100,
+                            egresos_usd: Math.round(totalEgresosUSD * 100) / 100,
+                            balance_neto_usd: Math.round((totalIngresosUSD - totalEgresosUSD) * 100) / 100,
+                            ingresos_ars: Math.round(totalIngresosARS * 100) / 100,
+                            egresos_ars: Math.round(totalEgresosARS * 100) / 100,
+                            balance_neto_ars: Math.round((totalIngresosARS - totalEgresosARS) * 100) / 100
                         },
                         desglose_por_categoria: porCategoria,
                         desglose_por_medio_pago: porMedioPago,
-                        transacciones: data.map(t => ({
-                            id: t.id,
-                            fecha: t.date ? t.date.split('T')[0] : 'N/A',
-                            tipo: t.type === 'INCOME' ? 'Ingreso' : 'Egreso',
-                            categoria: t.transaction_categories?.name || 'Sin categoría',
-                            descripcion: t.description || 'Sin descripción',
-                            monto: `${t.currency || 'ARS'} ${Number(t.amount).toLocaleString('es-AR')}`,
-                            monto_num: Number(t.amount),
-                            moneda: t.currency || 'ARS',
-                            medio_pago: t.payment_methods?.name || 'N/A',
-                            proveedor: t.suppliers?.name || null,
-                            es_personal: t.is_personal || false
-                        }))
+                        transacciones_recientes: sampleTransacciones
                     };
                 } catch (err) {
                     console.error('Error en consultar_finanzas:', err);
@@ -605,7 +626,7 @@ REGLAS DE ORO:
                 try {
                     let query = supabase.from('productos').select('*');
                     if (args.solo_activos !== false) {
-                        query = query.or('stock.gt.0,activo.eq.true');
+                        query = query.eq('activo', true);
                     }
                     if (args.modelo) {
                         query = query.ilike('modelo', `%${args.modelo}%`);
@@ -798,6 +819,7 @@ REGLAS DE ORO:
                     this.emit('onReportGenerated', {
                         tipo: 'PDF',
                         filename: result.filename,
+                        blobUrl: result.blobUrl,
                         totalPaginas: result.totalPages,
                         titulo: args.titulo
                     });
@@ -806,7 +828,7 @@ REGLAS DE ORO:
                         archivo: result.filename,
                         total_paginas: result.totalPages,
                         tipo_reporte: 'PDF',
-                        mensaje: `El reporte en PDF "${args.titulo}" se generó y descargó con éxito (${result.totalPages} página(s)).`
+                        mensaje: `El reporte en PDF "${args.titulo}" se compiló y descargó con éxito en el navegador del usuario (${result.totalPages} página(s)). Ya está guardado en su equipo. No generes links markdown de descarga falsos tipo sandbox:/ o file://.`
                     };
                 } catch (err) {
                     console.error('Error generando PDF en Growy:', err);
@@ -823,6 +845,7 @@ REGLAS DE ORO:
                     this.emit('onReportGenerated', {
                         tipo: 'EXCEL',
                         filename: result.filename,
+                        blobUrl: result.blobUrl,
                         totalHojas: result.totalHojas,
                         totalFilas: result.totalFilas,
                         titulo: args.titulo
@@ -833,7 +856,7 @@ REGLAS DE ORO:
                         total_hojas: result.totalHojas,
                         total_filas: result.totalFilas,
                         tipo_reporte: 'EXCEL',
-                        mensaje: `La planilla de cálculo Excel "${result.filename}" se generó y descargó con éxito (${result.totalFilas} registros en ${result.totalHojas} hoja(s)).`
+                        mensaje: `La planilla de cálculo Excel "${result.filename}" se generó y descargó con éxito en el navegador del usuario (${result.totalFilas} registros en ${result.totalHojas} hoja(s)). Ya está guardada en su equipo. No generes links markdown de descarga falsos tipo sandbox:/ o file://.`
                     };
                 } catch (err) {
                     console.error('Error generando Excel en Growy:', err);

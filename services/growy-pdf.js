@@ -212,12 +212,21 @@ export class GrowyPDFGenerator {
         const safeTitle = (data.titulo || 'reporte').toLowerCase().replace(/[^a-z0-9]/g, '_');
         const filename = `${safeTitle}_${Date.now()}.pdf`;
 
-        // Descarga directa
+        // Descarga directa en navegador
         doc.save(filename);
+
+        let blobUrl = null;
+        try {
+            const blob = doc.output('blob');
+            blobUrl = URL.createObjectURL(blob);
+        } catch (e) {
+            console.warn('No se pudo generar blobUrl de PDF:', e);
+        }
 
         return {
             filename,
             doc,
+            blobUrl,
             totalPages
         };
     }

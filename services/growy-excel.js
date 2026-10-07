@@ -124,9 +124,19 @@ export class GrowyExcelGenerator {
 
         XLSX.writeFile(wb, filename);
 
+        let blobUrl = null;
+        try {
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            blobUrl = URL.createObjectURL(blob);
+        } catch (e) {
+            console.warn('No se pudo generar blobUrl de Excel:', e);
+        }
+
         return {
             success: true,
             filename,
+            blobUrl,
             totalHojas: wb.SheetNames.length,
             totalFilas: totalFilasGlobal,
             mensaje: `El archivo Excel "${filename}" se descargó exitosamente con ${wb.SheetNames.length} hoja(s) y ${totalFilasGlobal} filas de datos.`

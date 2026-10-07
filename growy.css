@@ -565,3 +565,122 @@
     color: #86868B;
     text-align: center;
 }
+
+/* ============================================
+   GROWY RICH MARKDOWN STYLES (TABLES & FORMATTING)
+   ============================================ */
+.growy-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: 1px solid #E5E5EA;
+    background: #FFFFFF;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+.growy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.growy-table th {
+    background: #5C2E2E;
+    color: #FFFFFF;
+    font-weight: 600;
+    padding: 8px 12px;
+    border-bottom: 1px solid #3D1F1F;
+    letter-spacing: 0.2px;
+}
+
+.growy-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #F0F0F2;
+    color: #1D1D1F;
+}
+
+.growy-table tr:last-child td {
+    border-bottom: none;
+}
+
+.growy-table tr:hover td {
+    background: #FDFBF9;
+}
+
+.growy-bubble h2.growy-h2 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #5C2E2E;
+    margin: 14px 0 6px 0;
+    border-bottom: 1px solid #F0F0F2;
+    padding-bottom: 4px;
+}
+
+.growy-bubble h3.growy-h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #5C2E2E;
+    margin: 12px 0 6px 0;
+}
+
+.growy-bubble h4.growy-h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #3D1F1F;
+    margin: 10px 0 4px 0;
+}
+
+.growy-bubble hr.growy-hr {
+    border: none;
+    border-top: 1px solid #E5E5EA;
+    margin: 12px 0;
+}
+
+.growy-bubble a.growy-link {
+    color: #5C2E2E;
+    text-decoration: underline;
+    font-weight: 600;
+    transition: color 0.15s;
+}
+
+.growy-bubble a.growy-link:hover {
+    color: #D4AF37;
+}
+
+.growy-pre {
+    background: #1D1D1F;
+    color: #F5F5F7;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    overflow-x: auto;
+    margin: 8px 0;
+}
+
+.growy-bubble code {
+    background: rgba(92, 46, 46, 0.08);
+    color: #5C2E2E;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+}
+
+.growy-excel-download-btn,
+.growy-pdf-download-btn {
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.growy-excel-download-btn:active,
+.growy-pdf-download-btn:active {
+    transform: scale(0.97);
+}
+
