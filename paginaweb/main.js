@@ -906,20 +906,45 @@ function setupRepuestosScrollytelling() {
 
   const allVideos = [video1, video2].filter(Boolean);
 
-  // Configure videos for autoplay, muted, inline loop
+  // Configure all videos with all attributes required for mobile inline autoplay
   allVideos.forEach(v => {
     v.muted = true;
     v.defaultMuted = true;
     v.playsInline = true;
     v.loop = true;
+    v.autoplay = true;
     v.setAttribute('playsinline', '');
     v.setAttribute('webkit-playsinline', '');
     v.setAttribute('muted', '');
+    v.setAttribute('autoplay', '');
     v.setAttribute('loop', '');
+
+    // Seamless loop restart on mobile
+    v.addEventListener('ended', () => {
+      v.currentTime = 0;
+      const p = v.play();
+      if (p && p.catch) p.catch(() => {});
+    });
   });
 
-  let currentStage = 0;
-  let isSectionVisible = true;
+  let currentStage = -1;
+  let isSectionVisible = false;
+
+  // Safe play helper handling mobile autoplay promise rejections gracefully
+  function safePlayVideo(video) {
+    if (!video) return;
+    video.muted = true;
+    try {
+      if (video.currentTime >= (video.duration || 9) - 0.2) {
+        video.currentTime = 0;
+      }
+    } catch (e) {}
+
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {});
+    }
+  }
 
   function switchRepuestoVideo(newStage) {
     if (newStage === currentStage || !allVideos[newStage]) return;
@@ -928,12 +953,7 @@ function setupRepuestosScrollytelling() {
     allVideos.forEach((v, idx) => {
       if (idx === newStage) {
         v.classList.add('active');
-        try {
-          if (v.currentTime >= (v.duration || 9) - 0.2) {
-            v.currentTime = 0;
-          }
-        } catch (e) {}
-        v.play().catch(() => {});
+        safePlayVideo(v);
       } else {
         v.classList.remove('active');
         setTimeout(() => {
@@ -945,16 +965,44 @@ function setupRepuestosScrollytelling() {
     });
   }
 
-  // Guaranteed mobile unlock
-  const unlockAndPlay = () => {
-    const targetVideo = allVideos[currentStage] || allVideos[0];
-    if (targetVideo && targetVideo.paused && isSectionVisible) {
-      targetVideo.play().catch(() => {});
+  // Persistent user interaction unlocker for Mobile Safari / Android Chrome:
+  // On mobile, video.play() is guaranteed to succeed when triggered inside touch/pointer/scroll events.
+  // We keep this listener permanently active so ANY touch, drag, or scroll while near/in the section resumes playback.
+  function onUserInteraction() {
+    if (!isSectionVisible) return;
+    const activeVideo = allVideos[currentStage >= 0 ? currentStage : 0];
+    if (activeVideo && activeVideo.paused) {
+      safePlayVideo(activeVideo);
     }
-  };
-  ['touchstart', 'pointerdown', 'scroll', 'click'].forEach(evt => {
-    window.addEventListener(evt, unlockAndPlay, { passive: true, once: true });
+  }
+
+  ['touchstart', 'touchmove', 'touchend', 'scroll', 'pointerdown', 'click'].forEach(evt => {
+    window.addEventListener(evt, onUserInteraction, { passive: true });
   });
+
+  // IntersectionObserver to pre-warm and activate video 300px before scrolling into view
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const wasVisible = isSectionVisible;
+        isSectionVisible = entry.isIntersecting;
+
+        const activeVid = allVideos[currentStage >= 0 ? currentStage : 0];
+        if (isSectionVisible) {
+          if (activeVid && activeVid.paused) {
+            safePlayVideo(activeVid);
+          }
+        } else if (wasVisible && !isSectionVisible) {
+          // Pause only after it was visible and then scrolled away to save battery
+          allVideos.forEach(v => {
+            try { v.pause(); } catch (e) {}
+          });
+        }
+      });
+    }, { rootMargin: '300px 0px 300px 0px', threshold: [0, 0.05, 0.2] });
+
+    observer.observe(section);
+  }
 
   // Category switcher data (allows exploring other parts via the sticky tabs)
   const SCROLLY_PARTS = {
@@ -992,7 +1040,7 @@ function setupRepuestosScrollytelling() {
         setTimeout(() => {
           video1.src = data.video;
           video1.load();
-          video1.play().catch(() => {});
+          safePlayVideo(video1);
           video1.style.opacity = '1';
         }, 200);
       }
@@ -1020,16 +1068,20 @@ function setupRepuestosScrollytelling() {
     const rawProgress = currentScroll / Math.max(1, totalScrollable);
     targetProgress = Math.max(0, Math.min(1, rawProgress));
 
-    const visibleNow = rect.bottom > 0 && rect.top < window.innerHeight;
+    // Visible when section overlaps viewport with a 200px buffer
+    const visibleNow = rect.bottom > -200 && rect.top < window.innerHeight + 200;
     if (visibleNow !== isSectionVisible) {
+      const wasVisible = isSectionVisible;
       isSectionVisible = visibleNow;
-      if (!isSectionVisible) {
+      if (!isSectionVisible && wasVisible) {
         allVideos.forEach(v => {
           try { v.pause(); } catch (e) {}
         });
-      } else {
-        const activeVid = allVideos[currentStage] || allVideos[0];
-        if (activeVid) activeVid.play().catch(() => {});
+      } else if (isSectionVisible) {
+        const activeVid = allVideos[currentStage >= 0 ? currentStage : 0];
+        if (activeVid && activeVid.paused) {
+          safePlayVideo(activeVid);
+        }
       }
     }
   }
@@ -1037,6 +1089,9 @@ function setupRepuestosScrollytelling() {
   window.addEventListener('scroll', calculateProgress, { passive: true });
   window.addEventListener('resize', calculateProgress, { passive: true });
   calculateProgress();
+
+  // Activate initial stage 0 immediately
+  switchRepuestoVideo(0);
 
   function renderLoop() {
     const diff = targetProgress - currentProgress;
@@ -1051,6 +1106,14 @@ function setupRepuestosScrollytelling() {
       const targetVideoStage = currentProgress >= 0.75 ? 1 : 0;
       if (targetVideoStage !== currentStage) {
         switchRepuestoVideo(targetVideoStage);
+      }
+    }
+
+    // Continuous playback enforcement: if the section is visible and video paused, ensure playback
+    if (isSectionVisible) {
+      const activeVid = allVideos[currentStage >= 0 ? currentStage : 0];
+      if (activeVid && activeVid.paused && !activeVid.ended) {
+        safePlayVideo(activeVid);
       }
     }
 

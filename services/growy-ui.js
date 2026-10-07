@@ -75,10 +75,10 @@ export class GrowyUI {
 
             <!-- Quick Prompts Bar -->
             <div class="growy-quick-bar">
-                <button class="growy-chip" data-prompt="Genera un informe ejecutivo del mes en PDF con KPIs de ventas, finanzas y recomendaciones">📊 Informe Mensual PDF</button>
-                <button class="growy-chip" data-prompt="¿Qué stock disponible tenemos de iPhone 13 a 15, capacidades, precios y condición?">📱 Stock iPhones</button>
-                <button class="growy-chip" data-prompt="Dame un balance financiero de los ingresos y egresos recientes con total en USD y ARS">💰 Balance Financiero</button>
-                <button class="growy-chip" data-prompt="Genera un reporte de inventario valorizado en PDF">📦 Reporte Inventario PDF</button>
+                <button class="growy-chip" data-prompt="Dame un balance financiero completo de los ingresos y egresos registrados, con total en USD y ARS y desglose por categorías">💰 Balance Ingresos vs Egresos</button>
+                <button class="growy-chip" data-prompt="Genera y descarga un reporte completo de finanzas en Excel (.xlsx) con KPIs y transacciones de ingresos y egresos">📥 Descargar Excel Finanzas</button>
+                <button class="growy-chip" data-prompt="Genera un informe ejecutivo formal del mes en PDF con KPIs de ventas, finanzas y recomendaciones">📑 Informe Mensual PDF</button>
+                <button class="growy-chip" data-prompt="¿Cuál es el valor total del inventario disponible en USD (costo vs venta) y qué modelos tenemos en stock?">📦 Stock Valorizado</button>
                 <button class="growy-chip" data-prompt="¿Cuál es la cotización del dólar actual en el sistema?">💵 Cotización Dólar</button>
             </div>
 
@@ -87,9 +87,9 @@ export class GrowyUI {
                 <div class="growy-msg assistant">
                     <div class="growy-bubble">
                         Hola, soy <strong>Growy</strong>, tu copiloto inteligente de <strong>Estilo Apple</strong>. 
-                        Tengo conexión directa al inventario, ventas, clientes y finanzas. 
+                        Tengo acceso en tiempo real a toda la base de datos viva: <strong>ingresos, egresos, transacciones, inventario valorizado, clientes y proveedores</strong>. 
                         <br><br>
-                        Puedo responder consultas de stock, balance financiero o redactar y <strong>descargar informes ejecutivos en PDF</strong> con la estética oficial del sistema. ¿En qué te ayudo hoy?
+                        Puedo responder consultas analíticas, auditar balances en USD y ARS, y redactar o <strong>descargar informes y reportes tanto en PDF ejecutivo como en planillas Excel (.xlsx)</strong> con la estética oficial del sistema. ¿En qué te ayudo hoy?
                     </div>
                     <span class="growy-msg-time">Ahora</span>
                 </div>
@@ -98,7 +98,7 @@ export class GrowyUI {
             <!-- Footer / Input -->
             <footer class="growy-footer">
                 <div class="growy-input-wrap">
-                    <textarea class="growy-textarea" id="growyInput" placeholder="Pregunta sobre stock, finanzas o pide un informe en PDF..." rows="1"></textarea>
+                    <textarea class="growy-textarea" id="growyInput" placeholder="Pregunta sobre ingresos, egresos, stock o pide un reporte en PDF / Excel..." rows="1"></textarea>
                     <button class="growy-send-btn" id="growySendBtn" title="Enviar mensaje">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <line x1="12" y1="19" x2="12" y2="5"></line>
@@ -182,9 +182,68 @@ export class GrowyUI {
             this.mostrarIndicadorTool(data.nombre, data.args);
         });
 
+        growyAgent.on('onReportGenerated', (report) => {
+            this.renderizarReportCard(report);
+        });
+
         growyAgent.on('onMessage', (msg) => {
             this.ocultarIndicadorTool();
         });
+    }
+
+    renderizarReportCard(report) {
+        const container = document.getElementById('growyMessages');
+        if (!container) return;
+
+        const card = document.createElement('div');
+        if (report.tipo === 'EXCEL') {
+            card.className = 'growy-excel-card';
+            card.innerHTML = `
+                <div class="growy-excel-info">
+                    <div class="growy-excel-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="growy-excel-title">${report.titulo || 'Planilla de Cálculo Excel (.xlsx)'}</div>
+                        <div class="growy-excel-sub">${report.filename} • ${report.totalFilas || 0} registros • ${report.totalHojas || 1} hoja(s)</div>
+                    </div>
+                </div>
+                <span class="growy-excel-download-btn" style="pointer-events: none;">
+                    ✓ Descargado
+                </span>
+            `;
+        } else {
+            card.className = 'growy-pdf-card';
+            card.innerHTML = `
+                <div class="growy-pdf-info">
+                    <div class="growy-pdf-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="growy-pdf-title">${report.titulo || 'Informe Ejecutivo en PDF'}</div>
+                        <div class="growy-pdf-sub">${report.filename} • ${report.totalPaginas || 1} página(s)</div>
+                    </div>
+                </div>
+                <span class="growy-pdf-download-btn" style="pointer-events: none;">
+                    ✓ Descargado
+                </span>
+            `;
+        }
+
+        container.appendChild(card);
+        this.scrollToBottom();
     }
 
     toggle() {
@@ -252,12 +311,16 @@ export class GrowyUI {
         if (!container) return;
 
         let label = 'Growy está analizando...';
-        if (nombre === 'consultar_inventario') label = '🔍 Consultando stock en inventario...';
-        if (nombre === 'consultar_finanzas') label = '💰 Extrayendo transacciones y balance...';
+        if (nombre === 'consultar_metricas_globales') label = '📈 Obteniendo métricas globales y snapshot del ERP...';
+        if (nombre === 'consultar_inventario') label = '🔍 Consultando stock valorizado en inventario...';
+        if (nombre === 'consultar_finanzas') label = '💰 Extrayendo transacciones de ingresos, egresos y balance...';
+        if (nombre === 'consultar_movimientos_inventario') label = '📦 Revisando movimientos de stock...';
+        if (nombre === 'consultar_proveedores') label = '🏭 Consultando directorio de proveedores...';
         if (nombre === 'consultar_clientes') label = '👥 Buscando en base de clientes...';
         if (nombre === 'consultar_conversacion_chat') label = '💬 Leyendo historial de chat...';
         if (nombre === 'obtener_cotizacion_dolar') label = '💵 Obteniendo cotización del dólar...';
-        if (nombre === 'generar_reporte_pdf') label = '📄 Generando reporte ejecutivo en PDF...';
+        if (nombre === 'generar_reporte_pdf') label = '📄 Generando informe ejecutivo en PDF...';
+        if (nombre === 'generar_reporte_excel') label = '📊 Generando planilla de cálculo en Excel (.xlsx)...';
 
         const el = document.createElement('div');
         el.className = 'growy-tool-indicator';

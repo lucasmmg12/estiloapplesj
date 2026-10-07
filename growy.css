@@ -431,6 +431,68 @@
     background: #3D1F1F;
 }
 
+/* REPORT / EXCEL ACTION CARD */
+.growy-excel-card {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #F0FDF4 0%, #E8F5E9 100%);
+    border: 1px solid #107C41;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.growy-excel-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.growy-excel-icon {
+    width: 34px;
+    height: 34px;
+    background: #107C41;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.growy-excel-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #1B5E20;
+}
+
+.growy-excel-sub {
+    font-size: 10.5px;
+    color: #2E7D32;
+}
+
+.growy-excel-download-btn {
+    background: #107C41;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.growy-excel-download-btn:hover {
+    background: #0B592E;
+}
+
 /* --- FOOTER / INPUT BAR --- */
 .growy-footer {
     padding: 12px 16px;
