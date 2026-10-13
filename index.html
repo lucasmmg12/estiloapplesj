@@ -65,6 +65,19 @@
                     Growy IA
                     <kbd style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.25);border-radius:4px;padding:0.1rem 0.4rem;font-size:0.6rem;color:#E8D5C4;">Ctrl+G</kbd>
                 </button>
+                <button id="btnDescargarExcelHeader" onclick="window.descargarBaseDatosExcel?.()"
+                    style="display:flex;align-items:center;gap:0.45rem;padding:0.4rem 0.9rem;border-radius:8px;border:1px solid #107C41;background:linear-gradient(135deg, #107C41 0%, #0B5A2F 100%);color:#FFFFFF;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Inter',sans-serif;margin-left:0.5rem;"
+                    onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 12px rgba(16,124,65,0.35)'"
+                    onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'"
+                    title="Descargar base de datos completa de Estilo Apple en Excel (.xlsx) con todas las hojas">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <polyline points="9 15 12 18 15 15"></polyline>
+                    </svg>
+                    Descargar Todo (Excel)
+                </button>
             </div>
         </div>
     </header>
@@ -3180,6 +3193,7 @@
     <!-- Scripts -->
     <script type="module" src="/config.js"></script>
     <script type="module" src="/app.js"></script>
+    <script type="module" src="/services/backup-export.js"></script>
 
     <!-- COMMAND PALETTE (Ctrl+K) -->
     <div id="commandPalette" class="command-palette-overlay" style="display:none;">
@@ -3212,6 +3226,7 @@
             let selectedIndex = 0;
 
             const commands = [
+                { icon: '📥', label: 'Descargar Base de Datos Completa (Excel)', desc: 'Copia de seguridad en .xlsx con todas las hojas del sistema (Contactos, Finanzas, Catálogo, Mensajes)', action: () => { window.descargarBaseDatosExcel?.(); } },
                 { icon: '🤖', label: 'Growy AI Copilot', desc: 'Asistente de IA, consultas de datos y reportes PDF (Ctrl+G)', action: () => { window.growyUI?.toggle(); } },
                 { icon: '👥', label: 'Clientes', desc: 'Ver lista de clientes', action: () => { cambiarTab('conversaciones'); navTo('clientes'); } },
                 { icon: '💰', label: 'Ventas Financieras', desc: 'Dashboard de ventas', action: () => { cambiarTab('ventas-financieras'); navTo('ventas'); } },

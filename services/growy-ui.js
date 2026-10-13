@@ -76,6 +76,7 @@ export class GrowyUI {
 
             <!-- Quick Prompts Bar -->
             <div class="growy-quick-bar">
+                <button class="growy-chip" data-prompt="Quiero descargar la copia de seguridad completa de la base de datos en Excel (.xlsx) con todas las hojas">📦 Descargar Base de Datos (.xlsx)</button>
                 <button class="growy-chip" data-prompt="Dame un balance financiero completo de los ingresos y egresos registrados, con total en USD y ARS y desglose por categorías">💰 Balance Ingresos vs Egresos</button>
                 <button class="growy-chip" data-prompt="Genera y descarga un reporte completo de finanzas en Excel (.xlsx) con KPIs y transacciones de ingresos y egresos">📥 Descargar Excel Finanzas</button>
                 <button class="growy-chip" data-prompt="Genera un informe ejecutivo formal del mes en PDF con KPIs de ventas, finanzas y recomendaciones">📑 Informe Mensual PDF</button>

@@ -377,6 +377,23 @@ REGLAS DE ORO:
                         }
                     }
                 }
+            },
+            {
+                type: 'function',
+                function: {
+                    name: 'descargar_backup_base_datos',
+                    description: 'Abre el modal interactivo de exportación y descarga de la copia de seguridad completa de la base de datos de Estilo Apple SJ en Excel (.xlsx) con 16 hojas (contactos, finanzas, catálogo, stock, 159k chats).',
+                    parameters: {
+                        type: 'object',
+                        properties: {
+                            tipo: {
+                                type: 'string',
+                                enum: ['maestro', 'operativo', 'vivo'],
+                                description: 'Tipo de respaldo: "maestro" (completo con 159k chats), "operativo" (ágil sin chats masivos) o "vivo" (datos en directo)'
+                            }
+                        }
+                    }
+                }
             }
         ];
     }
@@ -864,6 +881,26 @@ REGLAS DE ORO:
                         success: false,
                         error: err.message
                     };
+                }
+            }
+
+            case 'descargar_backup_base_datos': {
+                try {
+                    if (typeof window !== 'undefined' && window.backupExport) {
+                        if (args?.tipo === 'operativo') {
+                            window.backupExport.descargarArchivoOperativo();
+                        } else if (args?.tipo === 'maestro') {
+                            window.backupExport.descargarArchivoMaestro();
+                        } else {
+                            window.backupExport.mostrarModal();
+                        }
+                    }
+                    return {
+                        success: true,
+                        mensaje: 'Se ha abierto el panel de descarga de la copia de seguridad completa en Excel (.xlsx) con 16 hojas de datos (Contactos, Finanzas, Catálogo, Mensajes, Stock, etc.).'
+                    };
+                } catch (err) {
+                    return { success: false, error: err.message };
                 }
             }
 
