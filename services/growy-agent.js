@@ -887,7 +887,13 @@ REGLAS DE ORO:
             case 'descargar_backup_base_datos': {
                 try {
                     if (typeof window !== 'undefined' && window.backupExport) {
-                        if (args?.tipo === 'operativo') {
+                        if (args?.tipo === 'vivo') {
+                            await window.backupExport.exportarDatosVivos();
+                            return {
+                                success: true,
+                                mensaje: 'Se ha generado y descargado con éxito el archivo Excel con los datos 100% actualizados en vivo de Supabase.'
+                            };
+                        } else if (args?.tipo === 'operativo') {
                             window.backupExport.descargarArchivoOperativo();
                         } else if (args?.tipo === 'maestro') {
                             window.backupExport.descargarArchivoMaestro();
